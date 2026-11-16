@@ -1,1 +1,59 @@
-
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#130f22">
+<title>Gazyava Tap</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#130f22;--panel:#211a35;--green:#a8ff45;--gold:#ffd36b;--text:#f8f7ff;--muted:#b9b3cc;--line:#403657}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#34234d 0,transparent 45%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+main{width:min(520px,100%);margin:auto;padding:22px 18px 30px;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;object-fit:contain;border-radius:14px;background:#a8ff4520}.brand{font-weight:900;letter-spacing:.04em}.brand span{color:var(--green)}.tag{margin-left:auto;color:var(--gold);font-size:11px;border:1px solid #78633a;border-radius:99px;padding:5px 9px}
+h1{text-align:center;font-size:30px;margin:26px 0 4px;letter-spacing:-.04em}.sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#211a35d9;border:1px solid var(--line);border-radius:16px;padding:13px 15px}.stat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.stat strong{display:block;font-size:23px;margin-top:3px}.stat strong.green{color:var(--green)}
+.game{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px}
+.cloud-wrap{position:relative;width:250px;height:250px;display:grid;place-items:center}.glow{position:absolute;inset:22px;border-radius:50%;background:#a8ff4520;filter:blur(25px)}
+#tap{position:relative;border:0;background:linear-gradient(145deg,#c4ff75,#65c84d);width:210px;height:210px;border-radius:48% 52% 47% 53%/52% 47% 53% 48%;box-shadow:0 16px 0 #397b36,0 25px 55px #8cff3b35;cursor:pointer;touch-action:manipulation;transition:transform .07s;display:grid;place-items:center}
+#tap:active{transform:translateY(7px) scale(.97);box-shadow:0 8px 0 #397b36,0 15px 35px #8cff3b25}
+#tap img{width:138px;height:138px;object-fit:contain;pointer-events:none;user-select:none}
+#tap:disabled{filter:grayscale(.7);opacity:.7;cursor:not-allowed}
+.hint{color:var(--muted);font-size:13px;margin-top:18px}.energy{width:100%;max-width:360px;margin-top:20px}.energy-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}.bar{height:10px;background:#342a49;border-radius:99px;overflow:hidden}.fill{height:100%;width:100%;background:linear-gradient(90deg,#75d84a,#c4ff75);border-radius:99px;transition:width .2s}
+footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-height:1.5}.toast{position:fixed;left:50%;top:18%;transform:translate(-50%,-10px);background:#a8ff45;color:#17200d;font-weight:900;padding:8px 14px;border-radius:99px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-height:720px){.game{min-height:270px}.cloud-wrap{width:205px;height:205px}#tap{width:170px;height:170px}#tap img{width:115px;height:115px}}
+</style>
+</head>
+<body>
+<main>
+<header><img class="logo" src="../gazyava-logo.png" alt="Gazyava"><div class="brand">GAZYAVA<span> TAP</span></div><div class="tag">BETA · DEV</div></header>
+<h1>Тапай на удачу!</h1><p class="sub">Собирай игровые очки до запуска проекта</p>
+<section class="stats">
+<div class="stat"><small>Твои очки</small><strong class="green" id="score">0</strong></div>
+<div class="stat"><small>Энергия</small><strong id="energyStat">500 / 500</strong></div>
+</section>
+<section class="game">
+<div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><img src="../gazyava-logo.png" alt=""></button></div>
+<div class="hint" id="hint">Нажимай на облачко, чтобы получить +1 очко</div>
+<div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
+</section>
+<footer>ДЕМО-ВЕРСИЯ. Очки хранятся только на этом устройстве и могут быть сброшены. Это игровые баллы, не токены GZV, не криптоактив и не обещание будущей награды. Не подключай кошелёк и не отправляй деньги.</footer>
+</main><div class="toast" id="toast">+1 GAZY POINT</div>
+<script>
+(() => {
+ const tg=window.Telegram&&window.Telegram.WebApp;
+ if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#130f22');tg.setBackgroundColor('#130f22')}catch(e){}}
+ const MAX=500, REGEN_PER_SECOND=1, KEY='gazyava-tap-demo-v1';
+ const now=()=>Date.now();
+ let state={score:0,energy:MAX,updatedAt:now()};
+ try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&Number.isFinite(saved.score)&&Number.isFinite(saved.energy)&&Number.isFinite(saved.updatedAt))state={score:Math.max(0,saved.score),energy:Math.max(0,Math.min(MAX,saved.energy)),updatedAt:saved.updatedAt}}catch(e){}
+ function regen(){const elapsed=Math.max(0,(now()-state.updatedAt)/1000);state.energy=Math.min(MAX,state.energy+elapsed*REGEN_PER_SECOND);state.updatedAt=now()}
+ function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+ const scoreEl=document.getElementById('score'),energyEl=document.getElementById('energyStat'),energyLabel=document.getElementById('energyLabel'),fill=document.getElementById('energyFill'),tap=document.getElementById('tap'),hint=document.getElementById('hint'),toast=document.getElementById('toast');
+ function render(){regen();const e=Math.floor(state.energy);scoreEl.textContent=Math.floor(state.score).toLocaleString('ru-RU');energyEl.textContent=e+' / '+MAX;energyLabel.textContent=e+' / '+MAX;fill.style.width=(state.energy/MAX*100)+'%';tap.disabled=state.energy<1;hint.textContent=tap.disabled?'Энергия восстанавливается: +1 в секунду':'Нажимай на облачко, чтобы получить +1 очко';save()}
+ let toastTimer;
+ tap.addEventListener('click',()=>{regen();if(state.energy<1){render();return}state.energy=Math.max(0,state.energy-1);state.score+=1;state.updatedAt=now();render();toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),450);if(tg&&tg.HapticFeedback)tg.HapticFeedback.impactOccurred('light')});
+ render();setInterval(render,500);
+})();
+</script>
+</body></html>
