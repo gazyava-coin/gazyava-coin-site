@@ -6,6 +6,22 @@
 <meta name="theme-color" content="#130f22">
 <title>Gazyava Tap</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#130f22;--panel:#211a35;--green:#a8ff45;--gold:#ffd36b;--text:#f8f7ff;--muted:#b9b3cc;--line:#403657}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#34234d 0,transparent 45%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+main{width:min(520px,100%);margin:auto;padding:22px 18px 30px;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;object-fit:contain;border-radius:14px;background:#a8ff4520}.brand{font-weight:900;letter-spacing:.04em}.brand span{color:var(--green)}.tag{margin-left:auto;color:var(--gold);font-size:11px;border:1px solid #78633a;border-radius:99px;padding:5px 9px}
+h1{text-align:center;font-size:30px;margin:26px 0 4px;letter-spacing:-.04em}.sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#211a35d9;border:1px solid var(--line);border-radius:16px;padding:13px 15px}.stat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.stat strong{display:block;font-size:23px;margin-top:3px}.stat strong.green{color:var(--green)}
+.game{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px}
+.cloud-wrap{position:relative;width:250px;height:250px;display:grid;place-items:center}.glow{position:absolute;inset:22px;border-radius:50%;background:#a8ff4520;filter:blur(25px)}
+#tap{position:relative;border:0;background:linear-gradient(145deg,#c4ff75,#65c84d);width:210px;height:210px;border-radius:48% 52% 47% 53%/52% 47% 53% 48%;box-shadow:0 16px 0 #397b36,0 25px 55px #8cff3b35;cursor:pointer;touch-action:manipulation;transition:transform .07s;display:grid;place-items:center}
+#tap:active{transform:translateY(7px) scale(.97);box-shadow:0 8px 0 #397b36,0 15px 35px #8cff3b25}
+#tap img{width:138px;height:138px;object-fit:contain;pointer-events:none;user-select:none}
+#tap:disabled{filter:grayscale(.7);opacity:.7;cursor:not-allowed}
+.hint{color:var(--muted);font-size:13px;margin-top:18px}.energy{width:100%;max-width:360px;margin-top:20px}.energy-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}.bar{height:10px;background:#342a49;border-radius:99px;overflow:hidden}.fill{height:100%;width:100%;background:linear-gradient(90deg,#75d84a,#c4ff75);border-radius:99px;transition:width .2s}
+footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-height:1.5}.toast{position:fixed;left:50%;top:18%;transform:translate(-50%,-10px);background:#a8ff45;color:#17200d;font-weight:900;padding:8px 14px;border-radius:99px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-height:720px){.game{min-height:270px}.cloud-wrap{width:205px;height:205px}#tap{width:170px;height:170px}#tap img{width:115px;height:115px}}
 .leaderboard {
   width: 100%;
   margin-top: 22px;
@@ -53,22 +69,6 @@
   font-weight: 800;
   margin-left: 10px;
 }
-<style>
-:root{--bg:#130f22;--panel:#211a35;--green:#a8ff45;--gold:#ffd36b;--text:#f8f7ff;--muted:#b9b3cc;--line:#403657}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#34234d 0,transparent 45%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-main{width:min(520px,100%);margin:auto;padding:22px 18px 30px;min-height:100vh;display:flex;flex-direction:column}
-header{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;object-fit:contain;border-radius:14px;background:#a8ff4520}.brand{font-weight:900;letter-spacing:.04em}.brand span{color:var(--green)}.tag{margin-left:auto;color:var(--gold);font-size:11px;border:1px solid #78633a;border-radius:99px;padding:5px 9px}
-h1{text-align:center;font-size:30px;margin:26px 0 4px;letter-spacing:-.04em}.sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#211a35d9;border:1px solid var(--line);border-radius:16px;padding:13px 15px}.stat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.stat strong{display:block;font-size:23px;margin-top:3px}.stat strong.green{color:var(--green)}
-.game{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px}
-.cloud-wrap{position:relative;width:250px;height:250px;display:grid;place-items:center}.glow{position:absolute;inset:22px;border-radius:50%;background:#a8ff4520;filter:blur(25px)}
-#tap{position:relative;border:0;background:linear-gradient(145deg,#c4ff75,#65c84d);width:210px;height:210px;border-radius:48% 52% 47% 53%/52% 47% 53% 48%;box-shadow:0 16px 0 #397b36,0 25px 55px #8cff3b35;cursor:pointer;touch-action:manipulation;transition:transform .07s;display:grid;place-items:center}
-#tap:active{transform:translateY(7px) scale(.97);box-shadow:0 8px 0 #397b36,0 15px 35px #8cff3b25}
-#tap img{width:138px;height:138px;object-fit:contain;pointer-events:none;user-select:none}
-#tap:disabled{filter:grayscale(.7);opacity:.7;cursor:not-allowed}
-.hint{color:var(--muted);font-size:13px;margin-top:18px}.energy{width:100%;max-width:360px;margin-top:20px}.energy-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}.bar{height:10px;background:#342a49;border-radius:99px;overflow:hidden}.fill{height:100%;width:100%;background:linear-gradient(90deg,#75d84a,#c4ff75);border-radius:99px;transition:width .2s}
-footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-height:1.5}.toast{position:fixed;left:50%;top:18%;transform:translate(-50%,-10px);background:#a8ff45;color:#17200d;font-weight:900;padding:8px 14px;border-radius:99px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-height:720px){.game{min-height:270px}.cloud-wrap{width:205px;height:205px}#tap{width:170px;height:170px}#tap img{width:115px;height:115px}}
 </style>
 </head>
 <body>
