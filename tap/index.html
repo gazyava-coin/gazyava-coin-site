@@ -40,21 +40,146 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 <footer>ДЕМО-ВЕРСИЯ. Очки хранятся только на этом устройстве и могут быть сброшены. Это игровые баллы, не токены GZV, не криптоактив и не обещание будущей награды. Не подключай кошелёк и не отправляй деньги.</footer>
 </main><div class="toast" id="toast">+1 GAZY POINT</div>
 <script>
-(() => {const SUPABASE_URL = 'https://dlnlvjchluvpccfqieql.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_HYs5_RFViW0WC8evbDADwQ_EygJRxFN';
- const tg=window.Telegram&&window.Telegram.WebApp;
- if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#130f22');tg.setBackgroundColor('#130f22')}catch(e){}}
- const MAX=500, REGEN_PER_SECOND=1, KEY='gazyava-tap-demo-v1';
- const now=()=>Date.now();
- let state={score:0,energy:MAX,updatedAt:now()};
- try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&Number.isFinite(saved.score)&&Number.isFinite(saved.energy)&&Number.isFinite(saved.updatedAt))state={score:Math.max(0,saved.score),energy:Math.max(0,Math.min(MAX,saved.energy)),updatedAt:saved.updatedAt}}catch(e){}
- function regen(){const elapsed=Math.max(0,(now()-state.updatedAt)/1000);state.energy=Math.min(MAX,state.energy+elapsed*REGEN_PER_SECOND);state.updatedAt=now()}
- function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
- const scoreEl=document.getElementById('score'),energyEl=document.getElementById('energyStat'),energyLabel=document.getElementById('energyLabel'),fill=document.getElementById('energyFill'),tap=document.getElementById('tap'),hint=document.getElementById('hint'),toast=document.getElementById('toast');
- function render(){regen();const e=Math.floor(state.energy);scoreEl.textContent=Math.floor(state.score).toLocaleString('ru-RU');energyEl.textContent=e+' / '+MAX;energyLabel.textContent=e+' / '+MAX;fill.style.width=(state.energy/MAX*100)+'%';tap.disabled=state.energy<1;hint.textContent=tap.disabled?'Энергия восстанавливается: +1 в секунду':'Нажимай на облачко, чтобы получить +1 очко';save()}
- let toastTimer;
- tap.addEventListener('click',()=>{regen();if(state.energy<1){render();return}state.energy=Math.max(0,state.energy-1);state.score+=1;state.updatedAt=now();render();toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),450);if(tg&&tg.HapticFeedback)tg.HapticFeedback.impactOccurred('light')});
- render();setInterval(render,500);
+(() => {
+  const SUPABASE_URL = 'https://dlnlvjchluvpccfqieql.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_HYs5_RFViW0WC8evbDADwQ_EygJRxFN';
+  
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    try {
+      tg.setHeaderColor('#130f22');
+      tg.setBackgroundColor('#130f22');
+    } catch (e) {}
+  }
+
+  const MAX = 500;
+  let score = 0;
+  let energy = MAX;
+  let lastSync = Date.now();
+  let busy = false;
+  let initialized = false;
+
+  const scoreEl = document.getElementById('score');
+  const energyEl = document.getElementById('energyStat');
+  const energyLabel = document.getElementById('energyLabel');
+  const fill = document.getElementById('energyFill');
+  const tap = document.getElementById('tap');
+  const hint = document.getElementById('hint');
+  const toast = document.getElementById('toast');
+
+  function currentEnergy() {
+    const elapsed = (Date.now() - lastSync) / 1000;
+    return Math.min(MAX, energy + Math.max(0, elapsed));
+  }
+
+  function render() {
+    const e = Math.floor(currentEnergy());
+
+    scoreEl.textContent = score.toLocaleString('ru-RU');
+    energyEl.textContent = e + ' / ' + MAX;
+    energyLabel.textContent = e + ' / ' + MAX;
+    fill.style.width = (e / MAX * 100) + '%';
+
+    tap.disabled = busy || !initialized || e < 1;
+
+    if (!initialized) {
+      hint.textContent = 'Загружаем профиль...';
+    } else if (busy) {
+      hint.textContent = 'Сохраняем результат...';
+    } else if (e < 1) {
+      hint.textContent = 'Энергия восстанавливается: +1 в секунду';
+    } else {
+      hint.textContent = 'Нажимай на облачко, чтобы получить +1 очко';
+    }
+  }
+
+  async function request(action) {
+    if (!tg || !tg.initData) {
+      throw new Error('Открой игру через Telegram-бота');
+    }
+
+    const response = await fetch(SUPABASE_URL + '/functions/v1/game', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      },
+      body: JSON.stringify({
+        action,
+        initData: tg.initData
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Ошибка сервера');
+    }
+
+    return data;
+  }
+
+  function applyServerData(data) {
+    score = Number(data.score);
+    energy = Math.max(0, Math.min(MAX, Number(data.energy)));
+    lastSync = Date.now();
+    initialized = true;
+    render();
+  }
+
+  async function loadPlayer() {
+    try {
+      const data = await request('load');
+      applyServerData(data);
+    } catch (error) {
+      hint.textContent = error.message;
+      console.error('Profile loading failed:', error);
+    }
+  }
+
+  let toastTimer;
+
+  tap.addEventListener('click', async () => {
+    if (busy || !initialized || currentEnergy() < 1) {
+      render();
+      return;
+    }
+
+    busy = true;
+    render();
+
+    try {
+      const previousScore = score;
+      const data = await request('tap');
+      applyServerData(data);
+
+      if (score > previousScore) {
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(
+          () => toast.classList.remove('show'),
+          450
+        );
+
+        if (tg?.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('light');
+        }
+      }
+    } catch (error) {
+      hint.textContent = error.message;
+      console.error('Tap failed:', error);
+    } finally {
+      busy = false;
+      render();
+    }
+  });
+
+  render();
+  loadPlayer();
+  setInterval(render, 500);
 })();
 </script>
 </body></html>
