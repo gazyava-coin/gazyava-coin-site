@@ -88,7 +88,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   <h2>🏆 TOP 10 PLAYERS</h2>
   <div id="leaderboardList">Загружаем рейтинг...</div>
 </section>
-<footer>ДЕМО-ВЕРСИЯ. Очки хранятся только на этом устройстве и могут быть сброшены. Это игровые баллы, не токены GZV, не криптоактив и не обещание будущей награды. Не подключай кошелёк и не отправляй деньги.</footer>
+<footer>ДЕМО-ВЕРСИЯ. Игровые очки сохраняются на сервере и привязаны к Telegram-профилю. Это игровые баллы, не токены GZV, не криптоактив и не обещание будущей награды. Не подключай кошелёк и не отправляй деньги.</footer>
 </main><div class="toast" id="toast">+1 GAZY POINT</div>
 <script>
 (() => {
@@ -191,6 +191,50 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     }
   }
 
+  async function loadLeaderboard() {
+  const list = document.getElementById('leaderboardList');
+  if (!list) return;
+
+  try {
+    const data = await request('leaderboard');
+    const players = Array.isArray(data.leaderboard)
+      ? data.leaderboard
+      : [];
+
+    list.replaceChildren();
+
+    if (players.length === 0) {
+      list.textContent = 'Пока нет игроков';
+      return;
+    }
+
+    players.forEach((player, index) => {
+      const row = document.createElement('div');
+      row.className = 'leader-row';
+
+      const rank = document.createElement('span');
+      rank.className = 'leader-rank';
+      rank.textContent = (player.rank || index + 1) + '.';
+
+      const name = document.createElement('span');
+      name.className = 'leader-name';
+      name.textContent = player.username
+        ? '@' + player.username
+        : (player.first_name || 'Игрок');
+
+      const score = document.createElement('span');
+      score.className = 'leader-score';
+      score.textContent = Number(player.score || 0).toLocaleString('ru-RU');
+
+      row.append(rank, name, score);
+      list.appendChild(row);
+    });
+  } catch (error) {
+    list.textContent = 'Не удалось загрузить рейтинг';
+    console.error('Leaderboard loading failed:', error);
+  }
+}
+  
   let toastTimer;
 
   tap.addEventListener('click', async () => {
@@ -230,7 +274,9 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 
   render();
   loadPlayer();
+  loadLeaderboard();
   setInterval(render, 500);
+  setInterval(loadLeaderboard, 30000);
 })();
 </script>
 </body></html>
