@@ -6,6 +6,53 @@
 <meta name="theme-color" content="#130f22">
 <title>Gazyava Tap</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+.leaderboard {
+  width: 100%;
+  margin-top: 22px;
+  padding: 18px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+}
+
+.leaderboard h2 {
+  margin: 0 0 14px;
+  color: #f5c84c;
+  font-size: 18px;
+  text-align: center;
+}
+
+.leader-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  font-size: 14px;
+}
+
+.leader-row:last-child {
+  border-bottom: 0;
+}
+
+.leader-rank {
+  color: #f5c84c;
+  width: 34px;
+  font-weight: 800;
+}
+
+.leader-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leader-score {
+  color: #9be36d;
+  font-weight: 800;
+  margin-left: 10px;
+}
 <style>
 :root{--bg:#130f22;--panel:#211a35;--green:#a8ff45;--gold:#ffd36b;--text:#f8f7ff;--muted:#b9b3cc;--line:#403657}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#34234d 0,transparent 45%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
@@ -36,6 +83,10 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 <div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><img src="../gazyava-logo.PNG" alt=""></button></div>
 <div class="hint" id="hint">Нажимай на облачко, чтобы получить +1 очко</div>
 <div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
+</section>
+<section class="leaderboard">
+  <h2>🏆 TOP 10 PLAYERS</h2>
+  <div id="leaderboardList">Загружаем рейтинг...</div>
 </section>
 <footer>ДЕМО-ВЕРСИЯ. Очки хранятся только на этом устройстве и могут быть сброшены. Это игровые баллы, не токены GZV, не криптоактив и не обещание будущей награды. Не подключай кошелёк и не отправляй деньги.</footer>
 </main><div class="toast" id="toast">+1 GAZY POINT</div>
