@@ -107,6 +107,21 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .shop-balance{text-align:center;color:var(--green);font-weight:900;margin-bottom:10px}.upgrade{padding:12px 0;border-top:1px solid rgba(255,255,255,.09)}
 .upgrade-head{display:flex;justify-content:space-between;gap:8px;font-weight:800}.upgrade-desc{font-size:12px;color:var(--muted);margin:4px 0 8px}.upgrade button{width:100%;border:0;border-radius:10px;padding:10px;background:var(--green);color:#17200d;font-weight:900;font-size:14px}.upgrade button:disabled{opacity:.45}
 
+
+.achievements{width:100%;margin-top:18px;padding:18px;background:rgba(255,255,255,.06);border:1px solid rgba(168,255,69,.22);border-radius:18px}
+.achievements h2{margin:0 0 5px;color:var(--green);font-size:18px;text-align:center}
+.achievements-sub{margin:0 0 12px;text-align:center;color:var(--muted);font-size:12px}
+.achievement{padding:12px 0;border-top:1px solid rgba(255,255,255,.09)}
+.achievement-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.achievement-title{font-weight:850;font-size:14px}
+.achievement-reward{color:var(--green);font-weight:900;font-size:13px;white-space:nowrap}
+.achievement-desc{font-size:12px;color:var(--muted);margin:4px 0 8px}
+.achievement-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:11px;margin-bottom:6px}
+.achievement-bar{height:7px;background:#342a49;border-radius:99px;overflow:hidden}
+.achievement-fill{height:100%;width:0;background:linear-gradient(90deg,#75d84a,#c4ff75);border-radius:99px}
+.achievement-status{margin-top:6px;font-size:11px;color:var(--muted)}
+.achievement-status.done{color:var(--green);font-weight:850}
+
 </style>
 </head>
 <body>
@@ -147,6 +162,13 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   <div class="shop-balance" id="shopBalance">Загружаем баланс...</div>
   <div id="shopItems">Загружаем улучшения...</div>
 </section>
+
+<section class="achievements" aria-labelledby="achievementsTitle">
+  <h2 id="achievementsTitle">🏅 ДОСТИЖЕНИЯ</h2>
+  <p class="achievements-sub">Выполняй цели, открывай награды и прокачивай свой профиль</p>
+  <div id="achievementsList"><div class="achievement">Загружаем достижения...</div></div>
+</section>
+
 <section class="leaderboard">
   <h2>🏆 TOP 10 PLAYERS</h2>
   <div id="leaderboardList">Загружаем рейтинг...</div>
@@ -345,6 +367,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 
     try {
       const data = await request('streak_checkin');
+      await loadAchievements();
       const streak = data.streak || {};
       const current = Number(streak.current_streak || 0);
       const best = Number(streak.best_streak || current);
@@ -407,6 +430,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
               scoreEl.textContent = score.toLocaleString('ru-RU');
             }
             await loadShop();
+            await loadAchievements();
           } catch (e) { alert(e.message || 'Ошибка покупки'); await loadShop(); }
         });
         card.append(head, desc, btn); list.appendChild(card);
@@ -414,6 +438,77 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     } catch (error) {
       if (list) list.textContent = 'Не удалось загрузить магазин';
       console.error('Shop loading failed:', error);
+    }
+  }
+
+
+  async function loadAchievements() {
+    const list = document.getElementById('achievementsList');
+    if (!list) return;
+    try {
+      const data = await request('achievements');
+      const achievements = data.achievements || {};
+      const items = Array.isArray(achievements.items) ? achievements.items : [];
+      list.replaceChildren();
+
+      if (!items.length) {
+        list.textContent = 'Достижения пока недоступны';
+        return;
+      }
+
+      items.forEach(item => {
+        const unlocked = Boolean(item.unlocked);
+        const progress = Math.max(0, Number(item.progress || 0));
+        const threshold = Math.max(1, Number(item.threshold || 1));
+        const percent = Math.min(100, progress / threshold * 100);
+
+        const card = document.createElement('div');
+        card.className = 'achievement';
+
+        const head = document.createElement('div');
+        head.className = 'achievement-head';
+
+        const title = document.createElement('span');
+        title.className = 'achievement-title';
+        title.textContent = (unlocked ? '🏆 ' : '🎯 ') + item.title;
+
+        const reward = document.createElement('span');
+        reward.className = 'achievement-reward';
+        reward.textContent = '+' + Number(item.reward || 0).toLocaleString('ru-RU') + ' очков';
+
+        head.append(title, reward);
+
+        const desc = document.createElement('div');
+        desc.className = 'achievement-desc';
+        desc.textContent = item.description || '';
+
+        const meta = document.createElement('div');
+        meta.className = 'achievement-meta';
+        const count = document.createElement('span');
+        count.textContent = item.kind === 'taps'
+          ? Math.min(progress, threshold).toLocaleString('ru-RU') + ' / ' + threshold.toLocaleString('ru-RU') + ' тапов'
+          : (unlocked ? 'Выполнено' : 'Ожидает выполнения');
+        const pct = document.createElement('span');
+        pct.textContent = Math.floor(unlocked ? 100 : percent) + '%';
+        meta.append(count, pct);
+
+        const bar = document.createElement('div');
+        bar.className = 'achievement-bar';
+        const fillBar = document.createElement('div');
+        fillBar.className = 'achievement-fill';
+        fillBar.style.width = (unlocked ? 100 : percent) + '%';
+        bar.appendChild(fillBar);
+
+        const status = document.createElement('div');
+        status.className = 'achievement-status' + (unlocked ? ' done' : '');
+        status.textContent = unlocked ? '✓ Достижение открыто — награда начислена' : 'Продолжай играть — награда начислится автоматически';
+
+        card.append(head, desc, meta, bar, status);
+        list.appendChild(card);
+      });
+    } catch (error) {
+      list.textContent = 'Не удалось загрузить достижения';
+      console.error('Achievements loading failed:', error);
     }
   }
 
