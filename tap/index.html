@@ -170,6 +170,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   }
 
   let MAX = 500;
+  let TAP_POWER = 1;
   let score = 0;
   let energy = MAX;
   let lastSync = Date.now();
@@ -206,7 +207,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     } else if (e < 1) {
       hint.textContent = 'Энергия восстанавливается: +1 в секунду';
     } else {
-      hint.textContent = 'Нажимай на облачко, чтобы получить +1 очко';
+      hint.textContent = 'Нажимай на облачко, чтобы получить +' + TAP_POWER + ' очк.';
     }
   }
 
@@ -379,6 +380,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
       const data = await request('shop');
       const shop = data.shop || {};
       MAX = Number(shop.max_energy || 500);
+      TAP_POWER = Number(shop.tap_power || 1);
       if (balance) balance.textContent = 'Твой баланс: ' + Number(shop.score || score).toLocaleString('ru-RU') + ' очков';
       if (energy > MAX) energy = MAX;
       render();
@@ -482,6 +484,7 @@ if (rankEl) {
       const previousScore = score;
       const data = await request('tap');
       applyServerData(data);
+      toast.textContent = '+' + TAP_POWER + ' GAZY POINT';
       await loadDailyProgress();
 
       if (score > previousScore) {
