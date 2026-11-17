@@ -80,6 +80,20 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   font-size: 14px;
   font-weight: 800;
 }
+
+.daily-tasks{width:100%;margin-top:22px;padding:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px}
+.daily-tasks h2{margin:0 0 6px;color:#f5c84c;font-size:18px;text-align:center}
+.daily-subtitle{margin:0 0 14px;color:var(--muted);font-size:12px;text-align:center}
+.daily-task{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.daily-task:last-child{border-bottom:0;padding-bottom:0}
+.daily-task-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:750}
+.daily-reward{color:var(--green);white-space:nowrap;font-weight:850}
+.daily-task-meta{display:flex;justify-content:space-between;gap:10px;margin:7px 0;color:var(--muted);font-size:12px}
+.daily-bar{height:8px;background:#342a49;border-radius:99px;overflow:hidden}
+.daily-fill{height:100%;width:0;background:linear-gradient(90deg,#75d84a,#c4ff75);border-radius:99px;transition:width .2s}
+.daily-status{margin-top:6px;color:var(--muted);font-size:11px}
+.daily-status.done{color:var(--green);font-weight:800}
+
 </style>
 </head>
 <body>
@@ -94,6 +108,13 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 <div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><img src="../gazyava-logo.PNG" alt=""></button></div>
 <div class="hint" id="hint">Нажимай на облачко, чтобы получить +1 очко</div>
 <div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
+</section>
+<section class="daily-tasks" aria-labelledby="dailyTasksTitle">
+  <h2 id="dailyTasksTitle">🎯 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</h2>
+  <p class="daily-subtitle">Тапай каждый день и забирай дополнительные очки</p>
+  <div id="dailyTasksList">
+    <div class="daily-task">Загружаем ежедневный прогресс...</div>
+  </div>
 </section>
 <section class="leaderboard">
   <h2>🏆 TOP 10 PLAYERS</h2>
@@ -203,6 +224,83 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     }
   }
 
+
+  const DAILY_TASKS = [
+    { target: 100, reward: 10, claimedKey: 'claimed_100' },
+    { target: 250, reward: 30, claimedKey: 'claimed_250' },
+    { target: 500, reward: 75, claimedKey: 'claimed_500' }
+  ];
+
+  function renderDailyProgress(progress) {
+    const list = document.getElementById('dailyTasksList');
+    if (!list) return;
+
+    const taps = Math.max(0, Number(progress?.taps || 0));
+    list.replaceChildren();
+
+    DAILY_TASKS.forEach((task) => {
+      const completed = taps >= task.target;
+      const claimed = Boolean(progress?.[task.claimedKey]);
+      const percent = Math.min(100, (taps / task.target) * 100);
+
+      const item = document.createElement('div');
+      item.className = 'daily-task';
+
+      const head = document.createElement('div');
+      head.className = 'daily-task-head';
+
+      const title = document.createElement('span');
+      title.textContent = task.target.toLocaleString('ru-RU') + ' тапов';
+
+      const reward = document.createElement('span');
+      reward.className = 'daily-reward';
+      reward.textContent = '+' + task.reward + ' очков';
+
+      head.append(title, reward);
+
+      const meta = document.createElement('div');
+      meta.className = 'daily-task-meta';
+
+      const count = document.createElement('span');
+      count.textContent = Math.min(taps, task.target).toLocaleString('ru-RU') + ' / ' + task.target;
+
+      const percentLabel = document.createElement('span');
+      percentLabel.textContent = Math.floor(percent) + '%';
+
+      meta.append(count, percentLabel);
+
+      const bar = document.createElement('div');
+      bar.className = 'daily-bar';
+
+      const fillBar = document.createElement('div');
+      fillBar.className = 'daily-fill';
+      fillBar.style.width = percent + '%';
+      bar.appendChild(fillBar);
+
+      const status = document.createElement('div');
+      status.className = 'daily-status' + (claimed ? ' done' : '');
+      status.textContent = claimed
+        ? '✓ Награда получена'
+        : completed
+          ? 'Награда начислена автоматически'
+          : 'Продолжай тапать — награда начислится автоматически';
+
+      item.append(head, meta, bar, status);
+      list.appendChild(item);
+    });
+  }
+
+  async function loadDailyProgress() {
+    const list = document.getElementById('dailyTasksList');
+    try {
+      const data = await request('daily_progress');
+      renderDailyProgress(data.progress || {});
+    } catch (error) {
+      if (list) list.textContent = 'Не удалось загрузить ежедневные задания';
+      console.error('Daily progress loading failed:', error);
+    }
+  }
+
   async function loadLeaderboard() {
   const list = document.getElementById('leaderboardList');
   if (!list) return;
@@ -270,6 +368,7 @@ if (rankEl) {
       const previousScore = score;
       const data = await request('tap');
       applyServerData(data);
+      await loadDailyProgress();
 
       if (score > previousScore) {
         toast.classList.add('show');
@@ -295,6 +394,7 @@ if (rankEl) {
   render();
   loadPlayer();
   loadLeaderboard();
+  loadDailyProgress();
   setInterval(render, 500);
   setInterval(loadLeaderboard, 30000);
 })();
