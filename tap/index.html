@@ -69,6 +69,17 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   font-weight: 800;
   margin-left: 10px;
 }
+  .my-rank {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(155, 227, 109, 0.12);
+  border: 1px solid rgba(155, 227, 109, 0.35);
+  color: #9be36d;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+}
 </style>
 </head>
 <body>
@@ -87,6 +98,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 <section class="leaderboard">
   <h2>🏆 TOP 10 PLAYERS</h2>
   <div id="leaderboardList">Загружаем рейтинг...</div>
+  <div id="myRank" class="my-rank">Твоё место: загружаем...</div>
 </section>
 <footer>ДЕМО-ВЕРСИЯ. Игровые очки сохраняются на сервере и привязаны к Telegram-профилю. Это игровые баллы, не токены GZV, не криптоактив и не обещание будущей награды. Не подключай кошелёк и не отправляй деньги.</footer>
 </main><div class="toast" id="toast">+1 GAZY POINT</div>
@@ -197,6 +209,14 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 
   try {
     const data = await request('leaderboard');
+    const rankData = await request('my_rank');
+const rankEl = document.getElementById('myRank');
+
+if (rankEl) {
+  rankEl.textContent = rankData.rank
+    ? 'Твоё место: №' + rankData.rank
+    : 'Твоё место: пока не определено';
+}
     const players = Array.isArray(data.leaderboard)
       ? data.leaderboard
       : [];
