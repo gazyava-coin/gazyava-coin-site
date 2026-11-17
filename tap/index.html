@@ -103,6 +103,18 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .streak-chip{padding:5px 8px;border-radius:99px;background:#ffd36b18;border:1px solid #ffd36b40;color:#ffe2a0;font-size:11px;font-weight:800}
 .streak-message{margin-top:10px;font-size:12px;color:var(--green)}
 
+
+.referral-card{width:100%;margin-top:14px;padding:18px;background:linear-gradient(135deg,rgba(168,255,69,.12),rgba(255,255,255,.04));border:1px solid rgba(168,255,69,.28);border-radius:18px}
+.referral-card h2{margin:0 0 6px;text-align:center;color:var(--green);font-size:18px}
+.referral-sub{margin:0 0 14px;text-align:center;color:var(--muted);font-size:12px}
+.referral-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.referral-stat{padding:10px;border-radius:12px;background:#ffffff0b;text-align:center}
+.referral-stat small{display:block;color:var(--muted);font-size:11px}
+.referral-stat strong{display:block;color:var(--gold);font-size:22px}
+.referral-link{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.referral-button{width:100%;margin-top:10px;padding:13px;border:0;border-radius:12px;background:linear-gradient(90deg,#a8ff45,#c4ff75);color:#17200d;font-weight:900;font-size:14px}
+.referral-note{margin-top:8px;color:var(--muted);font-size:11px;text-align:center}
+
 </style>
 </head>
 <body>
@@ -136,6 +148,17 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     <span class="streak-chip">30 дней · +100</span>
   </div>
   <div class="streak-message" id="streakMessage">Заходи каждый день, чтобы продолжить серию</div>
+</section>
+<section class="referral-card" aria-labelledby="referralTitle">
+  <h2 id="referralTitle">🎁 ПРИГЛАШАЙ ДРУЗЕЙ</h2>
+  <p class="referral-sub">Друг получает +50 очков, ты — +100 за нового игрока</p>
+  <div class="referral-stats">
+    <div class="referral-stat"><small>Приглашено друзей</small><strong id="referralCount">—</strong></div>
+    <div class="referral-stat"><small>Заработано очков</small><strong id="referralEarned">—</strong></div>
+  </div>
+  <div class="referral-link" id="referralLink">Создаём твою ссылку...</div>
+  <button class="referral-button" id="shareReferral" type="button" disabled>Поделиться ссылкой</button>
+  <div class="referral-note" id="referralStatus">Награда начисляется один раз за каждого нового игрока</div>
 </section>
 <section class="leaderboard">
   <h2>🏆 TOP 10 PLAYERS</h2>
@@ -359,6 +382,41 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     }
   }
 
+  let referralUrl = '';
+
+  async function loadReferralInfo() {
+    const linkEl = document.getElementById('referralLink');
+    const countEl = document.getElementById('referralCount');
+    const earnedEl = document.getElementById('referralEarned');
+    const button = document.getElementById('shareReferral');
+    const status = document.getElementById('referralStatus');
+    try {
+      const data = await request('referral_info');
+      const referral = data.referral || {};
+      if (!referral.code) throw new Error('Не получен реферальный код');
+      referralUrl = 'https://t.me/GazyavaTapBot?startapp=' + encodeURIComponent(referral.code);
+      if (linkEl) linkEl.textContent = referralUrl;
+      if (countEl) countEl.textContent = Number(referral.invited_count || 0).toLocaleString('ru-RU');
+      if (earnedEl) earnedEl.textContent = Number(referral.earned || 0).toLocaleString('ru-RU');
+      if (button) button.disabled = false;
+    } catch (error) {
+      if (linkEl) linkEl.textContent = 'Не удалось создать ссылку';
+      if (status) status.textContent = 'Ошибка загрузки реферальной программы';
+      console.error('Referral loading failed:', error);
+    }
+  }
+
+  document.getElementById('shareReferral')?.addEventListener('click', () => {
+    if (!referralUrl) return;
+    const text = 'Заходи в Gazyava Tap! Тебе +50 очков, а мне +100 за приглашение.';
+    const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(referralUrl) + '&text=' + encodeURIComponent(text);
+    if (tg?.openTelegramLink) {
+      tg.openTelegramLink(shareUrl);
+    } else {
+      window.open(shareUrl, '_blank', 'noopener');
+    }
+  });
+
   async function loadLeaderboard() {
   const list = document.getElementById('leaderboardList');
   if (!list) return;
@@ -454,6 +512,7 @@ if (rankEl) {
   loadLeaderboard();
   loadDailyProgress();
   checkInStreak();
+  loadReferralInfo();
   setInterval(render, 500);
   setInterval(loadLeaderboard, 30000);
 })();
