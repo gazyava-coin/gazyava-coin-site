@@ -545,6 +545,70 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .pet-companion-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin-top:12px;font-size:11px;color:var(--muted)}
 .pet-companion-card{padding:10px;border-radius:13px;background:#ffffff0b;border:1px solid #ffffff12;display:grid;gap:5px}.pet-companion-card.active{border-color:#91e6b1}.pet-companion-card strong{font-size:12px;color:#fff}.pet-companion-card small{font-size:10px;color:var(--muted)}.pet-companion-card button{padding:7px;margin-top:3px}.pet-companion-card button:disabled{opacity:.55}.pet-companion-note{display:block;line-height:1.45;margin-top:9px}
 
+ 
+/* Gazyava UI polish · responsive, calmer hierarchy and clearer controls */
+:root{--panel:#211a35;--line:#514365;--green:#bdff79;--muted:#c9c3d8}
+body{background:radial-gradient(ellipse at 50% 7%,#62417b 0,transparent 38%),radial-gradient(ellipse at 8% 58%,#284d3a55 0,transparent 35%),#100d20}
+main{width:min(540px,100%);padding-left:16px;padding-right:16px}
+header{min-height:62px;background:linear-gradient(110deg,#ffffff10,#ffffff05);border-color:#ffffff24;box-shadow:0 10px 30px #05030d35}
+.brand{font-size:15px;letter-spacing:.07em}
+.tag{font-weight:850;letter-spacing:.04em}
+h1{line-height:1.08;letter-spacing:-.055em}
+.sub{max-width:310px;margin-left:auto;margin-right:auto;line-height:1.5}
+.stats{gap:9px}
+.stat{position:relative;overflow:hidden;padding:14px 15px;border-radius:18px;background:linear-gradient(145deg,#302548ed,#1b162ded);box-shadow:0 10px 26px #05030d35}
+.stat:after{content:"";position:absolute;right:-22px;top:-28px;width:82px;height:82px;border-radius:50%;background:#ffffff08}
+.stat small{font-size:10px;letter-spacing:.1em}
+.stat strong{font-size:clamp(21px,6vw,27px);letter-spacing:-.035em}
+.player-progression,.profile-showcase,.mascot-collection,.combo-panel,.daily-spin,.daily-tasks,.daily-missions,.event-card,.streak-card,.calendar-card,.shop,.achievements,.referral-card,.weekly-tournament,.leaderboard,.clan-card,.season-pass-card,.pet-companions,.world-map-card{border-radius:20px}
+.tab-panel.active{animation:tabReveal .18s ease-out}
+.game-tabs{width:min(508px,calc(100% - 16px));bottom:calc(8px + env(safe-area-inset-bottom));padding:6px;gap:4px;border-radius:19px;background:rgba(25,19,42,.96);border-color:#ffffff30;box-shadow:0 12px 36px #000a,0 0 24px #b5ff6215}
+.game-tab{min-height:50px;border-radius:13px;font-size:10px;font-weight:900;letter-spacing:-.01em;transition:background .16s,border-color .16s,transform .16s}
+.game-tab:active{transform:scale(.95)}
+.game-tab.active{background:linear-gradient(155deg,#b5ff6230,#ffd36b18);border-color:#caff8b66;color:#f1ffe2}
+.tab-notice{top:0;right:0}
+.mascot-stage{padding-top:13px;isolation:isolate}
+.mascot{width:190px;height:168px;filter:drop-shadow(0 17px 24px #a8ff4540)}
+.mascot svg{overflow:visible}
+.mascot-bubble{max-width:88%;padding:9px 16px;border-radius:16px;background:linear-gradient(145deg,#382b50,#241c38);border-color:#ffffff35;box-shadow:0 9px 25px #0005;font-size:12px}
+.mascot-bubble:after{background:#2b2142}
+.cloud-wrap{width:250px;height:206px;margin-top:-12px}
+.glow{inset:18px;background:radial-gradient(circle,#b5ff6230,transparent 68%);filter:blur(20px)}
+#tap{width:194px;height:194px;border-radius:45% 55% 48% 52%/53% 45% 55% 47%;border:3px solid #eaffc7;background:radial-gradient(circle at 34% 23%,#f0ffd1,#c5ff83 38%,#78db50 78%,#55b843);box-shadow:0 13px 0 #397b36,0 25px 52px #8cff3b35,inset 0 5px 14px #fff9;transition:transform .1s,filter .15s;touch-action:manipulation}
+#tap span{font-size:27px;letter-spacing:.11em;text-shadow:0 2px #fff9}
+#tap:active{filter:saturate(1.12);transform:translateY(7px) scale(.96)}
+#tap:focus-visible,.game-tab:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #ffe08a;outline-offset:3px}
+button{touch-action:manipulation}
+button:disabled{cursor:not-allowed}
+.energy{max-width:390px;margin-top:18px;padding:12px 14px;border:1px solid #ffffff18;border-radius:15px;background:#ffffff08}
+.bar{height:11px;background:#ffffff1b}
+.fill{box-shadow:0 0 12px #a8ff4566}
+.combo-panel{max-width:370px;padding:13px 15px;background:linear-gradient(120deg,#b5ff6218,#ffd36b10);border-color:#b5ff6244}
+.skin-card,.daily-task,.mission-card,.achievement,.season-pass-tier{transition:background .15s,border-color .15s}
+.skin-card{padding:10px;border-radius:14px}
+.skin-card button,.mission-claim,.upgrade button,.daily-spin button,.season-pass-tier button{min-height:40px}
+.daily-task{padding:14px 0}
+.daily-task-head{gap:12px}
+.daily-task-head>span:first-child{min-width:0}
+.daily-task-meta{font-size:11px}
+.upgrade{padding:14px 0}
+.upgrade button{border-radius:12px}
+.leader-row{min-height:43px}
+input,button{font-family:inherit}
+@media(max-width:390px){
+ main{padding-left:13px;padding-right:13px}
+ .game-tabs{width:calc(100% - 12px);gap:2px;padding:5px}
+ .game-tab{font-size:9px;min-height:48px}
+ .mascot{width:168px;height:150px}
+ .cloud-wrap{width:225px;height:190px}
+ #tap{width:176px;height:176px}
+ #tap span{font-size:24px}
+ .profile-stats-grid{gap:5px}
+ .profile-stats-grid>div{padding:9px 2px}
+}
+@media(min-width:700px){main{padding-top:24px}.game-tabs{bottom:16px}}
+@media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}.game-tab,#tap,.skin-card{transition:none}}
+
 </style>
 </head>
 <body>
@@ -590,24 +654,34 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <button class="golden-cloud" id="goldenCloud" type="button" hidden aria-label="Поймать золотое облако">☁️<span>+?</span></button>
   <div class="mascot-bubble" id="mascotBubble">Погнали! Жми на меня ✨</div>
   <div class="mascot" id="mascot" aria-label="Маскот Gazyava">
-    <svg viewBox="0 0 240 220" role="img" aria-label="Зелёный облачный маскот Gazyava">
+    <svg viewBox="0 0 260 230" role="img" aria-label="Улыбающийся мятный облачный маскот Gazyava">
       <defs>
-        <linearGradient id="gazyavaBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d7ff91"/><stop offset="1" stop-color="#75d94b"/></linearGradient>
-        <linearGradient id="gazyavaShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9df45f"/><stop offset="1" stop-color="#4eaa3d"/></linearGradient>
+        <linearGradient id="gazyavaBody" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#f1ffd0"/><stop offset=".38" stop-color="#c9ff83"/><stop offset="1" stop-color="#62c94b"/></linearGradient>
+        <linearGradient id="gazyavaShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9f36a"/><stop offset="1" stop-color="#3d9e49"/></linearGradient>
+        <linearGradient id="gazyavaShine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+        <radialGradient id="gazyavaAura"><stop stop-color="#c9ff83" stop-opacity=".36"/><stop offset="1" stop-color="#c9ff83" stop-opacity="0"/></radialGradient>
       </defs>
-      <ellipse cx="120" cy="194" rx="69" ry="12" fill="#a8ff45" opacity=".15"/>
-      <path d="M53 151C32 148 22 133 25 114c3-17 17-28 35-28 2-25 22-43 47-42 17-22 52-22 69 2 23-2 43 16 43 39 19 7 28 24 23 43-5 17-19 26-39 26H65c-4 0-8-1-12-3Z" fill="url(#gazyavaBody)" stroke="#397b36" stroke-width="7" stroke-linejoin="round"/>
-      <path d="M59 148c18 12 105 15 143-2-5 18-22 27-42 27H76c-9 0-15-8-17-25Z" fill="url(#gazyavaShade)" opacity=".45"/>
-      <ellipse cx="91" cy="119" rx="8" ry="12" fill="#202039"/>
-      <ellipse cx="151" cy="119" rx="8" ry="12" fill="#202039"/>
-      <circle cx="94" cy="115" r="2.5" fill="#fff"/><circle cx="154" cy="115" r="2.5" fill="#fff"/>
-      <path d="M105 139q15 15 30 0" fill="none" stroke="#24552e" stroke-width="5" stroke-linecap="round"/>
-      <ellipse cx="73" cy="137" rx="12" ry="6" fill="#ff9a9a" opacity=".65"/><ellipse cx="169" cy="137" rx="12" ry="6" fill="#ff9a9a" opacity=".65"/>
-      <path d="M46 91 30 77m164 14 16-14" stroke="#d7ff91" stroke-width="9" stroke-linecap="round"/>
-      <path d="m191 47 5-12 5 12 12 5-12 5-5 12-5-12-12-5Z" fill="#ffd36b"/>
+      <ellipse cx="130" cy="207" rx="77" ry="13" fill="url(#gazyavaAura)"/>
+      <ellipse cx="130" cy="204" rx="58" ry="9" fill="#a8ff45" opacity=".19"/>
+      <path d="M57 166c-23-2-38-19-36-42 1-19 16-34 37-36 3-27 26-47 54-45 19-25 58-25 77 2 25-2 47 17 48 42 19 7 29 25 24 44-5 22-24 36-49 36H68c-4 0-8 0-11-1Z" fill="url(#gazyavaBody)" stroke="#367c42" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M52 117c7-31 28-48 57-48 18-23 49-25 70-4 11 11 16 22 18 35-25-14-48-18-72-14-27 4-47 15-73 31Z" fill="url(#gazyavaShine)" opacity=".55"/>
+      <path d="M58 159c30 18 112 20 162-2-8 19-25 28-48 28H83c-13 0-21-8-25-26Z" fill="url(#gazyavaShade)" opacity=".36"/>
+      <path d="M48 155c-13 8-17 20-10 27 9 8 25 2 34-10m149-17c13 8 17 20 10 27-9 8-25 2-34-10" fill="none" stroke="#4eae4a" stroke-width="12" stroke-linecap="round"/>
+      <ellipse cx="96" cy="123" rx="11" ry="15" fill="#25314a"/>
+      <ellipse cx="164" cy="123" rx="11" ry="15" fill="#25314a"/>
+      <ellipse cx="99" cy="118" rx="4" ry="5" fill="#fff"/>
+      <ellipse cx="167" cy="118" rx="4" ry="5" fill="#fff"/>
+      <circle cx="91" cy="130" r="2.2" fill="#fff" opacity=".7"/>
+      <circle cx="159" cy="130" r="2.2" fill="#fff" opacity=".7"/>
+      <ellipse cx="73" cy="145" rx="14" ry="7" fill="#ff8e9b" opacity=".55"/>
+      <ellipse cx="187" cy="145" rx="14" ry="7" fill="#ff8e9b" opacity=".55"/>
+      <path d="M112 146q18 22 36 0" fill="none" stroke="#28633b" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M124 157q6 5 12 0" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+      <path d="M62 83c-8-12-7-24 1-29 9-5 18 4 19 17m118 12c8-12 7-24-1-29-9-5-18 4-19 17" fill="none" stroke="#e8ffbd" stroke-width="9" stroke-linecap="round"/>
+      <path d="m201 42 6-14 6 14 14 6-14 6-6 14-6-14-14-6Z" fill="#ffd36b" stroke="#fff0b4" stroke-width="2"/>
+      <circle cx="48" cy="65" r="4" fill="#fff0b4"/><circle cx="221" cy="91" r="3" fill="#fff0b4"/>
     </svg>
-  </div>
-  <div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><span>ТАП!</span></button></div>
+  </div>  <div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><span>ТАП!</span></button></div>
 </div>
 <section class="mascot-collection" aria-labelledby="mascotCollectionTitle">
   <div class="collection-heading"><div><h2 id="mascotCollectionTitle">☁️ ЭВОЛЮЦИЯ GAZYAVA</h2><p>Копи очки, открывай облики и выбирай любимый</p></div><span id="mascotLevel" class="evolution-level">Ур. 1</span></div>
