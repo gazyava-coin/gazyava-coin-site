@@ -172,6 +172,12 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 #weeklyList .leader-row{border-bottom:1px solid rgba(255,255,255,.08)}
 #weeklyMyRank{margin-top:12px;padding:10px;border-radius:11px;background:rgba(155,227,109,.1);color:var(--green);text-align:center;font-size:13px;font-weight:850}
 
+
+.referral-milestones{display:grid;gap:8px;margin-top:13px}
+.referral-milestone{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 11px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:12px}
+.referral-milestone strong{color:var(--green);white-space:nowrap}
+.referral-milestone.done{border-color:rgba(168,255,69,.45);background:rgba(168,255,69,.09)}
+
 </style>
 </head>
 <body>
@@ -229,7 +235,9 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   <div class="referral-stats">
     <span>Приглашено: <strong id="referralCount">—</strong></span>
     <span>Заработано: <strong id="referralEarned">—</strong></span>
+    <span>Активны за 7 дней: <strong id="referralActive">—</strong></span>
   </div>
+  <div id="referralMilestones" class="referral-milestones" aria-live="polite"></div>
   <div id="referralStatus" aria-live="polite"></div>
 </section>
 <section class="shop" aria-labelledby="shopTitle">
