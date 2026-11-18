@@ -582,7 +582,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <section class="pet-companions" aria-label="Питомцы">
     <div class="pet-companions-head"><div><strong>🐾 СПУТНИКИ</strong><small id="petCompanionCount">Коллекция: 0/5</small></div><button type="button" id="buyPetEgg">🥚 Яйцо · 5 000</button></div>
     <div class="pet-companion-list" id="petCompanionList">Открой яйцо, чтобы найти первого спутника</div>
-    <small class="pet-companion-note">Спутник получает 1 XP за каждый серверно подтверждённый тап. Каждые 100 XP — новый уровень. Дубликат превращается в +100 XP.</small>
+    <small class="pet-companion-note">Спутник получает XP за подтверждённые тапы: редкие и эпические — ×2, легендарные — ×3. Эволюции на 3, 5 и 10 уровнях. Дубликат даёт +100 XP.</small>
   </section>
 </section>
 <section class="game">
@@ -1462,9 +1462,12 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         const name=document.createElement('strong');name.textContent=meta.icon+' '+meta.name;
         const rarity=document.createElement('small');rarity.textContent=PET_RARITY[p.rarity]||p.rarity;
         const level=document.createElement('small');level.textContent='Уровень '+p.level+' · '+p.level_xp+'/100 XP';
+        const evolution=document.createElement('small');evolution.textContent='✨ '+(p.evolution_name||'Юный спутник');
+        const ability=document.createElement('small');ability.textContent='🔮 '+(p.ability||'Способность');
+        const xpBonus=document.createElement('small');xpBonus.textContent='Получает '+(p.xp_multiplier||1)+' XP за тап';
         const btn=document.createElement('button');btn.type='button';btn.textContent=p.equipped?'Надет':'Выбрать';btn.disabled=Boolean(p.equipped);
         btn.addEventListener('click',async()=>{btn.disabled=true;try{await request('equip_pet',{pet_id:p.pet_id});await loadPetCollection();}catch(e){btn.disabled=false;hint.textContent=e.message;}});
-        card.append(name,rarity,level,btn);list.append(card);
+        card.append(name,rarity,level,evolution,ability,xpBonus,btn);list.append(card);
       });
     }catch(e){console.error('Pet collection failed:',e);list.textContent='Не удалось загрузить спутников';}
   }
