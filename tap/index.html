@@ -609,6 +609,44 @@ input,button{font-family:inherit}
 @media(min-width:700px){main{padding-top:24px}.game-tabs{bottom:16px}}
 @media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}.game-tab,#tap,.skin-card{transition:none}}
 
+/* Living mascot + play-first screen */
+[data-tab-panel="play"]{display:flex;flex-direction:column;gap:13px}
+[data-tab-panel="play"]>.stats{order:0;margin:0}
+[data-tab-panel="play"]>.player-progression{order:1;margin:0}
+[data-tab-panel="play"]>.game{order:2;margin:0;padding:15px 12px 16px;border:1px solid #b5ff6240;border-radius:24px;background:radial-gradient(ellipse at 50% 24%,#b5ff6212,transparent 47%),linear-gradient(155deg,#2b2142f2,#171326f5);box-shadow:0 18px 45px #05030d65,inset 0 1px #ffffff12}
+[data-tab-panel="play"]>.profile-showcase{order:3;margin:0}
+[data-tab-panel="play"]>.stats .stat:first-child{border-color:#b5ff6250;background:linear-gradient(145deg,#30472bed,#1b242ded)}
+[data-tab-panel="play"]>.stats .stat:nth-child(2){background:linear-gradient(145deg,#30294bed,#1b172ded)}
+[data-tab-panel="play"]>.game .mascot-collection{margin-top:15px}
+[data-tab-panel="play"]>.game .combo-panel{margin-top:10px}
+[data-tab-panel="play"]>.game .hint{padding:8px 10px;border-radius:11px;background:#ffffff08;color:#d7d0e5;font-size:11px}
+[data-tab-panel="play"]>.game .energy{width:100%;max-width:390px;margin:5px auto 0}
+.mascot{isolation:isolate}
+.mascot svg{animation:mascotHover 3.4s ease-in-out infinite;transform-origin:50% 70%}
+.mascot-eye{transform-box:fill-box;transform-origin:center;animation:mascotBlink 5.2s infinite}
+.mascot-mouth{transform-box:fill-box;transform-origin:center;animation:mascotSmile 3.8s ease-in-out infinite}
+.mascot-arms{transform-box:fill-box;transform-origin:center;animation:mascotWave 2.6s ease-in-out infinite}
+.mascot.cheer svg{animation:mascotBounce .42s ease-in-out 2}
+.mascot.sleeping svg{animation:mascotSleep 2.8s ease-in-out infinite}
+.mascot.surprised svg{animation:mascotEvolve .85s cubic-bezier(.2,.9,.25,1.3)}
+@keyframes mascotHover{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1.2deg)}}
+@keyframes mascotBlink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
+@keyframes mascotSmile{0%,100%{transform:scaleX(1) scaleY(1)}50%{transform:scaleX(1.08) scaleY(.88)}}
+@keyframes mascotWave{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+@keyframes mascotBounce{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-13px) rotate(-5deg)}70%{transform:translateY(2px) rotate(4deg)}}
+@keyframes mascotSleep{0%,100%{transform:translateY(3px) rotate(-3deg) scale(.98)}50%{transform:translateY(8px) rotate(2deg) scale(.96)}}
+.mascot-bubble{transition:transform .2s,background .2s;box-shadow:0 10px 26px #0005,0 0 18px #b5ff6210}
+.mascot-bubble:before{content:"✦";position:absolute;left:-12px;top:-9px;color:#ffe08a;font-size:15px;animation:mascotTwinkle 2s ease-in-out infinite}
+@keyframes mascotTwinkle{0%,100%{opacity:.35;transform:scale(.8) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(25deg)}}
+.cloud-wrap{position:relative;isolation:isolate}
+.cloud-wrap:before,.cloud-wrap:after{content:"✦";position:absolute;z-index:0;color:#ffe08a;pointer-events:none;text-shadow:0 0 12px #ffd36b88;animation:mascotTwinkle 2.4s ease-in-out infinite}
+.cloud-wrap:before{top:22%;left:2%;font-size:17px}.cloud-wrap:after{top:42%;right:0;font-size:12px;animation-delay:.8s}
+#tap{position:relative;z-index:1}
+#tap:before{content:"";position:absolute;inset:8px;border:1px solid #ffffff65;border-radius:inherit;pointer-events:none}
+#tap:after{content:"";position:absolute;top:15%;left:20%;width:28%;height:12%;border-radius:50%;background:#ffffff65;filter:blur(5px);transform:rotate(-25deg);pointer-events:none}
+@media(max-width:390px){[data-tab-panel="play"]>.game{padding:12px 9px}[data-tab-panel="play"]{gap:11px}}
+@media(prefers-reduced-motion:reduce){.mascot svg,.mascot-eye,.mascot-mouth,.mascot-arms,.mascot-bubble:before,.cloud-wrap:before,.cloud-wrap:after{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -633,22 +671,6 @@ input,button{font-family:inherit}
   <div class="player-progression-meta"><span id="playerXp">0 XP</span><span id="playerNextLevel">До следующего уровня: 100 XP</span></div>
   <div class="player-progression-track"><div id="playerProgressFill"></div></div>
 </section>
-<section class="profile-showcase" aria-label="Профиль игрока">
-  <div class="profile-showcase-head"><div class="profile-avatar" id="profileAvatar">☁️</div><div class="profile-identity"><strong id="profileName">Путешественник</strong><span id="profileTitle">Новичок Gazyava</span><small id="profileLevelLabel">Уровень 1</small></div><div class="profile-rank" id="profileRank">ПРОФИЛЬ</div></div>
-  <div class="profile-stats-grid">
-    <div><strong id="profileScore">0</strong><small>Очки</small></div>
-    <div><strong id="profileXp">0</strong><small>Опыт</small></div>
-    <div><strong id="profileTrophies">0</strong><small>Трофеи</small></div>
-    <div><strong id="profileSkins">0</strong><small>Скины</small></div>
-  </div>
-  <div class="profile-showcase-foot"><span>🏅 Коллекция достижений</span><div style="display:flex;gap:6px"><button type="button" id="profileShare">Поделиться</button><button type="button" id="profileRefresh">Обновить</button></div></div>
-  <div class="profile-featured" id="profileFeatured">Твои редкие трофеи появятся здесь</div>
-  <section class="pet-companions" aria-label="Питомцы">
-    <div class="pet-companions-head"><div><strong>🐾 СПУТНИКИ</strong><small id="petCompanionCount">Коллекция: 0/5</small></div><button type="button" id="buyPetEgg">🥚 Яйцо · 5 000</button></div>
-    <div class="pet-companion-list" id="petCompanionList">Открой яйцо, чтобы найти первого спутника</div>
-    <small class="pet-companion-note">Спутник получает XP за подтверждённые тапы: редкие и эпические — ×2, легендарные — ×3. Эволюции на 3, 5 и 10 уровнях. Дубликат даёт +100 XP.</small>
-  </section>
-</section>
 <section class="game">
 <div class="mascot-stage">
   <button class="golden-cloud" id="goldenCloud" type="button" hidden aria-label="Поймать золотое облако">☁️<span>+?</span></button>
@@ -666,16 +688,16 @@ input,button{font-family:inherit}
       <path d="M57 166c-23-2-38-19-36-42 1-19 16-34 37-36 3-27 26-47 54-45 19-25 58-25 77 2 25-2 47 17 48 42 19 7 29 25 24 44-5 22-24 36-49 36H68c-4 0-8 0-11-1Z" fill="url(#gazyavaBody)" stroke="#367c42" stroke-width="7" stroke-linejoin="round"/>
       <path d="M52 117c7-31 28-48 57-48 18-23 49-25 70-4 11 11 16 22 18 35-25-14-48-18-72-14-27 4-47 15-73 31Z" fill="url(#gazyavaShine)" opacity=".55"/>
       <path d="M58 159c30 18 112 20 162-2-8 19-25 28-48 28H83c-13 0-21-8-25-26Z" fill="url(#gazyavaShade)" opacity=".36"/>
-      <path d="M48 155c-13 8-17 20-10 27 9 8 25 2 34-10m149-17c13 8 17 20 10 27-9 8-25 2-34-10" fill="none" stroke="#4eae4a" stroke-width="12" stroke-linecap="round"/>
-      <ellipse cx="96" cy="123" rx="11" ry="15" fill="#25314a"/>
-      <ellipse cx="164" cy="123" rx="11" ry="15" fill="#25314a"/>
+      <path class="mascot-arms" d="M48 155c-13 8-17 20-10 27 9 8 25 2 34-10m149-17c13 8 17 20 10 27-9 8-25 2-34-10" fill="none" stroke="#4eae4a" stroke-width="12" stroke-linecap="round"/>
+      <ellipse class="mascot-eye" cx="96" cy="123" rx="11" ry="15" fill="#25314a"/>
+      <ellipse class="mascot-eye" cx="164" cy="123" rx="11" ry="15" fill="#25314a"/>
       <ellipse cx="99" cy="118" rx="4" ry="5" fill="#fff"/>
       <ellipse cx="167" cy="118" rx="4" ry="5" fill="#fff"/>
       <circle cx="91" cy="130" r="2.2" fill="#fff" opacity=".7"/>
       <circle cx="159" cy="130" r="2.2" fill="#fff" opacity=".7"/>
       <ellipse cx="73" cy="145" rx="14" ry="7" fill="#ff8e9b" opacity=".55"/>
       <ellipse cx="187" cy="145" rx="14" ry="7" fill="#ff8e9b" opacity=".55"/>
-      <path d="M112 146q18 22 36 0" fill="none" stroke="#28633b" stroke-width="5.5" stroke-linecap="round"/>
+      <path class="mascot-mouth" d="M112 146q18 22 36 0" fill="none" stroke="#28633b" stroke-width="5.5" stroke-linecap="round"/>
       <path d="M124 157q6 5 12 0" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
       <path d="M62 83c-8-12-7-24 1-29 9-5 18 4 19 17m118 12c8-12 7-24-1-29-9-5-18 4-19 17" fill="none" stroke="#e8ffbd" stroke-width="9" stroke-linecap="round"/>
       <path d="m201 42 6-14 6 14 14 6-14 6-6 14-6-14-14-6Z" fill="#ffd36b" stroke="#fff0b4" stroke-width="2"/>
@@ -691,6 +713,22 @@ input,button{font-family:inherit}
 <div class="combo-panel"><div class="combo-line"><span>⚡ КОМБО-СЕРИЯ</span><strong id="comboCount">0</strong></div><div class="combo-track"><div id="comboFill"></div></div><div class="combo-caption" id="comboCaption">Тапай ритмично, чтобы поддерживать серию</div></div>
 <div class="hint" id="hint">Нажимай на Gazyava, чтобы собирать очки</div>
 <div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
+</section>
+<section class="profile-showcase" aria-label="Профиль игрока">
+  <div class="profile-showcase-head"><div class="profile-avatar" id="profileAvatar">☁️</div><div class="profile-identity"><strong id="profileName">Путешественник</strong><span id="profileTitle">Новичок Gazyava</span><small id="profileLevelLabel">Уровень 1</small></div><div class="profile-rank" id="profileRank">ПРОФИЛЬ</div></div>
+  <div class="profile-stats-grid">
+    <div><strong id="profileScore">0</strong><small>Очки</small></div>
+    <div><strong id="profileXp">0</strong><small>Опыт</small></div>
+    <div><strong id="profileTrophies">0</strong><small>Трофеи</small></div>
+    <div><strong id="profileSkins">0</strong><small>Скины</small></div>
+  </div>
+  <div class="profile-showcase-foot"><span>🏅 Коллекция достижений</span><div style="display:flex;gap:6px"><button type="button" id="profileShare">Поделиться</button><button type="button" id="profileRefresh">Обновить</button></div></div>
+  <div class="profile-featured" id="profileFeatured">Твои редкие трофеи появятся здесь</div>
+  <section class="pet-companions" aria-label="Питомцы">
+    <div class="pet-companions-head"><div><strong>🐾 СПУТНИКИ</strong><small id="petCompanionCount">Коллекция: 0/5</small></div><button type="button" id="buyPetEgg">🥚 Яйцо · 5 000</button></div>
+    <div class="pet-companion-list" id="petCompanionList">Открой яйцо, чтобы найти первого спутника</div>
+    <small class="pet-companion-note">Спутник получает XP за подтверждённые тапы: редкие и эпические — ×2, легендарные — ×3. Эволюции на 3, 5 и 10 уровнях. Дубликат даёт +100 XP.</small>
+  </section>
 </section>
 </div>
 <div class="tab-panel" data-tab-panel="tasks">
