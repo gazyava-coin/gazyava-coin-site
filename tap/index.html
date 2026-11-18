@@ -529,6 +529,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   }
 
   let taskNoticeCount = 0;
+  let readyTaskNoticeCount = 0;
   let spinAvailable = false;
   let friendNoticeCount = 0;
   function updateTabNotices() {
@@ -666,9 +667,10 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     const taps = Math.max(0, Number(progress?.taps || 0));
     list.replaceChildren();
 
-    taskNoticeCount = DAILY_TASKS.filter(task =>
+    readyTaskNoticeCount = DAILY_TASKS.filter(task =>
       taps >= task.target && !Boolean(progress?.[task.claimedKey])
-    ).length + (spinAvailable ? 1 : 0);
+    ).length;
+    taskNoticeCount = readyTaskNoticeCount + (spinAvailable ? 1 : 0);
     updateTabNotices();
 
     DAILY_TASKS.forEach((task) => {
@@ -734,6 +736,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       button.disabled = !spinAvailable;
       button.textContent = spinAvailable ? '🎰 Крутить рулетку' : '✓ Сегодня уже крутили';
       if (spin.spun_today && resultEl && spin.reward != null) resultEl.textContent = 'Сегодня выпало: +' + Number(spin.reward).toLocaleString('ru-RU') + ' очков';
+      taskNoticeCount = readyTaskNoticeCount + (spinAvailable ? 1 : 0);
       updateTabNotices();
     } catch (error) {
       button.disabled = true; button.textContent = 'Рулетка временно недоступна';
