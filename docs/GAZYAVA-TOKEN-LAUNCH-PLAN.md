@@ -77,7 +77,7 @@ A future season points score may inform a reward pool, but the formula and snaps
 3. Finalize token metadata, token program, decimals, supply, mint / freeze authority handling, and an independently reviewed creation runbook.
 4. Set up hardware-wallet-backed multisig custody for treasury and liquidity. Never put seed phrases or private keys in source code, GitHub, chat, or a hosted backend.
 5. Publish community reward eligibility, anti-Sybil process, snapshot timing, claims and appeals before the qualifying period begins.
-6. Test the mint, transfers, authority changes and claim flow on devnet; obtain an independent security review.
+6. Prepare and execute the disposable Devnet rehearsal using the [GZV Solana Devnet runbook](./GZV-SOLANA-DEVNET-RUNBOOK.md); test mint, transfers, authority states and any claim flow, then obtain an independent security review.
 7. Only after all gates are signed off, create the mainnet mint, verify it on a Solana explorer, publish the mint address and authority state, and execute liquidity under the disclosed policy.
 
 **No mainnet token has been created by this plan.** Never share seed phrases or private keys with anyone, including project contributors or support staff.
