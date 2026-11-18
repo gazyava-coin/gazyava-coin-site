@@ -178,6 +178,40 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .referral-milestone strong{color:var(--green);white-space:nowrap}
 .referral-milestone.done{border-color:rgba(168,255,69,.45);background:rgba(168,255,69,.09)}
 
+
+/* Gazyava visual refresh */
+:root{--bg:#100d20;--panel:#211936;--green:#b5ff62;--gold:#ffd36b;--text:#fbfaff;--muted:#c1bad2;--line:#493b60}
+body{background:radial-gradient(ellipse at 50% 12%,#50316a 0,transparent 42%),radial-gradient(ellipse at 50% 72%,#243b2b 0,transparent 48%),#100d20}
+main{padding-top:18px}
+header{padding:10px 12px;border:1px solid #ffffff18;border-radius:18px;background:#ffffff08;backdrop-filter:blur(12px)}
+.logo{border-radius:14px;box-shadow:0 0 24px #a8ff4530}
+.tag{background:#ffd36b12}
+h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff4520}
+.stat,.daily-tasks,.shop,.achievements,.leaderboard,.weekly-tournament,.calendar-card,.referral-card,.streak-card{box-shadow:0 12px 35px #05030d45;backdrop-filter:blur(12px)}
+.stat{background:linear-gradient(145deg,#2b2142ed,#1b162ded);border-color:#ffffff18}
+.stat strong{font-variant-numeric:tabular-nums}
+.game{min-height:390px;gap:4px}
+.mascot-stage{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:8px}
+.mascot{width:170px;height:156px;z-index:2;filter:drop-shadow(0 15px 22px #a8ff4530);transition:transform .16s}
+.mascot svg{width:100%;height:100%;overflow:visible}
+.mascot.cheer{transform:translateY(-9px) rotate(-5deg) scale(1.06)}
+.mascot-bubble{position:relative;z-index:3;margin-bottom:-4px;padding:8px 14px;border:1px solid #ffffff28;border-radius:14px;background:#2b2142;color:#fff;font-size:12px;font-weight:800;box-shadow:0 8px 20px #0003}
+.mascot-bubble:after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;background:#2b2142;border-right:1px solid #ffffff28;border-bottom:1px solid #ffffff28;transform:translateX(-50%) rotate(45deg)}
+.cloud-wrap{width:245px;height:210px;margin-top:-18px}
+#tap{width:190px;height:190px;border-radius:48% 52% 47% 53%/52% 47% 53% 48%;background:linear-gradient(145deg,#d4ff91,#78dc4f 70%,#58bd43);border:3px solid #e1ffb5;box-shadow:0 12px 0 #397b36,0 24px 48px #8cff3b30,inset 0 5px 12px #ffffff75}
+#tap span{font-size:29px;font-weight:1000;letter-spacing:.08em;color:#23502a;text-shadow:0 2px #ffffff80}
+#tap:active{transform:translateY(7px) scale(.96);box-shadow:0 5px 0 #397b36,0 12px 30px #8cff3b25}
+.combo-panel{width:100%;max-width:340px;margin:4px auto 0;padding:12px 14px;border:1px solid #b5ff6233;border-radius:15px;background:linear-gradient(120deg,#b5ff6214,#ffd36b0c)}
+.combo-line{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;font-weight:900;letter-spacing:.07em}
+.combo-line strong{font-size:19px;color:var(--gold);font-variant-numeric:tabular-nums}
+.combo-track{height:7px;margin-top:8px;border-radius:99px;background:#ffffff16;overflow:hidden}
+#comboFill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#75d84a,#d5ff75,#ffd36b);transition:width .12s}
+.combo-caption{margin-top:7px;color:var(--muted);font-size:10px;text-align:center}
+.hint{margin-top:10px}
+#tap:focus-visible,#refreshLeaderboard:focus-visible,#refreshWeekly:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.toast{z-index:20;box-shadow:0 8px 30px #0005}
+@media(max-height:720px){.game{min-height:300px}.mascot{width:130px;height:120px}.cloud-wrap{height:170px}#tap{width:155px;height:155px}#tap span{font-size:24px}}
+
 </style>
 </head>
 <body>
@@ -189,8 +223,30 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 <div class="stat"><small>Энергия</small><strong id="energyStat">500 / 500</strong></div>
 </section>
 <section class="game">
-<div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><img src="../gazyava-logo.PNG" alt=""></button></div>
-<div class="hint" id="hint">Нажимай на облачко, чтобы получить +1 очко</div>
+<div class="mascot-stage">
+  <div class="mascot-bubble" id="mascotBubble">Погнали! Жми на меня ✨</div>
+  <div class="mascot" id="mascot" aria-label="Маскот Gazyava">
+    <svg viewBox="0 0 240 220" role="img" aria-label="Зелёный облачный маскот Gazyava">
+      <defs>
+        <linearGradient id="gazyavaBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d7ff91"/><stop offset="1" stop-color="#75d94b"/></linearGradient>
+        <linearGradient id="gazyavaShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9df45f"/><stop offset="1" stop-color="#4eaa3d"/></linearGradient>
+      </defs>
+      <ellipse cx="120" cy="194" rx="69" ry="12" fill="#a8ff45" opacity=".15"/>
+      <path d="M53 151C32 148 22 133 25 114c3-17 17-28 35-28 2-25 22-43 47-42 17-22 52-22 69 2 23-2 43 16 43 39 19 7 28 24 23 43-5 17-19 26-39 26H65c-4 0-8-1-12-3Z" fill="url(#gazyavaBody)" stroke="#397b36" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M59 148c18 12 105 15 143-2-5 18-22 27-42 27H76c-9 0-15-8-17-25Z" fill="url(#gazyavaShade)" opacity=".45"/>
+      <ellipse cx="91" cy="119" rx="8" ry="12" fill="#202039"/>
+      <ellipse cx="151" cy="119" rx="8" ry="12" fill="#202039"/>
+      <circle cx="94" cy="115" r="2.5" fill="#fff"/><circle cx="154" cy="115" r="2.5" fill="#fff"/>
+      <path d="M105 139q15 15 30 0" fill="none" stroke="#24552e" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="73" cy="137" rx="12" ry="6" fill="#ff9a9a" opacity=".65"/><ellipse cx="169" cy="137" rx="12" ry="6" fill="#ff9a9a" opacity=".65"/>
+      <path d="M46 91 30 77m164 14 16-14" stroke="#d7ff91" stroke-width="9" stroke-linecap="round"/>
+      <path d="m191 47 5-12 5 12 12 5-12 5-5 12-5-12-12-5Z" fill="#ffd36b"/>
+    </svg>
+  </div>
+  <div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><span>ТАП!</span></button></div>
+</div>
+<div class="combo-panel"><div class="combo-line"><span>⚡ КОМБО-СЕРИЯ</span><strong id="comboCount">0</strong></div><div class="combo-track"><div id="comboFill"></div></div><div class="combo-caption" id="comboCaption">Тапай ритмично, чтобы поддерживать серию</div></div>
+<div class="hint" id="hint">Нажимай на Gazyava, чтобы собирать очки</div>
 <div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
 </section>
 <section class="daily-tasks" aria-labelledby="dailyTasksTitle">
@@ -869,12 +925,44 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     }
   }
 
+  let comboCount = 0;
+  let lastComboTap = 0;
+  let comboDecayTimer = null;
+  const comboCountEl = document.getElementById('comboCount');
+  const comboFillEl = document.getElementById('comboFill');
+  const comboCaptionEl = document.getElementById('comboCaption');
+  const mascotEl = document.getElementById('mascot');
+  const mascotBubbleEl = document.getElementById('mascotBubble');
+  function registerComboTap() {
+    const now = Date.now();
+    const gap = now - lastComboTap;
+    if (!lastComboTap || gap > 1300) comboCount = 1;
+    else comboCount = Math.min(99, comboCount + 1);
+    lastComboTap = now;
+    const pct = Math.min(100, comboCount / 25 * 100);
+    if (comboCountEl) comboCountEl.textContent = comboCount + 'x';
+    if (comboFillEl) comboFillEl.style.width = pct + '%';
+    if (comboCaptionEl) comboCaptionEl.textContent = comboCount >= 25 ? '🔥 Отличный ритм! Серия на максимуме' : comboCount >= 10 ? '🔥 Горячо! Не сбавляй темп' : comboCount >= 5 ? '⚡ Хороший темп — продолжай' : 'Тапай чаще, чтобы разогнать комбо';
+    if (mascotEl) { mascotEl.classList.remove('cheer'); void mascotEl.offsetWidth; mascotEl.classList.add('cheer'); }
+    if (mascotBubbleEl) mascotBubbleEl.textContent = comboCount >= 25 ? 'Вот это скорость! 🔥' : comboCount >= 10 ? 'Ух ты, разогнался! ⚡' : comboCount >= 5 ? 'Так держать! ✨' : 'Ещё! Ещё! 😄';
+    clearTimeout(comboDecayTimer);
+    comboDecayTimer = setTimeout(() => {
+      comboCount = 0;
+      if (comboCountEl) comboCountEl.textContent = '0';
+      if (comboFillEl) comboFillEl.style.width = '0%';
+      if (comboCaptionEl) comboCaptionEl.textContent = 'Серия закончилась — начни новую!';
+      if (mascotBubbleEl) mascotBubbleEl.textContent = 'Я готов к новому раунду! ☁️';
+      if (mascotEl) mascotEl.classList.remove('cheer');
+    }, 1300);
+  }
+
   tap.addEventListener('click', () => {
     if (!initialized || Math.floor(currentEnergy()) - pendingTaps < 1) {
       render();
       return;
     }
 
+    registerComboTap();
     pendingTaps += 1;
     render();
     toast.textContent = '+' + TAP_POWER + ' GAZY POINT';
