@@ -1,6 +1,6 @@
 # GAZYAVA — token launch blueprint (working draft)
 
-**Status:** planning document only. Nothing here is a promise, final token allocation, sale offer, or guarantee of value. Token name/ticker, chain, supply, launch date, jurisdiction, and legal structure remain undecided.
+**Status:** approved working baseline as of 2026-11-19. This is still a planning model, not a deployed token, final legal disclosure, sale offer, or guarantee of value. GZV / Gazyava-Coin, Solana, a proposed fixed supply of 1,000,000,000 units, and the allocation below are the current project decisions for further design. Mainnet minting and any public distribution remain on hold pending legal, security, custody, and operational gates.
 
 ## 1. Product principles
 
@@ -33,7 +33,7 @@ A possible starting framework for community feedback; percentages are not approv
 | Marketing & partnerships | 5% | Disclosed campaigns and partnerships |
 | **Total** | **100%** | |
 
-Before approval, define the fully diluted supply, vesting dates, wallet controls, governance and reporting. Contributor tokens should have a cliff and linear vesting rather than being fully unlocked at launch.
+Working allocation amounts at the proposed 1 billion supply: Community & player rewards 400,000,000 GZV; liquidity 200,000,000 GZV; ecosystem & development 150,000,000 GZV; core contributors 100,000,000 GZV; treasury / reserve 100,000,000 GZV; marketing & partnerships 50,000,000 GZV. These are allocation budgets, not existing balances or wallet reserves.\n\nBefore mainnet creation, publish recipient / wallet policy, vesting and cliff schedules, liquidity deployment policy, multisig signers and thresholds, treasury reporting, and treatment of unclaimed community allocations. Contributor tokens should have a cliff and linear vesting rather than being fully unlocked at launch.
 
 ## 4. Fair player-reward design
 
@@ -51,10 +51,10 @@ A future season points score may inform a reward pool, but the formula and snaps
 
 ## 5. Launch gates
 
-- [ ] Choose chain after considering wallet UX, fees, ecosystem, security and compliance.
+- [x] Select Solana as the target chain for the working design.\n- [ ] Confirm the exact Solana token program / mint configuration after technical and security review.
 - [ ] Obtain legal advice for target jurisdictions, token classification, marketing, sanctions and distribution restrictions.
 - [ ] Finalize token utility that exists beyond speculative trading; do not promise profit or price appreciation.
-- [ ] Approve supply, allocation, vesting, emissions and treasury policy.
+- [x] Approve a working fixed-supply target of 1,000,000,000 GZV and the 40 / 20 / 15 / 10 / 10 / 5 allocation split.\n- [ ] Finalize vesting, emissions (intended: no discretionary minting after initial supply), treasury policy, and wallet controls.
 - [ ] Publish smart-contract source and obtain an independent security audit before mainnet deployment.
 - [ ] Establish multisig custody, role separation, emergency pause policy and public wallet disclosures.
 - [ ] Define airdrop eligibility, snapshot, Sybil review, claim window, unclaimed-token handling and support process.
