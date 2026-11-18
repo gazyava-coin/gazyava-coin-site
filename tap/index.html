@@ -463,6 +463,26 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .world-detail-copy p{margin:4px 0 0;color:#b9b3cc;font-size:10px;line-height:1.45}
 .world-discovery{display:flex;justify-content:space-between;margin-top:12px;color:#b9b3cc;font-size:10px}
 .world-discovery strong{color:#ffd36b}
+
+.world-atlas{margin-top:14px;padding:14px;border:1px solid #ffffff18;border-radius:15px;background:#100d1b88}
+.world-atlas h3{margin:0 0 9px;color:#ffd36b;font-size:13px}
+.world-landmark{display:flex;align-items:center;gap:10px;padding:10px;border-radius:11px;background:#ffffff08}
+.world-landmark-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#ffd36b18;font-size:20px}
+.world-landmark strong{display:block;font-size:11px}.world-landmark small{display:block;margin-top:2px;color:#b9b3cc;font-size:9px}
+.world-next{margin-top:10px;padding:11px;border-radius:11px;background:linear-gradient(110deg,#a8ff4512,#ffd36b12)}
+.world-next-head{display:flex;justify-content:space-between;gap:8px;font-size:10px}.world-next-head strong{color:#b5ff62}
+.world-next p{margin:5px 0 8px;color:#b9b3cc;font-size:10px}
+.world-next-track{height:6px;border-radius:99px;background:#403657;overflow:hidden}.world-next-track>div{height:100%;background:linear-gradient(90deg,#75d84a,#ffd36b)}
+.world-journal{margin-top:14px;padding:14px;border:1px solid #ffffff18;border-radius:15px;background:#100d1b88}
+.world-journal-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.world-journal h3{margin:0;color:#cbbcff;font-size:13px}
+.world-journal-count{color:#b5ff62;font-size:10px;font-weight:900}
+.world-journal-list{display:grid;gap:7px;margin-top:10px}
+.world-journal-row{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:9px;background:#ffffff07;font-size:10px}
+.world-journal-row span:first-child{font-size:16px}.world-journal-row strong{flex:1}.world-journal-row small{color:#b9b3cc;font-size:9px}
+.world-journal-empty{padding:10px;color:#b9b3cc;font-size:10px;text-align:center}
+.world-local-note{margin-top:9px;color:#8f88a2;font-size:9px;line-height:1.4}
+
 @media(max-width:370px){.world-map{min-height:470px}.world-node{width:94px;min-height:84px}.node-village{left:2%}.node-forest{right:2%}.node-mountains{left:2%}.node-frost{right:2%}.node-cosmos{left:2%}.node-kingdom{right:2%}.world-map-heading h2{font-size:17px}}
 
 </style>
@@ -615,6 +635,16 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <div class="world-legend"><span>🟢 Открыто</span><span>🔒 Пока закрыто</span><span>✨ Исследовано</span></div>
   <div class="world-detail" id="worldDetail" aria-live="polite"><div class="world-detail-icon">☁️</div><div class="world-detail-copy"><strong>Облачная деревня</strong><p>Твоё путешествие начинается здесь. Выбери любую открытую локацию на карте.</p></div></div>
   <div class="world-discovery"><span>Исследовано земель</span><strong id="worldDiscovered">0 / 6</strong></div>
+  <div class="world-atlas">
+    <h3>📍 ОРИЕНТИР ТЕКУЩЕГО РЕГИОНА</h3>
+    <div class="world-landmark"><div class="world-landmark-icon" id="worldLandmarkIcon">🏡</div><div><strong id="worldLandmark">Домик Первого Облака</strong><small id="worldLandmarkMeta">Главная достопримечательность</small></div></div>
+    <div class="world-next"><div class="world-next-head"><span>Следующая экспедиция</span><strong id="worldNextTarget">Мятный лес · 1 000</strong></div><p id="worldNextHint">Набери очки, чтобы открыть новый регион.</p><div class="world-next-track"><div id="worldNextFill" style="width:0%"></div></div></div>
+  </div>
+  <div class="world-journal">
+    <div class="world-journal-head"><h3>📖 ЖУРНАЛ ПУТЕШЕСТВИЙ</h3><span class="world-journal-count" id="worldJournalCount">0 / 6</span></div>
+    <div class="world-journal-list" id="worldJournalList"><div class="world-journal-empty">Выбери открытую землю, чтобы начать исследование.</div></div>
+    <div class="world-local-note">Прогресс карты и журнал хранятся на этом устройстве. Это исследовательская функция: она не начисляет игровые очки и не меняет серверный баланс.</div>
+  </div>
 </section>
 </div>
 <div class="tab-panel" data-tab-panel="friends">
@@ -913,7 +943,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   ];
   let selectedWorldZone = 'village';
   let discoveredWorldZones = [];
-  try { discoveredWorldZones = JSON.parse(localStorage.getItem('gazyava_world_discovered') || '[]').filter(id => WORLD_ZONES.some(zone => zone.id === id)); } catch (_) {}
+  let worldVisitOrder = [];
+  try {
+    discoveredWorldZones = JSON.parse(localStorage.getItem('gazyava_world_discovered') || '[]').filter(id => WORLD_ZONES.some(zone => zone.id === id));
+    worldVisitOrder = JSON.parse(localStorage.getItem('gazyava_world_visit_order') || '[]').filter(id => WORLD_ZONES.some(zone => zone.id === id));
+  } catch (_) {}
   function updateWorldMap() {
     const totalScore = Math.max(0, Number(score || 0) + pendingTaps * TAP_POWER);
     WORLD_ZONES.forEach(zone => {
@@ -948,6 +982,32 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const desc=document.createElement('p');desc.textContent=unlocked?zone.description+' '+zone.mission:'Регион закрыт. Нужно ещё '+Math.max(0,zone.unlock-totalScore).toLocaleString('ru-RU')+' очков. '+zone.mission;
       copy.append(title,desc);detail.append(icon,copy);
     }
+    const landmarkIcon=document.getElementById('worldLandmarkIcon'),landmark=document.getElementById('worldLandmark'),landmarkMeta=document.getElementById('worldLandmarkMeta');
+    if(landmarkIcon)landmarkIcon.textContent=unlocked?zone.emoji:'🔒';
+    if(landmark)landmark.textContent=unlocked?zone.landmark:'Неизвестная достопримечательность';
+    if(landmarkMeta)landmarkMeta.textContent=unlocked?'Главная достопримечательность · регион '+zone.level+'/6':'Откроется вместе с регионом';
+    const nextZone=WORLD_ZONES.find(item=>totalScore<item.unlock);
+    const nextTarget=document.getElementById('worldNextTarget'),nextHint=document.getElementById('worldNextHint'),nextFill=document.getElementById('worldNextFill');
+    if(nextTarget)nextTarget.textContent=nextZone?nextZone.name+' · '+nextZone.unlock.toLocaleString('ru-RU')+' очков':'Все регионы открыты';
+    if(nextHint)nextHint.textContent=nextZone?'Осталось '+Math.max(0,nextZone.unlock-totalScore).toLocaleString('ru-RU')+' очков до новой земли.':'Ты достиг предела карты — все шесть земель доступны!';
+    const previousZone=nextZone?WORLD_ZONES[WORLD_ZONES.indexOf(nextZone)-1]:WORLD_ZONES[WORLD_ZONES.length-1];
+    const base=previousZone?previousZone.unlock:0;
+    const pct=nextZone?Math.max(0,Math.min(100,(totalScore-base)/(nextZone.unlock-base)*100)):100;
+    if(nextFill)nextFill.style.width=pct+'%';
+    const journal=document.getElementById('worldJournalList'),journalCount=document.getElementById('worldJournalCount');
+    const validVisits=worldVisitOrder.filter((id,index,array)=>array.indexOf(id)===index&&discoveredWorldZones.includes(id)&&totalScore>=WORLD_ZONES.find(z=>z.id===id).unlock);
+    if(journalCount)journalCount.textContent=validVisits.length+' / 6';
+    if(journal){
+      journal.replaceChildren();
+      if(!validVisits.length){const empty=document.createElement('div');empty.className='world-journal-empty';empty.textContent='Выбери открытую землю, чтобы начать исследование.';journal.appendChild(empty);}
+      validVisits.slice().reverse().forEach(id=>{
+        const visited=WORLD_ZONES.find(z=>z.id===id),row=document.createElement('div');row.className='world-journal-row';
+        const emoji=document.createElement('span');emoji.textContent=visited.emoji;
+        const name=document.createElement('strong');name.textContent=visited.name;
+        const status=document.createElement('small');status.textContent='Исследовано';
+        row.append(emoji,name,status);journal.appendChild(row);
+      });
+    }
   }
   document.getElementById('worldMap')?.addEventListener('click',event=>{
     const button=event.target.closest('[data-zone]');
@@ -956,11 +1016,18 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     if(!zone)return;
     selectedWorldZone=zone.id;
     const totalScore=Math.max(0,Number(score||0)+pendingTaps*TAP_POWER);
-    if(totalScore>=zone.unlock&&!discoveredWorldZones.includes(zone.id)){
-      discoveredWorldZones.push(zone.id);
-      try{localStorage.setItem('gazyava_world_discovered',JSON.stringify(discoveredWorldZones));}catch(_){}
-      if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
-    } else if(totalScore<zone.unlock&&tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+    if(totalScore>=zone.unlock){
+      if(!discoveredWorldZones.includes(zone.id)){
+        discoveredWorldZones.push(zone.id);
+        if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
+      } else if(tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      worldVisitOrder=worldVisitOrder.filter(id=>id!==zone.id);
+      worldVisitOrder.push(zone.id);
+      try{
+        localStorage.setItem('gazyava_world_discovered',JSON.stringify(discoveredWorldZones));
+        localStorage.setItem('gazyava_world_visit_order',JSON.stringify(worldVisitOrder));
+      }catch(_){}
+    } else if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
     updateWorldMap();
   });
 
