@@ -117,6 +117,15 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .mission-claim{border:0;border-radius:9px;padding:8px 12px;background:var(--green);color:#17200d;font-size:11px;font-weight:950}
 .mission-claim:disabled{opacity:.48}
 .mission-rare{color:var(--gold);font-weight:900}
+.collection-box{margin-top:15px;padding-top:14px;border-top:1px solid #ffd36b44}
+.collection-title{text-align:center;color:var(--gold);font-size:13px;font-weight:950;letter-spacing:.5px}
+.collectibles-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.collectible-item{min-width:0;padding:10px 5px;border:1px solid #ffffff18;border-radius:12px;background:#171226;text-align:center}
+.collectible-icon{font-size:25px}
+.collectible-name{margin-top:4px;font-size:10px;font-weight:850;line-height:1.25}
+.collectible-count{margin-top:4px;color:var(--green);font-size:11px;font-weight:900}
+.collectible-empty{opacity:.35;filter:grayscale(1)}
+
 .daily-task-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:750}
 .daily-reward{color:var(--green);white-space:nowrap;font-weight:850}
 .daily-task-meta{display:flex;justify-content:space-between;gap:10px;margin:7px 0;color:var(--muted);font-size:12px}
@@ -382,6 +391,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <h2 id="dailyMissionsTitle">⚡ ЦЕПОЧКА МИССИЙ</h2>
   <p class="daily-subtitle">Выполняй этапы по порядку — за финал получишь редкий бонус</p>
   <div id="dailyMissionsList"><div class="daily-task">Загружаем миссии...</div></div>
+  <div class="collection-box">
+    <div class="collection-title">💎 КОЛЛЕКЦИЯ РЕДКОСТЕЙ</div>
+    <p class="daily-subtitle">Собирай уникальные предметы за финальную миссию</p>
+    <div id="collectiblesList" class="collectibles-list">Загружаем коллекцию...</div>
+  </div>
 </section>
 <section class="streak-card" aria-labelledby="streakTitle">
   <div class="streak-title"><span id="streakTitle">🔥 СЕРИЯ ВХОДОВ</span><span>Ежедневный бонус</span></div>
@@ -810,6 +824,26 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   }
 
 
+  function renderCollectibles(collection) {
+    const list=document.getElementById('collectiblesList');
+    if(!list) return;
+    const owned=new Map((Array.isArray(collection)?collection:[]).map(item=>[item.id,Number(item.quantity||0)]));
+    const catalog=[
+      {id:'mint_feather',icon:'🪶',name:'Мятное перо'},
+      {id:'star_core',icon:'🌟',name:'Звёздное ядро'},
+      {id:'golden_cloud',icon:'☁️',name:'Золотое облачко'}
+    ];
+    list.replaceChildren();
+    catalog.forEach(item=>{
+      const count=owned.get(item.id)||0;
+      const card=document.createElement('div'); card.className='collectible-item'+(count?'':' collectible-empty');
+      const icon=document.createElement('div'); icon.className='collectible-icon'; icon.textContent=count?item.icon:'❔';
+      const name=document.createElement('div'); name.className='collectible-name'; name.textContent=count?item.name:'Не найдено';
+      const quantity=document.createElement('div'); quantity.className='collectible-count'; quantity.textContent=count?'×'+count:'—';
+      card.append(icon,name,quantity); list.append(card);
+    });
+  }
+
   async function loadDailyMissions() {
     const list = document.getElementById('dailyMissionsList');
     if (!list) return;
@@ -818,6 +852,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const state = data.missions || {};
       const taps = Number(state.taps || 0);
       const claimed = state.claimed || {};
+      renderCollectibles(state.collection || []);
       const missions = Array.isArray(state.missions) ? state.missions : [];
       missionReadyNoticeCount = missions.filter(m => taps >= Number(m.target) && !claimed[m.id]).length;
       taskNoticeCount = readyTaskNoticeCount + missionReadyNoticeCount + (spinAvailable ? 1 : 0);
@@ -867,7 +902,8 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       await loadPlayer();
       await loadDailyMissions();
       const amount=Number(claim.total_reward||claim.reward||0);
-      if(toast) { toast.textContent='🎉 +'+amount+' игровых очков'+(id==='legend'?' · редкий бонус!':''); toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1800); }
+      const itemName=claim.collectible?.name;
+      if(toast) { toast.textContent='🎉 +'+amount+' игровых очков'+(id==='legend'?' · редкий предмет: '+(itemName||'получен'):''); toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1800); }
       if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
     } catch(error) {
       button.disabled=false; button.textContent='Повторить';
