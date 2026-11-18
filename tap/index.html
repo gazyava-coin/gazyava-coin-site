@@ -647,6 +647,17 @@ input,button{font-family:inherit}
 @media(max-width:390px){[data-tab-panel="play"]>.game{padding:12px 9px}[data-tab-panel="play"]{gap:11px}}
 @media(prefers-reduced-motion:reduce){.mascot svg,.mascot-eye,.mascot-mouth,.mascot-arms,.mascot-bubble:before,.cloud-wrap:before,.cloud-wrap:after{animation:none!important}}
 
+.event-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.event-heading h2{flex:1;text-align:left;margin:0}
+#refreshCloudFestival{flex:none;border:1px solid #bcb0ff55;border-radius:10px;padding:7px 10px;background:#bcb0ff14;color:#e2dcff;font-size:11px;font-weight:850}
+#refreshCloudFestival:disabled{opacity:.5}
+.event-next{margin:10px 0 12px;padding:10px 11px;border-radius:12px;background:#ffffff08;border:1px solid #ffffff12;color:#e8e2ff;font-size:11px}
+.event-next-label{margin-bottom:7px;font-weight:800}
+.event-next-track{height:6px;border-radius:99px;background:#302849;overflow:hidden}
+.event-next-track>div{height:100%;border-radius:99px;background:linear-gradient(90deg,#bcb0ff,#69d8ff);transition:width .25s}
+#tap{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#tap span{pointer-events:none}
+@media(max-width:390px){.event-heading h2{font-size:15px}#refreshCloudFestival{padding:6px 8px}}
 </style>
 </head>
 <body>
@@ -755,10 +766,11 @@ input,button{font-family:inherit}
   </div>
 </section>
 <section class="event-card" aria-labelledby="eventTitle">
-  <h2 id="eventTitle">🌌 ФЕСТИВАЛЬ СИЯЮЩИХ ОБЛАКОВ</h2>
+  <div class="event-heading"><h2 id="eventTitle">🌌 ФЕСТИВАЛЬ СИЯЮЩИХ ОБЛАКОВ</h2><button id="refreshCloudFestival" type="button">↻ Обновить</button></div>
   <p class="daily-subtitle">Сезонное событие · 18–24 ноября · набирай тапы и забирай награды</p>
   <div class="event-summary"><strong id="eventTapCount">—</strong><span> / 1 000 сезонных тапов</span><span id="eventTimeStatus">Загружаем событие...</span></div>
   <div class="event-progress"><div id="eventProgressFill"></div></div>
+  <div class="event-next" id="eventNextMilestone">Сверяем прогресс фестиваля...</div>
   <div id="eventMilestones"><div class="daily-task">Загружаем этапы фестиваля...</div></div>
   <div class="event-item" id="eventItem">✨ Осколки авроры: 0</div>
   <div class="event-rankings">
@@ -1808,7 +1820,23 @@ input,button{font-family:inherit}
       const item=document.getElementById('eventItem');
       if(count) count.textContent=taps.toLocaleString('ru-RU');
       if(fill) fill.style.width=Math.min(100,taps/1000*100)+'%';
-      if(status) status.textContent=active?'Событие активно до 25 ноября, 00:00 UTC':'Событие завершено';
+      if(status) status.textContent=active?'● Активно · до 25 ноября, 00:00 UTC':'Фестиваль завершён';
+      const nextGoal=(Array.isArray(event.milestones)?event.milestones:[]).find(m=>taps<Number(m.target));
+      const nextEl=document.getElementById('eventNextMilestone');
+      if(nextEl) {
+        if(nextGoal) {
+          const remaining=Math.max(0,Number(nextGoal.target)-taps);
+          const previous=(Array.isArray(event.milestones)?event.milestones:[]).filter(m=>Number(m.target)<Number(nextGoal.target)).slice(-1)[0];
+          const start=Number(previous?.target||0), span=Math.max(1,Number(nextGoal.target)-start);
+          const pct=Math.min(100,Math.max(0,(taps-start)/span*100));
+          nextEl.innerHTML='';
+          const label=document.createElement('div');label.className='event-next-label';
+          label.textContent='Следующая награда: '+nextGoal.title+' · ещё '+remaining.toLocaleString('ru-RU')+' тапов';
+          const track=document.createElement('div');track.className='event-next-track';
+          const bar=document.createElement('div');bar.style.width=pct+'%';track.append(bar);
+          nextEl.append(label,track);
+        } else nextEl.textContent='🌟 Все личные этапы фестиваля пройдены!';
+      }
       festivalShardBalance=Number(event.aurora_shards||0);
       if(item) item.textContent='✨ Осколки авроры: '+festivalShardBalance;
       if(exclusiveSkinsLoaded) renderSkinCrafting(cachedCollectibles);
@@ -1836,6 +1864,13 @@ input,button{font-family:inherit}
       console.error('Season event loading failed:',error);
     }
   }
+
+  document.getElementById('refreshCloudFestival')?.addEventListener('click', async event => {
+    const button=event.currentTarget;
+    button.disabled=true;button.textContent='Обновляем...';
+    await loadSeasonEvent();
+    button.disabled=false;button.textContent='↻ Обновить';
+  });
 
   async function loadSeasonLeaderboard() {
     const list=document.getElementById('eventLeaderboard');
@@ -2842,12 +2877,11 @@ input,button{font-family:inherit}
     }, 1300);
   }
 
-  tap.addEventListener('click', () => {
+  function performTap() {
     if (!initialized || Math.floor(currentEnergy()) - pendingTaps < 1) {
       render();
       return;
     }
-
     registerComboTap();
     pendingTaps += 1;
     render();
@@ -2856,8 +2890,26 @@ input,button{font-family:inherit}
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 450);
     if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-
     flushTapQueue();
+  }
+
+  // Каждый палец получает отдельный pointerId: два одновременных касания = два тапа.
+  const activeTapPointers = new Set();
+  tap.style.touchAction = 'none';
+  tap.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (activeTapPointers.has(event.pointerId)) return;
+    activeTapPointers.add(event.pointerId);
+    event.preventDefault();
+    performTap();
+  });
+  const releaseTapPointer = event => activeTapPointers.delete(event.pointerId);
+  tap.addEventListener('pointerup', releaseTapPointer);
+  tap.addEventListener('pointercancel', releaseTapPointer);
+  tap.addEventListener('lostpointercapture', releaseTapPointer);
+  // Сохраняем доступность для клавиатуры и экранных средств управления.
+  tap.addEventListener('click', event => {
+    if (event.detail === 0) performTap();
   });
 
   wakeMascot();
