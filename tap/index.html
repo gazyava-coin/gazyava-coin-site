@@ -104,6 +104,19 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .daily-subtitle{margin:0 0 14px;color:var(--muted);font-size:12px;text-align:center}
 .daily-task{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 .daily-task:last-child{border-bottom:0;padding-bottom:0}
+.daily-missions{width:100%;margin-top:14px;padding:18px;border:1px solid #ffd36b55;border-radius:18px;background:linear-gradient(145deg,rgba(255,211,107,.11),rgba(168,255,69,.06));box-shadow:0 12px 35px #05030d35}
+.daily-missions h2{margin:0 0 6px;color:var(--gold);font-size:18px;text-align:center}
+.mission-card{padding:13px 0;border-bottom:1px solid #ffffff14}
+.mission-card:last-child{border-bottom:0}
+.mission-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:850}
+.mission-reward{color:var(--green);white-space:nowrap}
+.mission-desc{margin:4px 0 8px;color:var(--muted);font-size:11px}
+.mission-progress{height:7px;background:#342a49;border-radius:99px;overflow:hidden}
+.mission-progress>div{height:100%;background:linear-gradient(90deg,#75d84a,#ffd36b);border-radius:99px}
+.mission-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;color:var(--muted);font-size:11px}
+.mission-claim{border:0;border-radius:9px;padding:8px 12px;background:var(--green);color:#17200d;font-size:11px;font-weight:950}
+.mission-claim:disabled{opacity:.48}
+.mission-rare{color:var(--gold);font-weight:900}
 .daily-task-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:750}
 .daily-reward{color:var(--green);white-space:nowrap;font-weight:850}
 .daily-task-meta{display:flex;justify-content:space-between;gap:10px;margin:7px 0;color:var(--muted);font-size:12px}
@@ -365,6 +378,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="daily-task">Загружаем ежедневный прогресс...</div>
   </div>
 </section>
+<section class="daily-missions" aria-labelledby="dailyMissionsTitle">
+  <h2 id="dailyMissionsTitle">⚡ ЦЕПОЧКА МИССИЙ</h2>
+  <p class="daily-subtitle">Выполняй этапы по порядку — за финал получишь редкий бонус</p>
+  <div id="dailyMissionsList"><div class="daily-task">Загружаем миссии...</div></div>
+</section>
 <section class="streak-card" aria-labelledby="streakTitle">
   <div class="streak-title"><span id="streakTitle">🔥 СЕРИЯ ВХОДОВ</span><span>Ежедневный бонус</span></div>
   <div class="streak-number" id="streakCurrent">— дней подряд</div>
@@ -539,6 +557,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
   let taskNoticeCount = 0;
   let readyTaskNoticeCount = 0;
+  let missionReadyNoticeCount = 0;
   let spinAvailable = false;
   let friendNoticeCount = 0;
   function updateTabNotices() {
@@ -680,7 +699,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     readyTaskNoticeCount = DAILY_TASKS.filter(task =>
       taps >= task.target && !Boolean(progress?.[task.claimedKey])
     ).length;
-    taskNoticeCount = readyTaskNoticeCount + (spinAvailable ? 1 : 0);
+    taskNoticeCount = readyTaskNoticeCount + missionReadyNoticeCount + (spinAvailable ? 1 : 0);
     updateTabNotices();
 
     DAILY_TASKS.forEach((task) => {
@@ -746,7 +765,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       button.disabled = !spinAvailable;
       button.textContent = spinAvailable ? '🎰 Крутить рулетку' : '✓ Сегодня уже крутили';
       if (spin.spun_today && resultEl && spin.reward != null) resultEl.textContent = 'Сегодня выпало: +' + Number(spin.reward).toLocaleString('ru-RU') + ' очков';
-      taskNoticeCount = readyTaskNoticeCount + (spinAvailable ? 1 : 0);
+      taskNoticeCount = readyTaskNoticeCount + missionReadyNoticeCount + (spinAvailable ? 1 : 0);
       updateTabNotices();
     } catch (error) {
       button.disabled = true; button.textContent = 'Рулетка временно недоступна';
@@ -790,6 +809,69 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     }
   }
 
+
+  async function loadDailyMissions() {
+    const list = document.getElementById('dailyMissionsList');
+    if (!list) return;
+    try {
+      const data = await request('daily_missions');
+      const state = data.missions || {};
+      const taps = Number(state.taps || 0);
+      const claimed = state.claimed || {};
+      const missions = Array.isArray(state.missions) ? state.missions : [];
+      missionReadyNoticeCount = missions.filter(m => taps >= Number(m.target) && !claimed[m.id]).length;
+      taskNoticeCount = readyTaskNoticeCount + missionReadyNoticeCount + (spinAvailable ? 1 : 0);
+      updateTabNotices();
+      list.replaceChildren();
+      missions.forEach(mission => {
+        const target = Number(mission.target);
+        const done = taps >= target;
+        const received = Boolean(claimed[mission.id]);
+        const card = document.createElement('div'); card.className = 'mission-card';
+        const head = document.createElement('div'); head.className = 'mission-head';
+        const title = document.createElement('span'); title.textContent = mission.title;
+        const reward = document.createElement('span'); reward.className = 'mission-reward';
+        reward.textContent = mission.id === 'legend' ? '+150 + редкий бонус +50' : '+' + Number(mission.reward) + ' очков';
+        head.append(title,reward);
+        const desc = document.createElement('div'); desc.className = 'mission-desc'; desc.textContent = mission.description;
+        if (mission.id === 'legend') { const rare=document.createElement('div'); rare.className='mission-desc mission-rare'; rare.textContent='✨ Редкая награда: дополнительные 50 очков'; card.append(head,desc,rare); }
+        else card.append(head,desc);
+        const bar=document.createElement('div'); bar.className='mission-progress';
+        const fill=document.createElement('div'); fill.style.width=Math.min(100,taps/target*100)+'%'; bar.append(fill);
+        const foot=document.createElement('div'); foot.className='mission-foot';
+        const progress=document.createElement('span'); progress.textContent=Math.min(taps,target).toLocaleString('ru-RU')+' / '+target+' тапов';
+        const button=document.createElement('button'); button.type='button'; button.className='mission-claim';
+        button.textContent=received?'✓ Получено':done?'Забрать':'В процессе';
+        button.disabled=!done||received;
+        button.addEventListener('click',()=>claimDailyMission(mission.id,button));
+        foot.append(progress,button); card.append(bar,foot); list.append(card);
+      });
+    } catch(error) {
+      list.textContent='Не удалось загрузить цепочку миссий';
+      console.error('Daily missions loading failed:',error);
+    }
+  }
+
+  async function claimDailyMission(id, button) {
+    button.disabled=true; button.textContent='Начисляем...';
+    try {
+      const data=await request('claim_daily_mission',{mission_id:id});
+      const claim=data.mission_claim||{};
+      if(!claim.ok) {
+        if(claim.reason==='not_completed') throw new Error('Миссия ещё не выполнена');
+        if(claim.reason==='already_claimed') throw new Error('Эта награда уже получена');
+        throw new Error('Не удалось получить награду');
+      }
+      await loadPlayer();
+      await loadDailyMissions();
+      const amount=Number(claim.total_reward||claim.reward||0);
+      if(toast) { toast.textContent='🎉 +'+amount+' игровых очков'+(id==='legend'?' · редкий бонус!':''); toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1800); }
+      if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    } catch(error) {
+      button.disabled=false; button.textContent='Повторить';
+      if(toast) { toast.textContent=error.message; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1800); }
+    }
+  }
 
   async function checkInStreak() {
     const currentEl = document.getElementById('streakCurrent');
@@ -1251,6 +1333,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         applyServerData(data);
         render();
         loadDailyProgress();
+        loadDailyMissions();
       }
     } catch (error) {
       pendingTaps = 0;
