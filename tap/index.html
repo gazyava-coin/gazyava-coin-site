@@ -524,6 +524,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     {id:'golden',name:'Золотой',emoji:'👑',unlock:50000,level:5,description:'Легенда Gazyava',className:'skin-golden'}
   ];
   let exclusiveMascotSkins = [];
+  let exclusiveSkinsLoaded = false;
   let equippedMascotSkin = 'classic';
   let mascotCollectionSignature = '';
   try { equippedMascotSkin = localStorage.getItem('gazyava_mascot_skin') || 'classic'; } catch (_) {}
@@ -567,7 +568,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     const unlocked=MASCOT_SKINS.filter(s=>score>=s.unlock);
     const exclusiveUnlocked=EXCLUSIVE_SKINS.filter(s=>exclusiveMascotSkins.some(x=>x.id===s.id));
     const allSkins=[...MASCOT_SKINS,...exclusiveUnlocked];
-    if(initialized && !unlocked.some(s=>s.id===equippedMascotSkin) && !exclusiveUnlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
+    if(initialized && exclusiveSkinsLoaded && !unlocked.some(s=>s.id===equippedMascotSkin) && !exclusiveUnlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
     const current=allSkins.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
     mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden','skin-mint-guardian','skin-star-wanderer','skin-cloud-royal');
     if(current.className) mascot.classList.add(current.className);
@@ -897,6 +898,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       renderCollectibles(state.collection || []);
       const skinData = await request('exclusive_skins');
       exclusiveMascotSkins = Array.isArray(skinData.exclusive_skins) ? skinData.exclusive_skins : [];
+      exclusiveSkinsLoaded = true;
       renderSkinCrafting(state.collection || []);
       mascotCollectionSignature = ''; updateMascotCollection();
       const missions = Array.isArray(state.missions) ? state.missions : [];
