@@ -96,3 +96,19 @@
 - Найденные точки отмечаются в карточке региона; счётчик показывает прогресс исследования (0–3).
 - Найденные места сохраняются в localStorage устройства. Это локальные открытия без игровых очков, серверных наград или влияния на баланс.
 - Проверка открытия региона выполняется по текущему игровому счёту на клиенте; это исследовательская/косметическая механика, а не защищённая серверная награда.
+
+
+## World treasures and relic collection (November 2026)
+
+The world map now includes six regional treasure chests. A chest becomes available only after the region is unlocked by the player's displayed score and all three local points of interest in that region have been discovered. Opening it grants one cosmetic relic:
+
+- Cloud Village — Cloud Compass (common)
+- Mint Forest — Mint Crystal (uncommon)
+- Fire Mountains — Spark Heart (rare)
+- Frost Lands — Frost Rune (rare)
+- Cosmic Valley — Star Lens (epic)
+- Golden Kingdom — Royal Seal (legendary)
+
+Collecting all six relics unlocks the local-only Secret Chest and the Heart of Gazyava discovery. Four exploration titles track milestones: Scout (3 points of interest), Cartographer (3 regions), Collector (3 relics), and Gazyava Legend (secret chest opened).
+
+Storage keys: `gazyava_world_chests`, `gazyava_world_artifacts`, and `gazyava_world_secret`. These collectibles, titles, and world discovery remain in browser localStorage and are cosmetic only. They do not award game points, affect player balances, or provide server-authoritative ownership. Clearing browser storage or switching devices resets this local collection. Do not use it as eligibility for token distributions or competitive rewards without moving validation to trusted server-side state.
