@@ -195,6 +195,14 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 .mascot{width:170px;height:156px;z-index:2;filter:drop-shadow(0 15px 22px #a8ff4530);transition:transform .16s}
 .mascot svg{width:100%;height:100%;overflow:visible}
 .mascot.cheer{transform:translateY(-9px) rotate(-5deg) scale(1.06)}
+.mascot.sleeping{animation:mascotSleep 2.8s ease-in-out infinite;filter:drop-shadow(0 8px 15px #a8ff4520)}
+.mascot.sleeping svg{transform:rotate(-5deg) scale(.97);transform-origin:50% 70%}
+.mascot.sleeping svg ellipse{opacity:.72}
+.mascot.surprised{animation:mascotEvolve .85s cubic-bezier(.2,.9,.25,1.3);filter:drop-shadow(0 0 28px #ffd36b)}
+.mascot.surprised svg{transform:scale(1.12) rotate(7deg)}
+@keyframes mascotSleep{0%,100%{transform:translateY(1px) rotate(-1deg)}50%{transform:translateY(7px) rotate(2deg)}}
+@keyframes mascotEvolve{0%{transform:scale(.75) rotate(-12deg)}45%{transform:scale(1.22) rotate(9deg)}72%{transform:scale(.96) rotate(-4deg)}100%{transform:scale(1) rotate(0)}}
+@media(prefers-reduced-motion:reduce){.mascot.sleeping,.mascot.surprised{animation:none}.mascot,.mascot svg{transition:none}}
 .mascot-bubble{position:relative;z-index:3;margin-bottom:-4px;padding:8px 14px;border:1px solid #ffffff28;border-radius:14px;background:#2b2142;color:#fff;font-size:12px;font-weight:800;box-shadow:0 8px 20px #0003}
 .mascot-bubble:after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;background:#2b2142;border-right:1px solid #ffffff28;border-bottom:1px solid #ffffff28;transform:translateX(-50%) rotate(45deg)}
 .cloud-wrap{width:245px;height:210px;margin-top:-18px}
@@ -503,8 +511,26 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
     return data;
   }
 
+  let previousServerScore = null;
+  function celebrateEvolution(oldScore, newScore) {
+    if (oldScore === null || newScore <= oldScore) return;
+    const unlocked = MASCOT_SKINS.find(s => s.unlock > 0 && oldScore < s.unlock && newScore >= s.unlock);
+    if (!unlocked) return;
+    if (mascotEl) {
+      mascotEl.classList.remove('sleeping','cheer','surprised');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('surprised');
+      setTimeout(() => mascotEl?.classList.remove('surprised'), 900);
+    }
+    if (mascotBubbleEl) mascotBubbleEl.textContent = 'Ура! Я эволюционировал — ' + unlocked.name + '! ✨';
+    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+  }
+
   function applyServerData(data) {
-    score = Number(data.score);
+    const incomingScore = Number(data.score);
+    celebrateEvolution(previousServerScore, incomingScore);
+    previousServerScore = incomingScore;
+    score = incomingScore;
     const shopBalanceEl = document.getElementById('shopBalance');
     if (shopBalanceEl) shopBalanceEl.textContent = 'Твой баланс: ' + score.toLocaleString('ru-RU') + ' очков';
     energy = Math.max(0, Math.min(MAX, Number(data.energy)));
@@ -1025,7 +1051,20 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
   const comboCaptionEl = document.getElementById('comboCaption');
   const mascotEl = document.getElementById('mascot');
   const mascotBubbleEl = document.getElementById('mascotBubble');
+  let mascotIdleTimer = null;
+  function wakeMascot() {
+    clearTimeout(mascotIdleTimer);
+    if (mascotEl) mascotEl.classList.remove('sleeping');
+    mascotIdleTimer = setTimeout(() => {
+      if (comboCount === 0 && mascotEl) {
+        mascotEl.classList.remove('cheer');
+        mascotEl.classList.add('sleeping');
+        if (mascotBubbleEl) mascotBubbleEl.textContent = 'Z-z-z... Разбуди меня тапом 😴';
+      }
+    }, 9000);
+  }
   function registerComboTap() {
+    wakeMascot();
     const now = Date.now();
     const gap = now - lastComboTap;
     if (!lastComboTap || gap > 1300) comboCount = 1;
@@ -1066,6 +1105,7 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
     flushTapQueue();
   });
 
+  wakeMascot();
   render();
   loadPlayer();
   loadLeaderboard();
