@@ -427,6 +427,44 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
   .clan-season-meter{margin:10px 0;padding:9px 11px;border-radius:10px;background:rgba(0,0,0,.18);color:#f7d78a;font-size:11px;font-weight:800}
   .clan-season-progress{min-height:16px}
+/* Gazyava World Map */
+
+.game-tabs{grid-template-columns:repeat(6,minmax(0,1fr))}
+.world-map-card{margin:0 0 18px;padding:18px;border:1px solid #8f7bd955;border-radius:20px;background:linear-gradient(160deg,#29203f,#191427 72%);box-shadow:0 15px 40px #05030d55}
+.world-map-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.world-kicker{color:#b5ff62;font-size:9px;font-weight:950;letter-spacing:2px}
+.world-map-heading h2{margin:3px 0 0;color:#f4eaff;font-size:20px}
+.world-level{padding:7px 10px;border:1px solid #ffd36b55;border-radius:99px;color:#ffd36b;font-size:10px;font-weight:900;white-space:nowrap}
+.world-intro{margin:10px 0 14px;color:#b9b3cc;font-size:11px;line-height:1.55}
+.world-progress{padding:11px 12px;border-radius:12px;background:#100d1b88}
+.world-progress-label{display:flex;justify-content:space-between;gap:8px;color:#b9b3cc;font-size:10px}
+.world-progress-label strong{color:#b5ff62}
+.world-track{height:7px;margin-top:8px;border-radius:99px;background:#403657;overflow:hidden}
+.world-track>div{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#75d84a,#ffd36b);transition:width .3s}
+.world-map{position:relative;min-height:500px;margin-top:14px;overflow:hidden;border:1px solid #ffffff16;border-radius:17px;background:radial-gradient(ellipse at 18% 15%,#4b8a6755,transparent 32%),radial-gradient(ellipse at 80% 23%,#8d5a9b55,transparent 28%),radial-gradient(ellipse at 32% 78%,#4383a455,transparent 32%),linear-gradient(145deg,#243d43,#25213b 55%,#3b2b50)}
+.world-map:before,.world-map:after{content:"";position:absolute;border:1px solid #ffffff10;border-radius:50%;width:240px;height:170px;transform:rotate(-24deg);pointer-events:none}
+.world-map:before{left:-90px;top:110px}.world-map:after{right:-100px;bottom:65px}
+.world-route{position:absolute;inset:0;opacity:.6;background:linear-gradient(145deg,transparent 18%,#f8d986 18.3%,#f8d986 18.8%,transparent 19.1%,transparent 39%,#f8d986 39.3%,#f8d986 39.8%,transparent 40.1%,transparent 58%,#f8d986 58.3%,#f8d986 58.8%,transparent 59.1%,transparent 78%,#f8d986 78.3%,#f8d986 78.8%,transparent 79.1%);clip-path:polygon(10% 15%,90% 85%,90% 88%,8% 18%)}
+.world-node{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:105px;min-height:92px;padding:7px 5px;border:1px solid #ffffff3b;border-radius:17px;background:#171226dd;color:#fff;text-align:center;box-shadow:0 8px 18px #0006;cursor:pointer;transition:transform .15s,border-color .15s,filter .15s}
+.world-node:active{transform:scale(.96)}
+.world-node>span{font-size:27px;line-height:1.1}
+.world-node b{font-size:10px;line-height:1.15}
+.world-node small{font-size:8px;color:#c9c2d8}
+.world-node.unlocked{border-color:#a8ff45aa;background:linear-gradient(145deg,#27402bdd,#171226ee)}
+.world-node.discovered{border-color:#ffd36baa;box-shadow:0 0 0 2px #ffd36b20,0 8px 18px #0006}
+.world-node.locked{filter:grayscale(.9);opacity:.72}
+.world-node.locked:after{content:"🔒";position:absolute;top:-7px;right:-5px;font-size:15px}
+.node-village{left:4%;top:4%}.node-forest{right:4%;top:20%}.node-mountains{left:7%;top:37%}.node-frost{right:4%;top:55%}.node-cosmos{left:5%;top:72%}.node-kingdom{right:4%;top:82%}
+.world-map-caption{position:absolute;left:10px;bottom:10px;padding:6px 9px;border-radius:99px;background:#100d1bcc;color:#e5dff0;font-size:9px}
+.world-legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:11px 0;color:#b9b3cc;font-size:9px}
+.world-detail{display:flex;align-items:center;gap:12px;min-height:92px;padding:13px;border:1px solid #ffffff1c;border-radius:14px;background:#100d1b99}
+.world-detail-icon{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:14px;background:#ffffff10;font-size:27px}
+.world-detail-copy strong{font-size:13px;color:#fff}
+.world-detail-copy p{margin:4px 0 0;color:#b9b3cc;font-size:10px;line-height:1.45}
+.world-discovery{display:flex;justify-content:space-between;margin-top:12px;color:#b9b3cc;font-size:10px}
+.world-discovery strong{color:#ffd36b}
+@media(max-width:370px){.world-map{min-height:470px}.world-node{width:94px;min-height:84px}.node-village{left:2%}.node-forest{right:2%}.node-mountains{left:2%}.node-frost{right:2%}.node-cosmos{left:2%}.node-kingdom{right:2%}.world-map-heading h2{font-size:17px}}
+
 </style>
 </head>
 <body>
@@ -439,6 +477,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 <button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="friends">🎁 Друзья<span class="tab-notice" id="friendsNotice" hidden></span></button>
 <button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="upgrade">🛒 Развитие</button>
 <button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="ranking">🏆 Топ</button>
+<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="map">🗺️ Мир</button>
 </nav>
 <div class="tab-panel active" data-tab-panel="play">
 <section class="stats">
@@ -556,6 +595,26 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="calendar-day">Загружаем...</div>
   </div>
   <div class="calendar-note" id="calendarNote">Награды начисляются автоматически при входе</div>
+</section>
+</div>
+<div class="tab-panel" data-tab-panel="map">
+<section class="world-map-card">
+  <div class="world-map-heading"><div><div class="world-kicker">МИР GAZYAVA</div><h2>🗺️ Карта приключений</h2></div><div class="world-level" id="worldLevel">Уровень 1</div></div>
+  <p class="world-intro">Исследуй земли, открывай новые места и собирай историю своего путешествия. Новые регионы открываются с ростом твоего игрового счёта.</p>
+  <div class="world-progress"><div class="world-progress-label"><span>Путь исследователя</span><strong id="worldProgressText">0 / 1 000</strong></div><div class="world-track"><div id="worldProgressFill"></div></div></div>
+  <div class="world-map" id="worldMap" aria-label="Интерактивная карта мира">
+    <div class="world-route"></div>
+    <button class="world-node node-village" data-zone="village" type="button"><span>☁️</span><b>Облачная<br>деревня</b><small>СТАРТ</small></button>
+    <button class="world-node node-forest" data-zone="forest" type="button"><span>🌿</span><b>Мятный<br>лес</b><small>1 000 очков</small></button>
+    <button class="world-node node-mountains" data-zone="mountains" type="button"><span>🔥</span><b>Огненные<br>горы</b><small>5 000 очков</small></button>
+    <button class="world-node node-frost" data-zone="frost" type="button"><span>❄️</span><b>Ледяные<br>земли</b><small>10 000 очков</small></button>
+    <button class="world-node node-cosmos" data-zone="cosmos" type="button"><span>🌌</span><b>Космическая<br>долина</b><small>15 000 очков</small></button>
+    <button class="world-node node-kingdom" data-zone="kingdom" type="button"><span>👑</span><b>Золотое<br>королевство</b><small>50 000 очков</small></button>
+    <div class="world-map-caption">☁️ Шесть земель · один большой путь</div>
+  </div>
+  <div class="world-legend"><span>🟢 Открыто</span><span>🔒 Пока закрыто</span><span>✨ Исследовано</span></div>
+  <div class="world-detail" id="worldDetail" aria-live="polite"><div class="world-detail-icon">☁️</div><div class="world-detail-copy"><strong>Облачная деревня</strong><p>Твоё путешествие начинается здесь. Выбери любую открытую локацию на карте.</p></div></div>
+  <div class="world-discovery"><span>Исследовано земель</span><strong id="worldDiscovered">0 / 6</strong></div>
 </section>
 </div>
 <div class="tab-panel" data-tab-panel="friends">
@@ -843,10 +902,73 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   try { savedTab = localStorage.getItem('gazyava_active_tab') || 'play'; } catch (_) {}
   if (gamePanels.some(panel => panel.dataset.tabPanel === savedTab)) activateGameTab(savedTab);
 
+
+  const WORLD_ZONES = [
+    {id:'village',name:'Облачная деревня',emoji:'☁️',unlock:0,level:1,description:'Тёплая стартовая долина, где живёт маскот Gazyava. Здесь начинаются все большие истории.',mission:'Освойся в игре: сделай первые тапы и загляни в ежедневные задания.',landmark:'Домик Первого Облака'},
+    {id:'forest',name:'Мятный лес',emoji:'🌿',unlock:1000,level:2,description:'Лес из мятных деревьев и светящихся ручьёв. Говорят, здесь прячутся редкие перья.',mission:'Набери 1 000 очков и открой Мятный лес.',landmark:'Мятная роща'},
+    {id:'mountains',name:'Огненные горы',emoji:'🔥',unlock:5000,level:3,description:'Жаркие вершины, древние кузницы и испытания для самых упорных таперов.',mission:'Набери 5 000 очков, чтобы добраться до вулканических троп.',landmark:'Кузница искр'},
+    {id:'frost',name:'Ледяные земли',emoji:'❄️',unlock:10000,level:4,description:'Северный край вечного снега. Здесь проходят морозные события и появляются ледяные трофеи.',mission:'Набери 10 000 очков и исследуй северные земли.',landmark:'Хрустальный ледник'},
+    {id:'cosmos',name:'Космическая долина',emoji:'🌌',unlock:15000,level:5,description:'Парящие острова среди звёзд. Здесь заканчиваются обычные дороги и начинаются космические приключения.',mission:'Набери 15 000 очков, чтобы открыть звёздный портал.',landmark:'Звёздный портал'},
+    {id:'kingdom',name:'Золотое королевство',emoji:'👑',unlock:50000,level:6,description:'Легендарная столица облачного мира. Доступна только мастерам Gazyava.',mission:'Набери 50 000 очков и докажи, что достоин короны.',landmark:'Трон Золотого облака'}
+  ];
+  let selectedWorldZone = 'village';
+  let discoveredWorldZones = [];
+  try { discoveredWorldZones = JSON.parse(localStorage.getItem('gazyava_world_discovered') || '[]').filter(id => WORLD_ZONES.some(zone => zone.id === id)); } catch (_) {}
+  function updateWorldMap() {
+    const totalScore = Math.max(0, Number(score || 0) + pendingTaps * TAP_POWER);
+    WORLD_ZONES.forEach(zone => {
+      const button = document.querySelector('[data-zone="'+zone.id+'"]');
+      if (!button) return;
+      const unlocked = totalScore >= zone.unlock;
+      const discovered = unlocked && discoveredWorldZones.includes(zone.id);
+      button.classList.toggle('locked',!unlocked);
+      button.classList.toggle('unlocked',unlocked);
+      button.classList.toggle('discovered',discovered);
+      button.setAttribute('aria-label',zone.name+(unlocked?', открыта':', закрыта'));
+      const small = button.querySelector('small');
+      if (small) small.textContent = discovered ? '✨ ИССЛЕДОВАНО' : unlocked ? 'ОТКРЫТО' : zone.unlock.toLocaleString('ru-RU')+' очков';
+    });
+    const next = WORLD_ZONES.find(zone => totalScore < zone.unlock);
+    const progress = next ? Math.min(100,totalScore/next.unlock*100) : 100;
+    const level = WORLD_ZONES.filter(zone => totalScore >= zone.unlock).length;
+    const levelEl=document.getElementById('worldLevel'),progressText=document.getElementById('worldProgressText'),progressFill=document.getElementById('worldProgressFill'),discoveredEl=document.getElementById('worldDiscovered');
+    if(levelEl) levelEl.textContent='Уровень '+level;
+    if(progressText) progressText.textContent=next ? totalScore.toLocaleString('ru-RU')+' / '+next.unlock.toLocaleString('ru-RU') : 'Все земли открыты!';
+    if(progressFill) progressFill.style.width=progress+'%';
+    if(discoveredEl) discoveredEl.textContent=discoveredWorldZones.filter(id=>totalScore>=WORLD_ZONES.find(z=>z.id===id)?.unlock).length+' / 6';
+    const zone=WORLD_ZONES.find(item=>item.id===selectedWorldZone)||WORLD_ZONES[0];
+    const unlocked=totalScore>=zone.unlock;
+    const detail=document.getElementById('worldDetail');
+    if(detail) {
+      const discovered=unlocked&&discoveredWorldZones.includes(zone.id);
+      detail.innerHTML='';
+      const icon=document.createElement('div');icon.className='world-detail-icon';icon.textContent=unlocked?zone.emoji:'🔒';
+      const copy=document.createElement('div');copy.className='world-detail-copy';
+      const title=document.createElement('strong');title.textContent=zone.name+(discovered?' · исследовано':'');
+      const desc=document.createElement('p');desc.textContent=unlocked?zone.description+' '+zone.mission:'Регион закрыт. Нужно ещё '+Math.max(0,zone.unlock-totalScore).toLocaleString('ru-RU')+' очков. '+zone.mission;
+      copy.append(title,desc);detail.append(icon,copy);
+    }
+  }
+  document.getElementById('worldMap')?.addEventListener('click',event=>{
+    const button=event.target.closest('[data-zone]');
+    if(!button)return;
+    const zone=WORLD_ZONES.find(item=>item.id===button.dataset.zone);
+    if(!zone)return;
+    selectedWorldZone=zone.id;
+    const totalScore=Math.max(0,Number(score||0)+pendingTaps*TAP_POWER);
+    if(totalScore>=zone.unlock&&!discoveredWorldZones.includes(zone.id)){
+      discoveredWorldZones.push(zone.id);
+      try{localStorage.setItem('gazyava_world_discovered',JSON.stringify(discoveredWorldZones));}catch(_){}
+      if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
+    } else if(totalScore<zone.unlock&&tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+    updateWorldMap();
+  });
+
   function render() {
     const e = Math.max(0, Math.floor(currentEnergy()) - pendingTaps);
 
     scoreEl.textContent = (score + pendingTaps * TAP_POWER).toLocaleString('ru-RU');
+    updateWorldMap();
     updateMascotCollection();
     energyEl.textContent = e + ' / ' + MAX;
     energyLabel.textContent = e + ' / ' + MAX;
