@@ -827,6 +827,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         const target = Number(mission.target);
         const done = taps >= target;
         const received = Boolean(claimed[mission.id]);
+        const locked = (mission.id === 'grinder' && !claimed.warmup) || (mission.id === 'legend' && !claimed.grinder);
         const card = document.createElement('div'); card.className = 'mission-card';
         const head = document.createElement('div'); head.className = 'mission-head';
         const title = document.createElement('span'); title.textContent = mission.title;
@@ -841,8 +842,8 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         const foot=document.createElement('div'); foot.className='mission-foot';
         const progress=document.createElement('span'); progress.textContent=Math.min(taps,target).toLocaleString('ru-RU')+' / '+target+' тапов';
         const button=document.createElement('button'); button.type='button'; button.className='mission-claim';
-        button.textContent=received?'✓ Получено':done?'Забрать':'В процессе';
-        button.disabled=!done||received;
+        button.textContent=received?'✓ Получено':locked?'🔒 Сначала предыдущая миссия':done?'Забрать':'В процессе';
+        button.disabled=!done||received||locked;
         button.addEventListener('click',()=>claimDailyMission(mission.id,button));
         foot.append(progress,button); card.append(bar,foot); list.append(card);
       });
@@ -860,6 +861,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       if(!claim.ok) {
         if(claim.reason==='not_completed') throw new Error('Миссия ещё не выполнена');
         if(claim.reason==='already_claimed') throw new Error('Эта награда уже получена');
+        if(claim.reason==='locked') throw new Error('Сначала забери награду предыдущего этапа');
         throw new Error('Не удалось получить награду');
       }
       await loadPlayer();
