@@ -255,6 +255,26 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 @media(max-width:370px){.game-tab{font-size:9px;padding:9px 1px}.game-tabs{gap:2px;padding:4px}}
 @media(prefers-reduced-motion:reduce){.tab-panel{animation:none}}
 
+
+/* Persistent bottom navigation for mobile and Telegram Mini App */
+main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+.game-tabs{
+  position:fixed;top:auto;bottom:calc(10px + env(safe-area-inset-bottom));
+  left:50%;transform:translateX(-50%);width:min(484px,calc(100% - 20px));
+  margin:0;z-index:50;
+  background:rgba(23,18,38,.94);
+  border:1px solid #ffffff2b;
+  box-shadow:0 10px 34px #0009,0 0 22px #b5ff6210;
+  padding:6px;
+}
+.game-tab{min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.game-tab.active{box-shadow:inset 0 0 16px #b5ff6210,0 0 14px #b5ff6210}
+@media(min-width:700px){
+  .game-tabs{bottom:18px}
+  main{padding-bottom:130px}
+}
+@media(prefers-reduced-motion:reduce){.game-tab,.game-tabs{scroll-behavior:auto;transition:none}}
+
 </style>
 </head>
 <body>
