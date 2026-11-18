@@ -306,6 +306,8 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 .mascot.skin-mint-guardian svg{filter:hue-rotate(45deg) saturate(1.5) brightness(1.08)}
 .mascot.skin-star-wanderer svg{filter:hue-rotate(245deg) saturate(1.7) brightness(1.12)}
 .mascot.skin-cloud-royal svg{filter:sepia(.65) saturate(2) hue-rotate(325deg) brightness(1.08)}
+.mascot.skin-aurora-sprite svg{filter:hue-rotate(175deg) saturate(1.8) brightness(1.22)}
+.mascot.skin-aurora-emperor svg{filter:hue-rotate(220deg) saturate(2) brightness(1.3) drop-shadow(0 0 7px #a78bfa)}
 @media(max-width:360px){.mascot-skins{grid-template-columns:1fr}.skin-card{padding:8px}}
 .game-tabs{position:sticky;top:6px;z-index:15;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:8px 0 16px;padding:6px;border:1px solid #ffffff20;border-radius:16px;background:#171226ed;backdrop-filter:blur(16px);box-shadow:0 8px 24px #05030d55}
 .game-tab{min-width:0;padding:10px 3px;border:1px solid transparent;border-radius:11px;background:transparent;color:#b9b3cc;font:800 10px/1.2 system-ui;cursor:pointer;white-space:nowrap}
@@ -568,14 +570,18 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   const EXCLUSIVE_SKINS = [
     {id:'mint_guardian',name:'Мятный страж',emoji:'🛡️',item:'mint_feather',itemName:'Мятное перо',className:'skin-mint-guardian'},
     {id:'star_wanderer',name:'Звёздный странник',emoji:'🌠',item:'star_core',itemName:'Звёздное ядро',className:'skin-star-wanderer'},
-    {id:'cloud_royal',name:'Король облаков',emoji:'👑',item:'golden_cloud',itemName:'Золотое облачко',className:'skin-cloud-royal'}
+    {id:'cloud_royal',name:'Король облаков',emoji:'👑',item:'golden_cloud',itemName:'Золотое облачко',className:'skin-cloud-royal'},
+    {id:'aurora_sprite',name:'Фея авроры',emoji:'🧚',item:'aurora_shard',itemName:'Осколки авроры',cost:2,className:'skin-aurora-sprite'},
+    {id:'aurora_emperor',name:'Император сияния',emoji:'🌌',item:'aurora_shard',itemName:'Осколки авроры',cost:3,className:'skin-aurora-emperor'}
   ];
+  let festivalShardBalance = 0;
+  let cachedCollectibles = [];
   function renderSkinCrafting(collection) {
     const list=document.getElementById('skinCraftList'); if(!list) return;
     const counts=new Map((Array.isArray(collection)?collection:[]).map(x=>[x.id,Number(x.quantity||0)]));
     const owned=new Set(exclusiveMascotSkins.map(x=>x.id)); list.replaceChildren();
     EXCLUSIVE_SKINS.forEach(skin=>{
-      const count=counts.get(skin.item)||0, has=owned.has(skin.id);
+      const count=skin.item==='aurora_shard'?festivalShardBalance:(counts.get(skin.item)||0), cost=Number(skin.cost||3), has=owned.has(skin.id);
       const card=document.createElement('div'); card.className='skin-card'+(has?' active':'');
       const avatar=document.createElement('div'); avatar.className='skin-avatar'; avatar.textContent=skin.emoji;
       const info=document.createElement('div'); info.className='skin-info';
@@ -583,7 +589,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const detail=document.createElement('div'); detail.className='skin-unlock'; detail.textContent=has?'✓ Уже создан · навсегда':skin.itemName+': '+count+'/3';
       info.append(title,detail);
       const button=document.createElement('button'); button.type='button'; button.textContent=has?'Создано':'Создать';
-      button.disabled=has||count<3; button.addEventListener('click',()=>craftExclusiveSkin(skin,button));
+      button.disabled=has||count<cost; button.addEventListener('click',()=>craftExclusiveSkin(skin,button));
       card.append(avatar,info,button); list.append(card);
     });
   }
@@ -591,7 +597,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     button.disabled=true; button.textContent='Создаём...';
     try {
       const data=await request('craft_skin',{skin_id:skin.id}); const craft=data.craft||{};
-      if(!craft.ok) { const reasons={not_enough_items:'Нужно 3 предмета для обмена',already_owned:'Этот облик уже есть',player_not_found:'Профиль не найден'}; throw new Error(reasons[craft.reason]||'Не удалось создать облик'); }
+      if(!craft.ok) { const reasons={not_enough_items:skin.item==='aurora_shard'?'Недостаточно осколков авроры':'Нужно 3 предмета для обмена',already_owned:'Этот облик уже есть',player_not_found:'Профиль не найден'}; throw new Error(reasons[craft.reason]||'Не удалось создать облик'); }
       await loadDailyMissions();
       if(toast){toast.textContent='✨ Получен эксклюзивный скин: '+(craft.name||skin.name);toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000);}
       if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
@@ -607,7 +613,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     const allSkins=[...MASCOT_SKINS,...exclusiveUnlocked];
     if(initialized && exclusiveSkinsLoaded && !unlocked.some(s=>s.id===equippedMascotSkin) && !exclusiveUnlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
     const current=allSkins.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
-    mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden','skin-mint-guardian','skin-star-wanderer','skin-cloud-royal');
+    mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden','skin-mint-guardian','skin-star-wanderer','skin-cloud-royal','skin-aurora-sprite','skin-aurora-emperor');
     if(current.className) mascot.classList.add(current.className);
     const next=MASCOT_SKINS.find(s=>score<s.unlock);
     const previous=[...unlocked].reverse()[0];
@@ -919,7 +925,9 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       if(count) count.textContent=taps.toLocaleString('ru-RU');
       if(fill) fill.style.width=Math.min(100,taps/1000*100)+'%';
       if(status) status.textContent=active?'Событие активно до 25 ноября, 00:00 UTC':'Событие завершено';
-      if(item) item.textContent='✨ Осколки авроры: '+Number(event.aurora_shards||0);
+      festivalShardBalance=Number(event.aurora_shards||0);
+      if(item) item.textContent='✨ Осколки авроры: '+festivalShardBalance;
+      if(exclusiveSkinsLoaded) renderSkinCrafting(cachedCollectibles);
       const claims=event.claimed||{};
       const milestones=Array.isArray(event.milestones)?event.milestones:[];
       host.replaceChildren();
@@ -1046,11 +1054,12 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const state = data.missions || {};
       const taps = Number(state.taps || 0);
       const claimed = state.claimed || {};
-      renderCollectibles(state.collection || []);
+      cachedCollectibles = state.collection || [];
+      renderCollectibles(cachedCollectibles);
       const skinData = await request('exclusive_skins');
       exclusiveMascotSkins = Array.isArray(skinData.exclusive_skins) ? skinData.exclusive_skins : [];
       exclusiveSkinsLoaded = true;
-      renderSkinCrafting(state.collection || []);
+      renderSkinCrafting(cachedCollectibles);
       mascotCollectionSignature = ''; updateMascotCollection();
       const missions = Array.isArray(state.missions) ? state.missions : [];
       missionReadyNoticeCount = missions.filter(m => taps >= Number(m.target) && !claimed[m.id]).length;
