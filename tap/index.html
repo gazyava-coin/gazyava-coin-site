@@ -1016,7 +1016,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       button.textContent='✓ Награда за место #'+claim.rank+' получена';
       if(toast){toast.textContent='🏆 #'+claim.rank+' · +'+claim.score_reward+' очков · '+claim.shard_reward+' осколков';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200);}
       if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-      await Promise.all([loadSeasonLeaderboard(),loadPlayer(),loadSeasonEvent()]);
+      await Promise.all([loadSeasonLeaderboard(),loadPlayer(),loadSeasonEvent(),loadDailyMissions()]);
     } catch(error) {
       button.disabled=false;button.textContent='Повторить получение';
       if(toast){toast.textContent=error.message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}
@@ -1032,7 +1032,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         const messages={not_ready:'Пока недостаточно тапов',already_claimed:'Награда уже получена',event_inactive:'Событие завершено'};
         throw new Error(messages[claim.reason]||'Не удалось забрать награду');
       }
-      await Promise.all([loadSeasonEvent(),loadPlayer()]);
+      await Promise.all([loadSeasonEvent(),loadPlayer(),loadDailyMissions()]);
       if(toast){toast.textContent='🎉 Награда фестиваля: +'+claim.reward+' очков'+(claim.item?' · осколок авроры':'');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2100);}
       if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
     } catch(error) {
