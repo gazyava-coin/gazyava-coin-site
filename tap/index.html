@@ -619,10 +619,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const avatar=document.createElement('div'); avatar.className='skin-avatar'; avatar.textContent=skin.emoji;
       const info=document.createElement('div'); info.className='skin-info';
       const title=document.createElement('div'); title.className='skin-name'; title.textContent=skin.name;
-      const detail=document.createElement('div'); detail.className='skin-unlock'; detail.textContent=has?'✓ Уже создан · навсегда':skin.itemName+': '+count+'/'+cost;
+      const detail=document.createElement('div'); detail.className='skin-unlock'; detail.textContent=has?'✓ Уже открыт · навсегда':(skin.item==='event_unlock'?'Награда за 2 000 тапов зимнего фестиваля':skin.itemName+': '+count+'/'+cost);
       info.append(title,detail);
-      const button=document.createElement('button'); button.type='button'; button.textContent=has?'Создано':'Создать';
-      button.disabled=has||count<cost; button.addEventListener('click',()=>craftExclusiveSkin(skin,button));
+      const button=document.createElement('button'); button.type='button'; button.textContent=has?'Открыт':(skin.item==='event_unlock'?'Сезонная награда':'Создать');
+      button.disabled=true;
+      if(skin.item!=='event_unlock'&&!has&&count>=cost){button.disabled=false;button.addEventListener('click',()=>craftExclusiveSkin(skin,button));}
       card.append(avatar,info,button); list.append(card);
     });
   }
