@@ -364,6 +364,38 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   box-shadow:0 2px 8px #ff5d7655;
 }
 .tab-notice[hidden]{display:none}
+.clan-card{margin-top:18px;padding:17px;border:1px solid rgba(126,190,255,.3);border-radius:18px;background:linear-gradient(145deg,rgba(84,122,200,.15),rgba(255,255,255,.035))}
+.clan-card h2{margin:0 0 6px;color:#a9d5ff;font-size:18px;text-align:center}
+.clan-sub{margin:0 0 14px;color:var(--muted);font-size:12px;text-align:center}
+.clan-action-box{padding:12px;margin-top:10px;border-radius:13px;background:rgba(255,255,255,.045)}
+.clan-action-box h3,.clan-section-title{margin:0 0 9px;font-size:14px;color:#d6eaff}
+.clan-input-row,.clan-invite-row{display:flex;gap:8px;align-items:center}
+.clan-input-row input{min-width:0;flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;background:#171226;color:var(--text)}
+.clan-input-row button,.clan-invite-row button{border:0;border-radius:10px;padding:10px 12px;background:#9bd4ff;color:#122337;font-weight:850;white-space:nowrap}
+.clan-headline{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:13px;background:rgba(120,190,255,.1)}
+.clan-headline small{font-size:10px;color:var(--muted);letter-spacing:.08em}
+.clan-headline h3{margin:2px 0 0;font-size:20px;overflow-wrap:anywhere}
+.clan-count{font-size:12px;font-weight:800;color:#a9d5ff}
+.clan-invite-row{justify-content:space-between;margin:10px 0;padding:10px;background:rgba(0,0,0,.17);border-radius:11px;font-size:12px}
+.clan-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}
+.clan-stats>div{padding:10px 6px;border-radius:11px;background:rgba(255,255,255,.05);text-align:center}
+.clan-stats small{display:block;font-size:10px;color:var(--muted)}
+.clan-stats strong{display:block;margin-top:3px;color:#b4e0ff;font-size:16px}
+.clan-milestone{padding:11px;margin:8px 0;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.035)}
+.clan-milestone-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800}
+.clan-milestone-meta{margin:5px 0 8px;color:var(--muted);font-size:11px}
+.clan-progress{height:7px;background:#342a49;border-radius:99px;overflow:hidden}
+.clan-progress>div{height:100%;background:linear-gradient(90deg,#68bfff,#d8f2ff);border-radius:99px}
+.clan-milestone button{margin-top:8px;width:100%;border:0;border-radius:9px;padding:8px;background:#9bd4ff;color:#122337;font-weight:850}
+.clan-milestone button:disabled{opacity:.45}
+.clan-member-row,.clan-rank-row{display:flex;align-items:center;gap:9px;padding:9px 3px;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px}
+.clan-member-row strong,.clan-rank-row strong{color:#b9e1ff}
+.clan-member-row span:nth-child(2),.clan-rank-row span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}
+.clan-member-row small,.clan-rank-row small{color:var(--muted)}
+.clan-leave{width:100%;margin-top:12px;padding:10px;border:1px solid #a45a6a;border-radius:10px;background:transparent;color:#ff9baa;font-weight:800}
+.clan-ranking{margin-top:18px}
+.clan-status{min-height:18px;margin-top:9px;text-align:center;color:#b9e1ff;font-size:12px}
+@media(max-width:360px){.clan-input-row{flex-direction:column;align-items:stretch}.clan-input-row button{padding:10px}}
 </style>
 </head>
 <body>
@@ -515,6 +547,35 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   </div>
   <div id="referralMilestones" class="referral-milestones" aria-live="polite"></div>
   <div id="referralStatus" aria-live="polite"></div>
+</section>
+<section class="clan-card" aria-labelledby="clanTitle">
+  <h2 id="clanTitle">🛡️ КЛАНЫ GAZYAVA</h2>
+  <p class="clan-sub">Соберитесь командой до 25 игроков, копите общий прогресс и забирайте награды всем составом</p>
+  <div id="clanCreateJoin">
+    <div class="clan-action-box">
+      <h3>Создать свой клан</h3>
+      <div class="clan-input-row"><input id="clanNameInput" maxlength="24" placeholder="Название клана (3–24 символа)"><button id="clanCreateBtn" type="button">Создать</button></div>
+    </div>
+    <div class="clan-action-box">
+      <h3>Вступить по приглашению</h3>
+      <div class="clan-input-row"><input id="clanInviteInput" maxlength="8" placeholder="Код приглашения"><button id="clanJoinBtn" type="button">Вступить</button></div>
+    </div>
+  </div>
+  <div id="clanDashboard" hidden>
+    <div class="clan-headline"><div><small>ТВОЙ КЛАН</small><h3 id="clanName">—</h3></div><span id="clanMemberCount" class="clan-count">0 / 25</span></div>
+    <div class="clan-invite-row"><span>Код приглашения: <strong id="clanInviteCode">—</strong></span><button id="clanCopyInvite" type="button">Копировать</button></div>
+    <div class="clan-stats"><div><small>Тапы за неделю</small><strong id="clanWeeklyTaps">0</strong></div><div><small>Всего тапов</small><strong id="clanTotalTaps">0</strong></div><div><small>Твои тап-очки</small><strong id="clanMyTaps">0</strong></div></div>
+    <h3 class="clan-section-title">🎯 Командные задания недели</h3>
+    <div id="clanMilestones"></div>
+    <h3 class="clan-section-title">👥 Участники</h3>
+    <div id="clanMembers"></div>
+    <button id="clanLeaveBtn" class="clan-leave" type="button">Покинуть клан</button>
+  </div>
+  <div class="clan-ranking">
+    <h3 class="clan-section-title">🏆 Рейтинг кланов недели</h3>
+    <div id="clanLeaderboard">Загружаем кланы...</div>
+  </div>
+  <div id="clanStatus" class="clan-status" aria-live="polite"></div>
 </section>
 </div>
 <div class="tab-panel" data-tab-panel="upgrade">
@@ -719,6 +780,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       button.setAttribute('aria-selected', active ? 'true' : 'false');
     });
     gamePanels.forEach(panel => panel.classList.toggle('active', panel.dataset.tabPanel === name));
+    if (name === 'friends') loadClanInfo();
     try { localStorage.setItem('gazyava_active_tab', name); } catch (_) {}
     window.scrollTo({top:0,behavior:'smooth'});
   }
@@ -1489,6 +1551,72 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       console.error('Achievements loading failed:', error);
     }
   }
+
+  let clanInfoCache = null;
+  function clanMessage(message,isError=false){
+    const el=document.getElementById('clanStatus');if(el){el.textContent=message;el.style.color=isError?'#ff9baa':'#b9e1ff';}
+  }
+  async function loadClanLeaderboard(){
+    const host=document.getElementById('clanLeaderboard');if(!host)return;
+    try{
+      const data=await request('clan_leaderboard'),rows=data.clan_leaderboard?.leaderboard||[];
+      host.replaceChildren();
+      if(!rows.length){const empty=document.createElement('div');empty.className='clan-status';empty.textContent='Пока нет кланов — создай первый!';host.append(empty);return;}
+      rows.forEach(row=>{const line=document.createElement('div');line.className='clan-rank-row';const rank=document.createElement('strong');rank.textContent='#'+row.rank;const name=document.createElement('span');name.textContent=row.name;const stats=document.createElement('small');stats.textContent=Number(row.weekly_taps||0).toLocaleString('ru-RU')+' тапов · '+row.member_count+'/25';line.append(rank,name,stats);host.append(line);});
+    }catch(error){host.textContent='Не удалось загрузить рейтинг кланов';}
+  }
+  async function loadClanInfo(){
+    const createJoin=document.getElementById('clanCreateJoin'),dashboard=document.getElementById('clanDashboard');if(!createJoin||!dashboard)return;
+    try{
+      const data=await request('clan_info'),info=data.clan_info||{};clanInfoCache=info;
+      const clan=info.clan;
+      createJoin.hidden=Boolean(clan);dashboard.hidden=!clan;
+      if(clan){
+        document.getElementById('clanName').textContent=clan.name;
+        document.getElementById('clanMemberCount').textContent=Number(clan.member_count||0)+' / 25';
+        document.getElementById('clanInviteCode').textContent=clan.invite_code;
+        document.getElementById('clanWeeklyTaps').textContent=Number(clan.weekly_taps||0).toLocaleString('ru-RU');
+        document.getElementById('clanTotalTaps').textContent=Number(clan.total_taps||0).toLocaleString('ru-RU');
+        document.getElementById('clanMyTaps').textContent=Number(clan.my_weekly_taps||0).toLocaleString('ru-RU');
+        const members=document.getElementById('clanMembers');members.replaceChildren();
+        (info.members||[]).forEach(member=>{const line=document.createElement('div');line.className='clan-member-row';const crown=document.createElement('strong');crown.textContent=member.role==='leader'?'👑':'☁️';const name=document.createElement('span');name.textContent=member.name+(Number(member.telegram_id)===Number(tg?.initDataUnsafe?.user?.id)?' · ты':'');const taps=document.createElement('small');taps.textContent=Number(member.weekly_taps||0).toLocaleString('ru-RU')+' тапов';line.append(crown,name,taps);members.append(line);});
+        const milestoneHost=document.getElementById('clanMilestones');milestoneHost.replaceChildren();
+        (info.milestones||[]).forEach(m=>{const progress=Number(clan.weekly_taps||0),target=Number(m.target),claimed=Boolean(info.claims?.[m.id]),ready=progress>=target;const card=document.createElement('div');card.className='clan-milestone';const head=document.createElement('div');head.className='clan-milestone-head';const title=document.createElement('span');title.textContent=m.title;const reward=document.createElement('span');reward.textContent='+'+m.reward+' каждому';head.append(title,reward);const meta=document.createElement('div');meta.className='clan-milestone-meta';meta.textContent=progress.toLocaleString('ru-RU')+' / '+target.toLocaleString('ru-RU')+' командных тапов';const bar=document.createElement('div');bar.className='clan-progress';const fill=document.createElement('div');fill.style.width=Math.min(100,progress/target*100)+'%';bar.append(fill);const button=document.createElement('button');button.type='button';button.textContent=claimed?'✓ Забрано всей командой':ready?'Забрать всем участникам':'Выполняется';button.disabled=!ready||claimed;button.addEventListener('click',()=>claimClanReward(m.id,button));card.append(head,meta,bar,button);milestoneHost.append(card);});
+      }
+      await loadClanLeaderboard();
+    }catch(error){clanMessage(error.message||'Не удалось загрузить кланы',true);}
+  }
+  async function clanAction(action,extra={}){
+    const data=await request(action,extra),result=data.clan_action||{};
+    if(!result.ok){const messages={invalid_name:'Название должно содержать от 3 до 24 символов',name_taken:'Такое название уже занято',already_in_clan:'Ты уже состоишь в клане',invalid_code:'Код приглашения не найден',clan_full:'В клане уже 25 участников',not_in_clan:'Ты пока не в клане'};throw new Error(messages[result.reason]||'Не удалось выполнить действие');}
+    return result;
+  }
+  async function claimClanReward(id,button){
+    button.disabled=true;button.textContent='Начисляем...';
+    try{const data=await request('claim_clan_reward',{milestone_id:id}),claim=data.clan_claim||{};if(!claim.ok)throw new Error(claim.reason==='not_ready'?'Команда ещё не набрала нужное число тапов':claim.reason==='already_claimed'?'Награду уже забрали':'Награда недоступна');await Promise.all([loadClanInfo(),loadPlayer()]);clanMessage('🎉 Начислено +'+claim.reward_each+' очков каждому из '+claim.members_rewarded+' участников!');}
+    catch(error){button.disabled=false;button.textContent='Повторить';clanMessage(error.message,true);}
+  }
+  document.getElementById('clanCreateBtn')?.addEventListener('click',async()=>{
+    const button=document.getElementById('clanCreateBtn'),input=document.getElementById('clanNameInput');button.disabled=true;
+    try{await clanAction('create_clan',{name:input.value.trim()});input.value='';clanMessage('Клан создан! Приглашай друзей.');await loadClanInfo();}
+    catch(error){clanMessage(error.message,true);}finally{button.disabled=false;}
+  });
+  document.getElementById('clanJoinBtn')?.addEventListener('click',async()=>{
+    const button=document.getElementById('clanJoinBtn'),input=document.getElementById('clanInviteInput');button.disabled=true;
+    try{await clanAction('join_clan',{invite_code:input.value.trim()});input.value='';clanMessage('Добро пожаловать в клан!');await loadClanInfo();}
+    catch(error){clanMessage(error.message,true);}finally{button.disabled=false;}
+  });
+  document.getElementById('clanLeaveBtn')?.addEventListener('click',async()=>{
+    if(!confirm('Покинуть клан? Если ты лидер, руководство перейдёт следующему участнику.'))return;
+    const button=document.getElementById('clanLeaveBtn');button.disabled=true;
+    try{await clanAction('leave_clan');clanMessage('Ты покинул клан.');await loadClanInfo();}
+    catch(error){clanMessage(error.message,true);}finally{button.disabled=false;}
+  });
+  document.getElementById('clanCopyInvite')?.addEventListener('click',async()=>{
+    const code=document.getElementById('clanInviteCode')?.textContent;if(!code)return;
+    try{await navigator.clipboard.writeText(code);clanMessage('Код приглашения скопирован!');}
+    catch(_){clanMessage('Код приглашения: '+code);}
+  });
 
   async function loadReferralInfo() {
     const linkInput = document.getElementById('referralLink');
