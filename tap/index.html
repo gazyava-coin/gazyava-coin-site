@@ -563,7 +563,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div><strong id="profileTrophies">0</strong><small>Трофеи</small></div>
     <div><strong id="profileSkins">0</strong><small>Скины</small></div>
   </div>
-  <div class="profile-showcase-foot"><span>🏅 Коллекция достижений</span><button type="button" id="profileRefresh">Обновить профиль</button></div>
+  <div class="profile-showcase-foot"><span>🏅 Коллекция достижений</span><div style="display:flex;gap:6px"><button type="button" id="profileShare">Поделиться</button><button type="button" id="profileRefresh">Обновить</button></div></div>
   <div class="profile-featured" id="profileFeatured">Твои редкие трофеи появятся здесь</div>
 </section>
 <section class="game">
@@ -1369,6 +1369,17 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   }
 
   document.getElementById('profileRefresh')?.addEventListener('click',()=>{loadPlayerProgression();loadProfileShowcase();});
+  document.getElementById('profileShare')?.addEventListener('click',()=>{
+    const name=document.getElementById('profileName')?.textContent||'Путешественник';
+    const title=document.getElementById('profileTitle')?.textContent||'Новичок Gazyava';
+    const xp=document.getElementById('profileXp')?.textContent||'0';
+    const shareText=name+' — '+title+' · '+xp+' XP в Gazyava Tap! Присоединяйся к игре:';
+    const shareUrl='https://t.me/GazyavaTapBot/gazyavatap';
+    const tg=window.Telegram?.WebApp;
+    if(tg?.openTelegramLink)tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(shareUrl)+'&text='+encodeURIComponent(shareText));
+    else if(navigator.share)navigator.share({title:'Gazyava Tap',text:shareText,url:shareUrl}).catch(()=>{});
+    else if(navigator.clipboard)navigator.clipboard.writeText(shareText+' '+shareUrl).then(()=>{hint.textContent='Ссылка на профиль скопирована';}).catch(()=>{});
+  });
 
   async function loadPlayer() {
     try {
