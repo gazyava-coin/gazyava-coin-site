@@ -483,6 +483,20 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .world-journal-empty{padding:10px;color:#b9b3cc;font-size:10px;text-align:center}
 .world-local-note{margin-top:9px;color:#8f88a2;font-size:9px;line-height:1.4}
 
+.world-poi{margin-top:14px;padding:14px;border:1px solid #ffffff18;border-radius:15px;background:#100d1b88}
+.world-poi-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.world-poi h3{margin:0;color:#b5ff62;font-size:13px}
+.world-poi-count{font-size:10px;color:#ffd36b;font-weight:900}
+.world-poi-list{display:grid;gap:8px;margin-top:10px}
+.world-poi-item{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #ffffff12;border-radius:11px;background:#ffffff07}
+.world-poi-item>span{font-size:21px;width:28px;text-align:center}
+.world-poi-copy{flex:1;min-width:0}.world-poi-copy strong{display:block;font-size:10px}.world-poi-copy small{display:block;margin-top:3px;color:#aaa2bd;font-size:9px;line-height:1.35}
+.world-poi-item button{padding:7px 9px;border:1px solid #b5ff6255;border-radius:9px;background:#a8ff4515;color:#caff9c;font-size:9px;font-weight:900}
+.world-poi-item.found{border-color:#ffd36b44;background:#ffd36b0b}
+.world-poi-item.found button{border-color:#ffd36b55;background:#ffd36b18;color:#ffd36b}
+.world-poi-item.hidden-poi{opacity:.7}
+
+
 @media(max-width:370px){.world-map{min-height:470px}.world-node{width:94px;min-height:84px}.node-village{left:2%}.node-forest{right:2%}.node-mountains{left:2%}.node-frost{right:2%}.node-cosmos{left:2%}.node-kingdom{right:2%}.world-map-heading h2{font-size:17px}}
 
 </style>
@@ -644,6 +658,10 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="world-journal-head"><h3>📖 ЖУРНАЛ ПУТЕШЕСТВИЙ</h3><span class="world-journal-count" id="worldJournalCount">0 / 6</span></div>
     <div class="world-journal-list" id="worldJournalList"><div class="world-journal-empty">Выбери открытую землю, чтобы начать исследование.</div></div>
     <div class="world-local-note">Прогресс карты и журнал хранятся на этом устройстве. Это исследовательская функция: она не начисляет игровые очки и не меняет серверный баланс.</div>
+  </div>
+  <div class="world-poi">
+    <div class="world-poi-head"><h3>🧭 ТАЙНЫ И ДОСТОПРИМЕЧАТЕЛЬНОСТИ</h3><span class="world-poi-count" id="worldPoiCount">0 / 3</span></div>
+    <div class="world-poi-list" id="worldPoiList"><div class="world-journal-empty">Открой регион, чтобы искать тайные места.</div></div>
   </div>
 </section>
 </div>
@@ -944,6 +962,17 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   let selectedWorldZone = 'village';
   let discoveredWorldZones = [];
   let worldVisitOrder = [];
+  const WORLD_POIS = {
+    village:[['cottage','🏡','Домик Первого Облака','Тёплое убежище хранителя карты.'],['well','💧','Колодец желаний','Говорят, вода здесь отражает самые смелые мечты.'],['secret','🗝️','Тайная чердачная дверь','Секрет открывается после двух находок в регионе.']],
+    forest:[['grove','🌳','Мятная роща','Светящиеся листья указывают путь.'],['feather','🪶','Поляна перьев','Здесь ветер оставляет редкие перья.'],['root','🍄','Корни старого дуба','Секрет открывается после двух находок в регионе.']],
+    mountains:[['forge','⚒️','Кузница искр','Древняя печь не гаснет даже ночью.'],['lava','🌋','Лавовый мост','Тропа над огненной рекой.'],['dragon','🐉','Пещера дракона','Секрет открывается после двух находок в регионе.']],
+    frost:[['glacier','🧊','Хрустальный ледник','Лёд хранит сияние северного неба.'],['aurora','🌠','Долина сияния','Лучшее место для наблюдения за полярным светом.'],['icekey','🔑','Ледяной тайник','Секрет открывается после двух находок в регионе.']],
+    cosmos:[['portal','🌀','Звёздный портал','Врата между облачными мирами.'],['meteor','☄️','Метеоритный сад','Осколки звёзд мерцают в траве.'],['moon','🌙','Лунная обсерватория','Секрет открывается после двух находок в регионе.']],
+    kingdom:[['throne','👑','Трон Золотого облака','Сердце королевства и символ пути.'],['vault','💎','Королевская сокровищница','Здесь собраны легенды всех земель.'],['crown','✨','Зал вечной короны','Секрет открывается после двух находок в регионе.']]
+  };
+  let discoveredWorldPois = [];
+  try { discoveredWorldPois = JSON.parse(localStorage.getItem('gazyava_world_pois') || '[]').filter(key => /^[a-z]+:[a-z]+$/.test(key)); } catch (_) {}
+
   try {
     discoveredWorldZones = JSON.parse(localStorage.getItem('gazyava_world_discovered') || '[]').filter(id => WORLD_ZONES.some(zone => zone.id === id));
     worldVisitOrder = JSON.parse(localStorage.getItem('gazyava_world_visit_order') || '[]').filter(id => WORLD_ZONES.some(zone => zone.id === id));
@@ -1008,6 +1037,25 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         row.append(emoji,name,status);journal.appendChild(row);
       });
     }
+    const poiList=document.getElementById('worldPoiList'),poiCount=document.getElementById('worldPoiCount');
+    const poiDefs=WORLD_POIS[zone.id]||[];
+    const foundCount=poiDefs.filter(p=>discoveredWorldPois.includes(zone.id+':'+p[0])).length;
+    if(poiCount)poiCount.textContent=foundCount+' / '+poiDefs.length;
+    if(poiList){
+      poiList.replaceChildren();
+      if(!unlocked){const empty=document.createElement('div');empty.className='world-journal-empty';empty.textContent='Эти места пока скрыты. Сначала открой регион.';poiList.appendChild(empty);}
+      else poiDefs.forEach((poi,index)=>{
+        const key=zone.id+':'+poi[0],found=discoveredWorldPois.includes(key),secret=index===2,secretOpen=foundCount>=2||found;
+        const item=document.createElement('div');item.className='world-poi-item'+(found?' found':'')+(secret&&!secretOpen?' hidden-poi':'');
+        const emoji=document.createElement('span');emoji.textContent=secret&&!secretOpen?'❔':poi[1];
+        const copy=document.createElement('div');copy.className='world-poi-copy';
+        const name=document.createElement('strong');name.textContent=secret&&!secretOpen?'Секретное место':poi[2];
+        const desc=document.createElement('small');desc.textContent=secret&&!secretOpen?'Найди два других места в этом регионе, чтобы раскрыть тайну.':poi[3];
+        copy.append(name,desc);
+        const action=document.createElement('button');action.type='button';action.dataset.poi=key;action.textContent=found?'✓ Найдено':secret&&!secretOpen?'Закрыто':'Исследовать';action.disabled=found||(secret&&!secretOpen);
+        item.append(emoji,copy,action);poiList.appendChild(item);
+      });
+    }
   }
   document.getElementById('worldMap')?.addEventListener('click',event=>{
     const button=event.target.closest('[data-zone]');
@@ -1028,6 +1076,23 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         localStorage.setItem('gazyava_world_visit_order',JSON.stringify(worldVisitOrder));
       }catch(_){}
     } else if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+    updateWorldMap();
+  });
+
+  document.getElementById('worldPoiList')?.addEventListener('click',event=>{
+    const button=event.target.closest('button[data-poi]');
+    if(!button||button.disabled)return;
+    const key=button.dataset.poi,parts=key.split(':'),zone=WORLD_ZONES.find(z=>z.id===parts[0]);
+    if(!zone||!WORLD_POIS[zone.id]?.some(p=>p[0]===parts[1]))return;
+    const totalScore=Math.max(0,Number(score||0)+pendingTaps*TAP_POWER);
+    if(totalScore<zone.unlock||selectedWorldZone!==zone.id)return;
+    if(discoveredWorldPois.includes(key))return;
+    const secret=WORLD_POIS[zone.id].findIndex(p=>p[0]===parts[1])===2;
+    const foundInZone=WORLD_POIS[zone.id].filter(p=>discoveredWorldPois.includes(zone.id+':'+p[0])).length;
+    if(secret&&foundInZone<2)return;
+    discoveredWorldPois.push(key);
+    try{localStorage.setItem('gazyava_world_pois',JSON.stringify(discoveredWorldPois));}catch(_){}
+    if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
     updateWorldMap();
   });
 
