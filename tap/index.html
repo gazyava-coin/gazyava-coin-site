@@ -275,6 +275,16 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 }
 @media(prefers-reduced-motion:reduce){.game-tab,.game-tabs{scroll-behavior:auto;transition:none}}
 
+/* Tab notification counters */
+.game-tab{position:relative}
+.tab-notice{
+  position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:99px;background:#ff5d76;color:#fff;
+  border:1.5px solid #171226;font:900 9px/1 system-ui;
+  box-shadow:0 2px 8px #ff5d7655;
+}
+.tab-notice[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -283,8 +293,8 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 <h1>Тапай на удачу!</h1><p class="sub">Собирай игровые очки до запуска проекта</p>
 <nav class="game-tabs" role="tablist" aria-label="Разделы игры">
 <button class="game-tab active" type="button" role="tab" aria-selected="true" data-tab-target="play">☁️ Игра</button>
-<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="tasks">🎯 Задания</button>
-<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="friends">🎁 Друзья</button>
+<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="tasks">🎯 Задания<span class="tab-notice" id="tasksNotice" hidden></span></button>
+<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="friends">🎁 Друзья<span class="tab-notice" id="friendsNotice" hidden></span></button>
 <button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="upgrade">🛒 Развитие</button>
 <button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="ranking">🏆 Топ</button>
 </nav>
@@ -504,6 +514,24 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     });
   }
 
+  let taskNoticeCount = 0;
+  let friendNoticeCount = 0;
+  function updateTabNotices() {
+    const tasksNotice = document.getElementById('tasksNotice');
+    const friendsNotice = document.getElementById('friendsNotice');
+    if (tasksNotice) {
+      tasksNotice.hidden = taskNoticeCount < 1;
+      tasksNotice.textContent = taskNoticeCount > 9 ? '9+' : String(taskNoticeCount);
+      const tab = tasksNotice.closest('[role="tab"]');
+      if (tab) tab.setAttribute('aria-label', taskNoticeCount ? 'Задания, доступно наград: ' + taskNoticeCount : 'Задания');
+    }
+    if (friendsNotice) {
+      friendsNotice.hidden = friendNoticeCount < 1;
+      friendsNotice.textContent = friendNoticeCount > 9 ? '9+' : String(friendNoticeCount);
+      const tab = friendsNotice.closest('[role="tab"]');
+      if (tab) tab.setAttribute('aria-label', friendNoticeCount ? 'Друзья, новые бонусы: ' + friendNoticeCount : 'Друзья');
+    }
+  }
   const gameTabs = Array.from(document.querySelectorAll('[data-tab-target]'));
   const gamePanels = Array.from(document.querySelectorAll('[data-tab-panel]'));
   function activateGameTab(name) {
@@ -622,6 +650,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
     const taps = Math.max(0, Number(progress?.taps || 0));
     list.replaceChildren();
+
+    taskNoticeCount = DAILY_TASKS.filter(task =>
+      taps >= task.target && !Boolean(progress?.[task.claimedKey])
+    ).length;
+    updateTabNotices();
 
     DAILY_TASKS.forEach((task) => {
       const completed = taps >= task.target;
@@ -909,10 +942,14 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       earnedEl.textContent = Number(referral.earned || 0).toLocaleString('ru-RU') + ' очков';
       const activeEl = document.getElementById('referralActive');
       if (activeEl) activeEl.textContent = Number(referral.active_invited_7d || 0).toLocaleString('ru-RU');
+      const milestones = Array.isArray(referral.milestones) ? referral.milestones : [];
+      friendNoticeCount = milestones.filter(milestone =>
+        Number(referral.invited_count || 0) >= Number(milestone.invites || Infinity) && !milestone.claimed
+      ).length;
+      updateTabNotices();
       const milestonesEl = document.getElementById('referralMilestones');
       if (milestonesEl) {
         milestonesEl.replaceChildren();
-        const milestones = Array.isArray(referral.milestones) ? referral.milestones : [];
         milestones.forEach((milestone) => {
           const row = document.createElement('div');
           row.className = 'referral-milestone' + (milestone.claimed ? ' done' : '');
