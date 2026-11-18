@@ -655,6 +655,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     try {
       const data = await request('load');
       applyServerData(data);
+      loadBoosters();
     } catch (error) {
       hint.textContent = error.message;
       console.error('Profile loading failed:', error);
