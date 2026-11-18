@@ -846,10 +846,12 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     tapQueueRunning = true;
     try {
       while (pendingTaps > 0) {
-        const data = await request('tap');
-        pendingTaps = Math.max(0, pendingTaps - 1);
+        const batchSize = Math.min(20, pendingTaps);
+        const data = await request('tap_batch', { count: batchSize });
+        pendingTaps = Math.max(0, pendingTaps - batchSize);
         applyServerData(data);
         render();
+        loadDailyProgress();
       }
     } catch (error) {
       pendingTaps = 0;
@@ -882,7 +884,6 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
     flushTapQueue();
-    loadDailyProgress();
   });
 
   render();
