@@ -459,6 +459,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   let TAP_POWER = 1;
   let score = 0;
   let energy = MAX;
+  let ENERGY_REGEN_RATE = 1;
   let lastSync = Date.now();
   let busy = false;
   let pendingTaps = 0;
@@ -474,7 +475,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
   function currentEnergy() {
     const elapsed = (Date.now() - lastSync) / 1000;
-    return Math.min(MAX, energy + Math.max(0, elapsed));
+    return Math.min(MAX, energy + Math.max(0, elapsed) * ENERGY_REGEN_RATE);
   }
 
   const MASCOT_SKINS = [
@@ -929,10 +930,15 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     try {
       const data = await request('booster_status');
       const status = data.booster_status || {};
+      ENERGY_REGEN_RATE = status.regen_active ? 3 : 1;
+      render();
       list.replaceChildren();
+      const timeLabel = value => value ? new Date(value).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '';
       const items = [
-        { id: 'double_points', name: '✨ Двойные очки', description: 'Каждый тап приносит в 2 раза больше очков в течение 60 секунд.', price: 1200, active: Boolean(status.multiplier_active), activeText: status.multiplier_until ? 'Активен до ' + new Date(status.multiplier_until).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '' },
-        { id: 'energy_refill', name: '🔋 Полная энергия', description: 'Мгновенно восстанавливает энергию до максимума.', price: 350, active: false, activeText: '' }
+        { id: 'double_points', name: '✨ Двойные очки', description: 'Удваивают очки за тап на 60 секунд.', price: 1200, active: Boolean(status.multiplier_active), activeText: status.multiplier_until ? 'Множитель активен до ' + timeLabel(status.multiplier_until) : '' },
+        { id: 'triple_points', name: '🚀 Тройные очки', description: 'Утраивают очки за тап на 45 секунд.', price: 3000, active: Boolean(status.multiplier_active), activeText: status.triple_active ? 'Тройной множитель до ' + timeLabel(status.triple_until) : 'Сначала дождись окончания другого множителя' },
+        { id: 'energy_refill', name: '🔋 Полная энергия', description: 'Мгновенно восстанавливает энергию до максимума.', price: 350, active: false, activeText: '' },
+        { id: 'energy_surge', name: '⚡ Турбо-регенерация', description: 'Восстановление энергии в 3 раза быстрее в течение 5 минут.', price: 900, active: Boolean(status.regen_active), activeText: status.regen_until ? 'Ускорение до ' + timeLabel(status.regen_until) : '' }
       ];
       items.forEach(item => {
         const card = document.createElement('div'); card.className = 'upgrade';
@@ -951,10 +957,10 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
             const result = await request('buy_booster', { booster: item.id });
             const purchase = result.booster_purchase || {};
             if (!purchase.ok) {
-              alert(purchase.reason === 'not_enough_points' ? 'Недостаточно очков' : 'Этот бустер уже активен');
+              alert(purchase.reason === 'not_enough_points' ? 'Недостаточно очков' : 'Этот тип усиления уже активен');
             } else {
               applyServerData({ score: purchase.score, energy: purchase.energy });
-              toast.textContent = item.id === 'double_points' ? '✨ Двойные очки на 60 секунд!' : '🔋 Энергия восстановлена!';
+              toast.textContent = item.id === 'double_points' ? '✨ Двойные очки на 60 секунд!' : item.id === 'triple_points' ? '🚀 Тройные очки на 45 секунд!' : item.id === 'energy_surge' ? '⚡ Регенерация ускорена на 5 минут!' : '🔋 Энергия восстановлена!';
               toast.classList.add('show');
               clearTimeout(toastTimer);
               toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
