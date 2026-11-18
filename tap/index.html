@@ -104,6 +104,20 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .daily-subtitle{margin:0 0 14px;color:var(--muted);font-size:12px;text-align:center}
 .daily-task{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 .daily-task:last-child{border-bottom:0;padding-bottom:0}
+.event-card{width:100%;margin-top:14px;padding:18px;border:1px solid #8b7bff66;border-radius:18px;background:linear-gradient(145deg,rgba(117,93,255,.16),rgba(70,205,255,.07));box-shadow:0 12px 35px #05030d35}
+.event-card h2{margin:0 0 6px;color:#c8bcff;font-size:18px;text-align:center}
+.event-summary{display:flex;align-items:baseline;justify-content:center;gap:5px;flex-wrap:wrap;color:var(--muted);font-size:11px}
+.event-summary strong{color:#fff;font-size:22px;font-variant-numeric:tabular-nums}
+#eventTimeStatus{width:100%;text-align:center;color:#b9adff;margin-top:3px}
+.event-progress{height:9px;margin:12px 0;background:#302849;border-radius:99px;overflow:hidden}
+.event-progress>div{height:100%;width:0;background:linear-gradient(90deg,#8d75ff,#69d8ff);border-radius:99px;transition:width .25s}
+.event-milestone{padding:11px 0;border-bottom:1px solid #ffffff12}
+.event-milestone:last-child{border-bottom:0}
+.event-milestone-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:850}
+.event-milestone-meta{margin-top:4px;color:var(--muted);font-size:10px}
+.event-milestone button{margin-top:7px;border:0;border-radius:9px;padding:7px 11px;background:#bcb0ff;color:#1c1631;font-size:10px;font-weight:900}
+.event-milestone button:disabled{opacity:.45}
+.event-item{margin-top:10px;padding:9px;border-radius:10px;background:#8d75ff16;color:#d9d0ff;text-align:center;font-size:11px;font-weight:850}
 .daily-missions{width:100%;margin-top:14px;padding:18px;border:1px solid #ffd36b55;border-radius:18px;background:linear-gradient(145deg,rgba(255,211,107,.11),rgba(168,255,69,.06));box-shadow:0 12px 35px #05030d35}
 .daily-missions h2{margin:0 0 6px;color:var(--gold);font-size:18px;text-align:center}
 .mission-card{padding:13px 0;border-bottom:1px solid #ffffff14}
@@ -389,6 +403,14 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <div id="dailyTasksList">
     <div class="daily-task">Загружаем ежедневный прогресс...</div>
   </div>
+</section>
+<section class="event-card" aria-labelledby="eventTitle">
+  <h2 id="eventTitle">🌌 ФЕСТИВАЛЬ СИЯЮЩИХ ОБЛАКОВ</h2>
+  <p class="daily-subtitle">Сезонное событие · 18–24 ноября · набирай тапы и забирай награды</p>
+  <div class="event-summary"><strong id="eventTapCount">—</strong><span> / 1 000 сезонных тапов</span><span id="eventTimeStatus">Загружаем событие...</span></div>
+  <div class="event-progress"><div id="eventProgressFill"></div></div>
+  <div id="eventMilestones"><div class="daily-task">Загружаем этапы фестиваля...</div></div>
+  <div class="event-item" id="eventItem">✨ Осколки авроры: 0</div>
 </section>
 <section class="daily-missions" aria-labelledby="dailyMissionsTitle">
   <h2 id="dailyMissionsTitle">⚡ ЦЕПОЧКА МИССИЙ</h2>
@@ -866,6 +888,64 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     }
   }
 
+
+  async function loadSeasonEvent() {
+    const host=document.getElementById('eventMilestones');
+    if(!host) return;
+    try {
+      const response=await request('event_status');
+      const event=response.event||{};
+      const taps=Number(event.taps||0);
+      const active=Boolean(event.active);
+      const count=document.getElementById('eventTapCount');
+      const fill=document.getElementById('eventProgressFill');
+      const status=document.getElementById('eventTimeStatus');
+      const item=document.getElementById('eventItem');
+      if(count) count.textContent=taps.toLocaleString('ru-RU');
+      if(fill) fill.style.width=Math.min(100,taps/1000*100)+'%';
+      if(status) status.textContent=active?'Событие активно до 25 ноября, 00:00 UTC':'Событие завершено';
+      if(item) item.textContent='✨ Осколки авроры: '+Number(event.aurora_shards||0);
+      const claims=event.claimed||{};
+      const milestones=Array.isArray(event.milestones)?event.milestones:[];
+      host.replaceChildren();
+      milestones.forEach(m=>{
+        const done=taps>=Number(m.target), claimed=Boolean(claims[m.id]);
+        const row=document.createElement('div');row.className='event-milestone';
+        const head=document.createElement('div');head.className='event-milestone-head';
+        const title=document.createElement('span');title.textContent=m.title;
+        const reward=document.createElement('span');reward.textContent='+'+Number(m.reward)+' очков';
+        head.append(title,reward);
+        const meta=document.createElement('div');meta.className='event-milestone-meta';
+        meta.textContent=taps.toLocaleString('ru-RU')+' / '+Number(m.target).toLocaleString('ru-RU')+' тапов'+(m.item?' · +1 осколок авроры':'');
+        const button=document.createElement('button');button.type='button';
+        button.textContent=claimed?'✓ Получено':done?'Забрать награду':'В процессе';
+        button.disabled=!active||!done||claimed;
+        button.addEventListener('click',()=>claimSeasonReward(m.id,button));
+        row.append(head,meta,button);host.append(row);
+      });
+    } catch(error) {
+      host.textContent='Не удалось загрузить событие';
+      console.error('Season event loading failed:',error);
+    }
+  }
+
+  async function claimSeasonReward(id,button) {
+    button.disabled=true;button.textContent='Забираем...';
+    try {
+      const response=await request('claim_event_reward',{milestone_id:id});
+      const claim=response.claim||{};
+      if(!claim.ok) {
+        const messages={not_ready:'Пока недостаточно тапов',already_claimed:'Награда уже получена',event_inactive:'Событие завершено'};
+        throw new Error(messages[claim.reason]||'Не удалось забрать награду');
+      }
+      await Promise.all([loadSeasonEvent(),loadPlayer()]);
+      if(toast){toast.textContent='🎉 Награда фестиваля: +'+claim.reward+' очков'+(claim.item?' · осколок авроры':'');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2100);}
+      if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    } catch(error) {
+      button.disabled=false;button.textContent='Повторить';
+      if(toast){toast.textContent=error.message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}
+    }
+  }
 
   function renderCollectibles(collection) {
     const list=document.getElementById('collectiblesList');
@@ -1419,6 +1499,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         applyServerData(data);
         render();
         loadDailyProgress();
+  loadSeasonEvent();
         loadDailyMissions();
       }
     } catch (error) {
@@ -1577,6 +1658,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   setInterval(render, 500);
   setInterval(requestGoldenCloud, 15000);
   setInterval(loadBoosters, 15000);
+  setInterval(loadSeasonEvent, 20000);
   setInterval(loadLeaderboard, 30000);
   setInterval(loadWeeklyTournament, 60000);
 })();
