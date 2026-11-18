@@ -1651,6 +1651,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     try{
       const data=await request('clan_info'),info=data.clan_info||{};clanInfoCache=info;
       const clan=info.clan;
+      const startParam=tg?.initDataUnsafe?.start_param||'';
+      if(!clan&&startParam.startsWith('clan_')){
+        const inviteInput=document.getElementById('clanInviteInput');
+        if(inviteInput&&!inviteInput.value)inviteInput.value=startParam.slice(5).slice(0,8);
+      }
       createJoin.hidden=Boolean(clan);dashboard.hidden=!clan;
       if(clan){
         document.getElementById('clanName').textContent=clan.name;
