@@ -586,7 +586,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const avatar=document.createElement('div'); avatar.className='skin-avatar'; avatar.textContent=skin.emoji;
       const info=document.createElement('div'); info.className='skin-info';
       const title=document.createElement('div'); title.className='skin-name'; title.textContent=skin.name;
-      const detail=document.createElement('div'); detail.className='skin-unlock'; detail.textContent=has?'✓ Уже создан · навсегда':skin.itemName+': '+count+'/3';
+      const detail=document.createElement('div'); detail.className='skin-unlock'; detail.textContent=has?'✓ Уже создан · навсегда':skin.itemName+': '+count+'/'+cost;
       info.append(title,detail);
       const button=document.createElement('button'); button.type='button'; button.textContent=has?'Создано':'Создать';
       button.disabled=has||count<cost; button.addEventListener('click',()=>craftExclusiveSkin(skin,button));
@@ -1731,6 +1731,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   loadDailyMissions();
   loadDailySpinStatus();
   loadReferralInfo();
+  loadSeasonEvent();
 
   loadShop();
   loadBoosters();
