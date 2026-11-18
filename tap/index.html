@@ -69,6 +69,17 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   font-weight: 800;
   margin-left: 10px;
 }
+.leaderboard-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.leaderboard-head h2{margin:0;text-align:left}
+#refreshLeaderboard{border:1px solid #78633a;border-radius:10px;padding:7px 10px;background:#ffd36b18;color:#ffd36b;font-size:11px;font-weight:850}
+#refreshLeaderboard:disabled{opacity:.5}
+.leader-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.podium-card{min-width:0;padding:12px 6px;border:1px solid rgba(255,211,107,.22);border-radius:13px;background:rgba(255,211,107,.07);text-align:center}
+.podium-card.first{border-color:#ffd36b88;background:rgba(255,211,107,.15);transform:translateY(-3px)}
+.podium-medal{font-size:23px;line-height:1.2}
+.podium-name{margin-top:5px;font-size:11px;font-weight:850;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podium-score{margin-top:4px;color:var(--green);font-size:12px;font-weight:900}
+.leaderboard .leader-row:nth-child(odd){background:rgba(255,255,255,.025)}
   .my-rank {
   margin-top: 14px;
   padding: 12px;
@@ -226,7 +237,8 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 </section>
 
 <section class="leaderboard">
-  <h2>🏆 TOP 10 PLAYERS</h2>
+  <div class="leaderboard-head"><h2>🏆 РЕЙТИНГ ИГРОКОВ</h2><button id="refreshLeaderboard" type="button">↻ Обновить</button></div>
+  <div id="leaderboardPodium" class="leader-podium" aria-label="Топ три игрока">Загружаем лидеров...</div>
   <div id="leaderboardList">Загружаем рейтинг...</div>
   <div id="myRank" class="my-rank">Твоё место: загружаем...</div>
 </section>
@@ -666,56 +678,77 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   });
   async function loadLeaderboard() {
   const list = document.getElementById('leaderboardList');
-  if (!list) return;
+  const podium = document.getElementById('leaderboardPodium');
+  const refresh = document.getElementById('refreshLeaderboard');
+  if (!list || !podium) return;
+  if (refresh) refresh.disabled = true;
 
   try {
-    const data = await request('leaderboard');
-    const rankData = await request('my_rank');
-const rankEl = document.getElementById('myRank');
+    const [data, rankData] = await Promise.all([
+      request('leaderboard'),
+      request('my_rank')
+    ]);
+    const rankEl = document.getElementById('myRank');
+    if (rankEl) {
+      rankEl.textContent = rankData.rank
+        ? 'Твоё место в рейтинге: №' + Number(rankData.rank).toLocaleString('ru-RU')
+        : 'Твоё место: пока не определено';
+    }
 
-if (rankEl) {
-  rankEl.textContent = rankData.rank
-    ? 'Твоё место: №' + rankData.rank
-    : 'Твоё место: пока не определено';
-}
-    const players = Array.isArray(data.leaderboard)
-      ? data.leaderboard
-      : [];
-
+    const players = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+    podium.replaceChildren();
     list.replaceChildren();
 
-    if (players.length === 0) {
-      list.textContent = 'Пока нет игроков';
+    if (!players.length) {
+      podium.textContent = 'Пока нет игроков';
+      list.textContent = 'Рейтинг появится, когда начнётся игра';
       return;
     }
 
-    players.forEach((player, index) => {
+    const medals = ['🥇', '🥈', '🥉'];
+    players.slice(0, 3).forEach((player, index) => {
+      const card = document.createElement('div');
+      card.className = 'podium-card' + (index === 0 ? ' first' : '');
+      const medal = document.createElement('div');
+      medal.className = 'podium-medal';
+      medal.textContent = medals[index];
+      const name = document.createElement('div');
+      name.className = 'podium-name';
+      name.textContent = player.username ? '@' + player.username : (player.first_name || 'Игрок');
+      const points = document.createElement('div');
+      points.className = 'podium-score';
+      points.textContent = Number(player.score || 0).toLocaleString('ru-RU') + ' очков';
+      card.append(medal, name, points);
+      podium.appendChild(card);
+    });
+
+    players.slice(3).forEach((player, index) => {
       const row = document.createElement('div');
       row.className = 'leader-row';
-
       const rank = document.createElement('span');
       rank.className = 'leader-rank';
-      rank.textContent = (player.rank || index + 1) + '.';
-
+      rank.textContent = (player.rank || index + 4) + '.';
       const name = document.createElement('span');
       name.className = 'leader-name';
-      name.textContent = player.username
-        ? '@' + player.username
-        : (player.first_name || 'Игрок');
-
-      const score = document.createElement('span');
-      score.className = 'leader-score';
-      score.textContent = Number(player.score || 0).toLocaleString('ru-RU');
-
-      row.append(rank, name, score);
+      name.textContent = player.username ? '@' + player.username : (player.first_name || 'Игрок');
+      const points = document.createElement('span');
+      points.className = 'leader-score';
+      points.textContent = Number(player.score || 0).toLocaleString('ru-RU');
+      row.append(rank, name, points);
       list.appendChild(row);
     });
+    if (players.length <= 3) list.textContent = 'Ты видишь всех игроков в топе!';
   } catch (error) {
-    list.textContent = 'Не удалось загрузить рейтинг';
+    podium.textContent = 'Не удалось загрузить лидеров';
+    list.textContent = 'Попробуй обновить рейтинг позже';
     console.error('Leaderboard loading failed:', error);
+  } finally {
+    if (refresh) refresh.disabled = false;
   }
 }
   
+  document.getElementById('refreshLeaderboard')?.addEventListener('click', loadLeaderboard);
+
   let toastTimer;
 
   tap.addEventListener('click', async () => {
