@@ -212,6 +212,33 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 .toast{z-index:20;box-shadow:0 8px 30px #0005}
 @media(max-height:720px){.game{min-height:300px}.mascot{width:130px;height:120px}.cloud-wrap{height:170px}#tap{width:155px;height:155px}#tap span{font-size:24px}}
 
+
+/* Mascot evolution and collectible looks */
+.mascot-collection{width:100%;margin-top:12px;padding:16px;border:1px solid #b5ff6230;border-radius:18px;background:linear-gradient(145deg,#2b2142e8,#191528e8);box-shadow:0 12px 35px #05030d40}
+.collection-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.collection-heading h2{margin:0;color:var(--green);font-size:16px}
+.collection-heading p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.evolution-level{flex:none;padding:6px 9px;border-radius:99px;background:#ffd36b18;border:1px solid #ffd36b55;color:var(--gold);font-size:11px;font-weight:950}
+.evolution-progress{margin-top:14px;padding:10px 11px;border-radius:12px;background:#ffffff08}
+.evolution-progress-head{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:11px}
+.evolution-progress-head strong{color:var(--green);font-variant-numeric:tabular-nums}
+.evolution-track{height:7px;margin-top:8px;border-radius:99px;background:#ffffff16;overflow:hidden}
+#evolutionFill{height:100%;width:0;background:linear-gradient(90deg,#75d84a,#d5ff75,#ffd36b);border-radius:99px;transition:width .25s}
+.mascot-skins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.skin-card{display:flex;align-items:center;gap:9px;min-width:0;padding:9px;border:1px solid #ffffff16;border-radius:13px;background:#ffffff08}
+.skin-avatar{display:grid;place-items:center;flex:none;width:43px;height:43px;border-radius:12px;background:#b5ff6214;font-size:26px}
+.skin-info{flex:1;min-width:0}
+.skin-name{font-size:11px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.skin-unlock{margin-top:3px;color:var(--muted);font-size:9px}
+.skin-card button{flex:none;border:1px solid #b5ff6250;border-radius:9px;padding:6px 7px;background:#b5ff6218;color:var(--green);font-size:10px;font-weight:900}
+.skin-card button:disabled{border-color:#ffffff18;background:#ffffff08;color:#a7a0b7;opacity:.8}
+.skin-card.active{border-color:#b5ff6280;background:#b5ff6212}
+.mascot.skin-sprout svg{filter:hue-rotate(16deg) saturate(1.15)}
+.mascot.skin-flame svg{filter:hue-rotate(305deg) saturate(1.3)}
+.mascot.skin-cosmic svg{filter:hue-rotate(205deg) saturate(1.5)}
+.mascot.skin-golden svg{filter:sepia(.8) saturate(1.8) hue-rotate(350deg)}
+@media(max-width:360px){.mascot-skins{grid-template-columns:1fr}.skin-card{padding:8px}}
+
 </style>
 </head>
 <body>
@@ -245,6 +272,11 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
   </div>
   <div class="cloud-wrap"><div class="glow"></div><button id="tap" aria-label="Тапнуть по Gazyava"><span>ТАП!</span></button></div>
 </div>
+<section class="mascot-collection" aria-labelledby="mascotCollectionTitle">
+  <div class="collection-heading"><div><h2 id="mascotCollectionTitle">☁️ ЭВОЛЮЦИЯ GAZYAVA</h2><p>Копи очки, открывай облики и выбирай любимый</p></div><span id="mascotLevel" class="evolution-level">Ур. 1</span></div>
+  <div class="evolution-progress"><div class="evolution-progress-head"><span id="evolutionName">Новичок</span><strong id="evolutionProgressText">0 / 1 000</strong></div><div class="evolution-track"><div id="evolutionFill"></div></div></div>
+  <div id="mascotSkins" class="mascot-skins" aria-live="polite"></div>
+</section>
 <div class="combo-panel"><div class="combo-line"><span>⚡ КОМБО-СЕРИЯ</span><strong id="comboCount">0</strong></div><div class="combo-track"><div id="comboFill"></div></div><div class="combo-caption" id="comboCaption">Тапай ритмично, чтобы поддерживать серию</div></div>
 <div class="hint" id="hint">Нажимай на Gazyava, чтобы собирать очки</div>
 <div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
@@ -362,10 +394,65 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
     return Math.min(MAX, energy + Math.max(0, elapsed));
   }
 
+  const MASCOT_SKINS = [
+    {id:'classic',name:'Облачко',emoji:'☁️',unlock:0,level:1,description:'Твой первый друг',className:''},
+    {id:'sprout',name:'Мятный',emoji:'🌱',unlock:1000,level:2,description:'Свежий и бодрый',className:'skin-sprout'},
+    {id:'flame',name:'Огненный',emoji:'🔥',unlock:5000,level:3,description:'Жаркий характер',className:'skin-flame'},
+    {id:'cosmic',name:'Космический',emoji:'🌌',unlock:15000,level:4,description:'Звезда тапов',className:'skin-cosmic'},
+    {id:'golden',name:'Золотой',emoji:'👑',unlock:50000,level:5,description:'Легенда Gazyava',className:'skin-golden'}
+  ];
+  let equippedMascotSkin = 'classic';
+  try { equippedMascotSkin = localStorage.getItem('gazyava_mascot_skin') || 'classic'; } catch (_) {}
+  function updateMascotCollection() {
+    const list=document.getElementById('mascotSkins');
+    const mascot=document.getElementById('mascot');
+    if(!list || !mascot) return;
+    const unlocked=MASCOT_SKINS.filter(s=>score>=s.unlock);
+    if(!unlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
+    const current=MASCOT_SKINS.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
+    mascot.className='mascot '+current.className;
+    const next=MASCOT_SKINS.find(s=>score<s.unlock);
+    const previous=[...unlocked].reverse()[0];
+    const levelEl=document.getElementById('mascotLevel');
+    const nameEl=document.getElementById('evolutionName');
+    const progressText=document.getElementById('evolutionProgressText');
+    const fillEl=document.getElementById('evolutionFill');
+    if(levelEl) levelEl.textContent='Ур. '+previous.level;
+    if(nameEl) nameEl.textContent=previous.name+' · '+current.name+' выбран';
+    if(progressText) progressText.textContent=next ? score.toLocaleString('ru-RU')+' / '+next.unlock.toLocaleString('ru-RU') : 'Максимальная эволюция!';
+    if(fillEl) {
+      const pct=next ? Math.max(0,Math.min(100,(score-previous.unlock)/(next.unlock-previous.unlock)*100)) : 100;
+      fillEl.style.width=pct+'%';
+    }
+    list.replaceChildren();
+    MASCOT_SKINS.forEach(skin=>{
+      const isUnlocked=score>=skin.unlock;
+      const card=document.createElement('div');
+      card.className='skin-card'+(skin.id===equippedMascotSkin?' active':'');
+      const avatar=document.createElement('div');avatar.className='skin-avatar';avatar.textContent=skin.emoji;
+      const info=document.createElement('div');info.className='skin-info';
+      const title=document.createElement('div');title.className='skin-name';title.textContent=skin.name;
+      const detail=document.createElement('div');detail.className='skin-unlock';detail.textContent=isUnlocked?skin.description:'🔒 '+skin.unlock.toLocaleString('ru-RU')+' очков';
+      info.append(title,detail);
+      const button=document.createElement('button');button.type='button';
+      button.textContent=!isUnlocked?'Закрыт':skin.id===equippedMascotSkin?'Выбран':'Надеть';
+      button.disabled=!isUnlocked||skin.id===equippedMascotSkin;
+      button.addEventListener('click',()=>{
+        if(score<skin.unlock) return;
+        equippedMascotSkin=skin.id;
+        try{localStorage.setItem('gazyava_mascot_skin',skin.id);}catch(_){}
+        updateMascotCollection();
+        if(mascotBubbleEl) mascotBubbleEl.textContent=skin.name+'! Как тебе мой новый вид? ✨';
+      });
+      card.append(avatar,info,button);list.appendChild(card);
+    });
+  }
+
   function render() {
     const e = Math.max(0, Math.floor(currentEnergy()) - pendingTaps);
 
     scoreEl.textContent = (score + pendingTaps * TAP_POWER).toLocaleString('ru-RU');
+    updateMascotCollection();
     energyEl.textContent = e + ' / ' + MAX;
     energyLabel.textContent = e + ' / ' + MAX;
     fill.style.width = (e / MAX * 100) + '%';
