@@ -512,6 +512,12 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .world-artifact.locked{opacity:.35;filter:grayscale(1)}.world-artifact-icon{font-size:23px}.world-artifact-name{margin-top:4px;font-size:9px;font-weight:900;line-height:1.25}.world-artifact-rarity{margin-top:3px;color:#c8a5ff;font-size:8px;font-weight:900;text-transform:uppercase}
 .world-collection-progress{height:7px;margin-top:9px;border-radius:99px;background:#403657;overflow:hidden}.world-collection-progress>div{height:100%;background:linear-gradient(90deg,#8d75ff,#ffd36b);width:0;transition:width .3s}
 .world-secret-chest{margin-top:10px;padding:11px;border:1px dashed #ffd36b70;border-radius:12px;text-align:center;background:#ffd36b0b}.world-secret-chest strong{display:block;color:#ffd36b;font-size:12px}.world-secret-chest p{margin:4px 0;color:var(--muted);font-size:10px}.world-secret-chest button{padding:9px 13px;border:0;border-radius:9px;background:linear-gradient(120deg,#ffd36b,#b5ff62);color:#21182c;font-size:10px;font-weight:950}.world-secret-chest button:disabled{opacity:.4}
+
+/* Clan boss raid */
+.clan-boss-card{margin:14px 0;padding:14px;border:1px solid #ff9a6b55;border-radius:16px;background:linear-gradient(145deg,#ff784015,#8e63ff12)}
+.clan-boss-head{display:flex;align-items:center;gap:10px}.clan-boss-avatar{font-size:38px;filter:drop-shadow(0 0 12px #ff9b6b66)}.clan-boss-copy{flex:1;min-width:0}.clan-boss-copy h3{margin:0;font-size:15px}.clan-boss-copy small{color:var(--muted);font-size:10px}
+.clan-boss-hp{height:13px;margin:12px 0 5px;border-radius:99px;background:#130f22;overflow:hidden;border:1px solid #ffffff20}.clan-boss-hp>div{height:100%;width:100%;background:linear-gradient(90deg,#ff6b67,#ffbd5e);transition:width .35s}
+.clan-boss-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10px}.clan-boss-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}.clan-boss-stat{padding:9px;border-radius:10px;background:#130f2277}.clan-boss-stat small{display:block;color:var(--muted);font-size:9px}.clan-boss-stat strong{font-size:16px}.clan-boss-board{margin-top:9px}.clan-boss-board .clan-rank-row{grid-template-columns:28px 1fr auto}.clan-boss-actions{display:flex;gap:8px;margin-top:10px}.clan-boss-actions button{flex:1;padding:10px;border:0;border-radius:10px;background:var(--gold);color:#21182c;font-weight:900;font-size:11px}.clan-boss-actions button.secondary{background:#ffffff16;color:var(--text);border:1px solid #ffffff20}.clan-boss-actions button:disabled{opacity:.4}
 </style>
 </head>
 <body>
@@ -745,6 +751,15 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       <button id="clanWarQueueBtn" type="button">⚔️ Найти соперника</button>
       <button id="clanWarClaimBtn" type="button" hidden>Забрать награду</button>
       <small class="clan-chat-note">Победа: +200 очков каждому · Ничья: +100 · Участие: +50</small>
+    </div>
+    <div class="clan-boss-card">
+      <div class="clan-boss-head"><div class="clan-boss-avatar" id="clanBossEmoji">🐉</div><div class="clan-boss-copy"><h3 id="clanBossName">Клановый босс</h3><small id="clanBossWeek">Еженедельный рейд · общий прогресс</small></div></div>
+      <div class="clan-boss-hp"><div id="clanBossHpFill"></div></div>
+      <div class="clan-boss-meta"><span id="clanBossHpText">100 000 / 100 000 HP</span><span id="clanBossPhase">Фаза I</span></div>
+      <div class="clan-boss-stats"><div class="clan-boss-stat"><small>Твой урон</small><strong id="clanBossMyDamage">0</strong></div><div class="clan-boss-stat"><small>Твоё место</small><strong id="clanBossMyRank">—</strong></div></div>
+      <h4 class="clan-section-title">⚔️ Вклад команды</h4><div id="clanBossBoard" class="clan-boss-board">Загружаем участников рейда...</div>
+      <div class="clan-boss-actions"><button id="clanBossRefresh" class="secondary" type="button">↻ Обновить</button><button id="clanBossClaim" type="button" hidden>Забрать награду</button></div>
+      <small class="clan-chat-note" id="clanBossHint">Каждый подтверждённый тап наносит 1 урон. Босс и вклад обновляются на сервере. Награды после победы: топ-1 +500, топ-2 +300, топ-3 +200, остальные участники +100 очков.</small>
     </div>
     <h3 class="clan-section-title">👥 Участники и роли</h3>
     <div id="clanMembers"></div>
@@ -2070,7 +2085,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         const milestoneHost=document.getElementById('clanMilestones');milestoneHost.replaceChildren();
         (info.milestones||[]).forEach(m=>{const progress=Number(clan.weekly_taps||0),target=Number(m.target),claimed=Boolean(info.claims?.[m.id]),ready=progress>=target;const card=document.createElement('div');card.className='clan-milestone';const head=document.createElement('div');head.className='clan-milestone-head';const title=document.createElement('span');title.textContent=m.title;const reward=document.createElement('span');reward.textContent='+'+m.reward+' каждому';head.append(title,reward);const meta=document.createElement('div');meta.className='clan-milestone-meta';meta.textContent=progress.toLocaleString('ru-RU')+' / '+target.toLocaleString('ru-RU')+' командных тапов';const bar=document.createElement('div');bar.className='clan-progress';const fill=document.createElement('div');fill.style.width=Math.min(100,progress/target*100)+'%';bar.append(fill);const button=document.createElement('button');button.type='button';button.textContent=claimed?'✓ Забрано всей командой':ready?'Забрать всем участникам':'Выполняется';button.disabled=!ready||claimed;button.addEventListener('click',()=>claimClanReward(m.id,button));card.append(head,meta,bar,button);milestoneHost.append(card);});
       }
-      await Promise.all([loadClanLeaderboard(),loadClanChat(),loadClanWarStatus(),loadClanSeasonStatus()]);
+      await Promise.all([loadClanLeaderboard(),loadClanChat(),loadClanWarStatus(),loadClanSeasonStatus(),loadClanBossStatus()]);
     }catch(error){clanMessage(error.message||'Не удалось загрузить кланы',true);}
   }
   async function clanAction(action,extra={}){
@@ -2105,6 +2120,35 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     catch(_){clanMessage('Код приглашения: '+code);}
   });
 
+
+  async function loadClanBossStatus(){
+    const host=document.getElementById('clanBossBoard'),claimBtn=document.getElementById('clanBossClaim');
+    if(!host||!clanInfoCache?.clan)return;
+    try{
+      const data=await request('clan_boss_status'),boss=data.clan_boss||{};
+      if(!boss.in_clan){host.textContent='Вступи в клан, чтобы участвовать в рейде.';return;}
+      const hp=Math.max(0,Number(boss.hp||0)),max=Math.max(1,Number(boss.max_hp||100000)),pct=Math.max(0,Math.min(100,hp/max*100));
+      document.getElementById('clanBossEmoji').textContent=boss.boss_emoji||'🐉';
+      document.getElementById('clanBossName').textContent=boss.boss_name||'Клановый босс';
+      document.getElementById('clanBossWeek').textContent='Неделя с '+(boss.week_start||'—')+' · общий рейд клана';
+      document.getElementById('clanBossHpFill').style.width=pct+'%';
+      document.getElementById('clanBossHpText').textContent=hp.toLocaleString('ru-RU')+' / '+max.toLocaleString('ru-RU')+' HP';
+      document.getElementById('clanBossPhase').textContent=boss.defeated?'БОСС ПОВЕРЖЕН 🏆':pct<=10?'Фаза IV · Последний рывок':pct<=40?'Фаза III · Ярость':pct<=70?'Фаза II · Натиск':'Фаза I · Пробуждение';
+      document.getElementById('clanBossMyDamage').textContent=Number(boss.my_damage||0).toLocaleString('ru-RU');
+      document.getElementById('clanBossMyRank').textContent=boss.my_rank?'#'+boss.my_rank:'—';
+      host.replaceChildren();const rows=Array.isArray(boss.top)?boss.top:[];
+      if(!rows.length)host.textContent='Пока никто не атаковал. Сделай первый подтверждённый тап!';
+      rows.forEach(row=>{const line=document.createElement('div');line.className='clan-rank-row';const rank=document.createElement('strong');rank.textContent='#'+row.rank;const name=document.createElement('span');name.textContent=row.name+(Number(row.telegram_id)===Number(tg?.initDataUnsafe?.user?.id)?' · ты':'');const damage=document.createElement('small');damage.textContent=Number(row.damage||0).toLocaleString('ru-RU')+' урона';line.append(rank,name,damage);host.append(line);});
+      claimBtn.hidden=!boss.reward_available;claimBtn.disabled=false;
+      const hint=document.getElementById('clanBossHint');if(hint&&boss.defeated)hint.textContent='Босс повержен! Награда рассчитывается по личному вкладу и выдаётся один раз каждому участнику, нанёсшему урон.';
+    }catch(error){host.textContent='Не удалось загрузить рейд босса';console.error(error);}
+  }
+  document.getElementById('clanBossRefresh')?.addEventListener('click',loadClanBossStatus);
+  document.getElementById('clanBossClaim')?.addEventListener('click',async()=>{
+    const button=document.getElementById('clanBossClaim');button.disabled=true;
+    try{const data=await request('claim_clan_boss_reward'),claim=data.clan_boss_claim||{};if(!claim.ok){const messages={boss_alive:'Босс ещё не повержен',no_contribution:'Нужно нанести боссу хотя бы 1 урон',already_claimed:'Награда уже получена',not_in_clan:'Ты не состоишь в клане'};throw new Error(messages[claim.reason]||'Награда недоступна');}await Promise.all([loadPlayer(),loadClanBossStatus()]);clanMessage('🏆 Рейд завершён! Место #'+claim.rank+' · твой урон '+Number(claim.damage||0).toLocaleString('ru-RU')+' · награда +'+claim.reward+' очков.');}
+    catch(error){clanMessage(error.message,true);button.disabled=false;}
+  });
   async function loadClanSeasonStatus(){
     const host=document.getElementById('clanSeasonStatus'),board=document.getElementById('clanSeasonLeaderboard'),claimBtn=document.getElementById('clanSeasonClaimBtn');
     if(!host||!board||!clanInfoCache?.clan)return;
