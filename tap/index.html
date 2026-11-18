@@ -424,6 +424,9 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   .clan-season-leaderboard{margin:10px 0}
   .clan-season-card button{width:100%;padding:11px;border:0;border-radius:11px;background:linear-gradient(120deg,#f5ce72,#b88cff);color:#21182c;font-weight:800}
   .skin-season-champion{filter:drop-shadow(0 0 10px rgba(255,205,80,.8))}
+
+  .clan-season-meter{margin:10px 0;padding:9px 11px;border-radius:10px;background:rgba(0,0,0,.18);color:#f7d78a;font-size:11px;font-weight:800}
+  .clan-season-progress{min-height:16px}
 </style>
 </head>
 <body>
@@ -598,7 +601,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="clan-season-card">
       <h3 class="clan-section-title">🏆 Клановый сезон</h3>
       <div id="clanSeasonStatus" class="clan-season-status">Загружаем сезон...</div>
-      <div id="clanSeasonLeaderboard" class="clan-season-leaderboard"></div>
+      <div class="clan-season-meter"><div id="clanSeasonProgress" class="clan-season-progress"></div></div><div id="clanSeasonLeaderboard" class="clan-season-leaderboard"></div>
       <button id="clanSeasonClaimBtn" type="button" hidden>Забрать сезонную награду</button>
       <small class="clan-chat-note">Сезон длится 7 дней · серверные тапы идут в рейтинг · награды после завершения недели</small>
     </div>
@@ -1738,10 +1741,16 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     try{
       const data=await request('clan_season_status'),s=data.clan_season_status||{};
       if(!s.in_clan){host.textContent='Вступи в клан, чтобы участвовать в сезонах.';return;}
-      const move=s.movement==='promotion'?' · Повышение ⬆️':s.movement==='demotion'?' · Понижение ⬇️':'';
+      const move=s.movement==='promotion'?' · Предварительное повышение ⬆️':s.movement==='demotion'?' · Предварительное понижение ⬇️':'';
       host.textContent=(names[s.division]||s.division)+' · место #'+s.rank+' · '+Number(s.taps||0).toLocaleString('ru-RU')+' тапов за неделю'+move+'\nСезон: '+s.season_start+' — '+s.season_end;
+      const progress=document.getElementById('clanSeasonProgress');
+      const thresholds={bronze:10000,silver:50000,gold:150000,diamond:null};
+      const next=thresholds[s.division];
+      if(progress)progress.textContent=next?('До следующего дивизиона: '+Math.max(0,next-Number(s.taps||0)).toLocaleString('ru-RU')+' тапов'):'Высший дивизион достигнут 💎';
       board.replaceChildren();
-      (s.leaderboard||[]).slice(0,10).forEach(row=>{
+      const rows=(s.leaderboard||[]).slice(0,10);
+      if(!rows.length){board.textContent='Сезонный рейтинг появится после первых тапов кланов.';}
+      rows.forEach(row=>{
         const line=document.createElement('div');line.className='clan-rank-row';
         const rank=document.createElement('strong');rank.textContent='#'+row.rank;
         const name=document.createElement('span');name.textContent=row.name+' · '+(names[row.division]||row.division);
@@ -2164,6 +2173,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   setInterval(loadFrostFestival, 20000);
   setInterval(loadLeaderboard, 30000);
   setInterval(loadWeeklyTournament, 60000);
+  setInterval(()=>{if(document.querySelector('[data-tab-panel="friends"].active')&&!document.getElementById('clanDashboard')?.hidden){loadClanWarStatus();loadClanSeasonStatus();}},30000);
 })();
 </script>
 </body></html>
