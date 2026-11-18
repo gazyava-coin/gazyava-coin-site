@@ -658,11 +658,49 @@ input,button{font-family:inherit}
 #tap{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #tap span{pointer-events:none}
 @media(max-width:390px){.event-heading h2{font-size:15px}#refreshCloudFestival{padding:6px 8px}}
-</style>
+
+/* Unified Gazyava interface refresh */
+:root{--bg:#100d1e;--panel:#211a35;--green:#b9ff70;--gold:#ffd77d;--text:#fbfaff;--muted:#bdb6cf;--line:#44385f}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 50% -10%,#493266 0,transparent 42%),radial-gradient(ellipse at 100% 45%,#1d3a3530 0,transparent 34%),var(--bg);background-attachment:fixed}
+main{width:min(560px,100%);padding:18px 16px calc(100px + env(safe-area-inset-bottom))}
+header{padding:8px 2px 15px;border-bottom:1px solid #ffffff12}
+.logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#b9ff7020,#ffffff08);border:1px solid #b9ff7033;box-shadow:0 7px 22px #a8ff4520}
+.brand{font-size:15px;letter-spacing:.075em}
+.tag{border-color:#ffd77d40;background:#ffd77d0b;color:#ffdf9a;font-weight:800;letter-spacing:.06em}
+h1{font-size:clamp(26px,6vw,32px);margin:22px 0 5px}
+.sub{max-width:340px;margin:0 auto 18px;line-height:1.55}
+.stat,.player-progression,.profile-showcase,.leaderboard,.daily-tasks,.shop,.achievements,.referral-card,.weekly-tournament,.streak-card,.calendar-card,.daily-spin,.daily-missions,.event-card,.mascot-collection,.season-pass-card,.clan-card,.world-card{border-color:#ffffff18;box-shadow:0 12px 32px #05030d25}
+.stat{border-radius:19px;background:linear-gradient(145deg,#2a2142e8,#1b162ee8);padding:14px 15px}
+.stat strong{font-size:24px;letter-spacing:-.03em}
+.game-tabs{border:1px solid #ffffff22;background:rgba(24,18,40,.94);box-shadow:0 16px 44px #05030d90,0 0 26px #b9ff7010;backdrop-filter:blur(18px)}
+.game-tab{color:#c7bfd8}
+.game-tab.active{background:linear-gradient(145deg,#b9ff7022,#ffd77d12);border-color:#b9ff7060;color:#f4ffe9;box-shadow:inset 0 1px #ffffff18}
+.tab-panel.active{animation:panelEnter .22s ease both}
+@keyframes panelEnter{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+[data-tab-panel]>.stats .stat,[data-tab-panel] .leaderboard,[data-tab-panel] .daily-tasks,[data-tab-panel] .shop,[data-tab-panel] .achievements,[data-tab-panel] .referral-card,[data-tab-panel] .weekly-tournament,[data-tab-panel] .event-card,[data-tab-panel] .streak-card,[data-tab-panel] .calendar-card,[data-tab-panel] .daily-missions{border-radius:20px}
+button{font-weight:800}
+button:not(:disabled){transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+button:not(:disabled):active{filter:brightness(.96)}
+button:focus-visible,input:focus-visible{outline:3px solid #ffdf9a;outline-offset:3px}
+input{border-radius:12px}
+.daily-spin,.daily-missions,.event-card,.referral-card,.weekly-tournament,.shop,.achievements,.leaderboard,.streak-card,.calendar-card{background-color:#211a35;background-image:linear-gradient(145deg,#ffffff08,transparent 60%)}
+.daily-spin button,.mission-claim,.upgrade button,.daily-task button,.event-milestone button,#eventRankClaim,#copyReferral{border-radius:12px;box-shadow:0 5px 16px #0002}
+.leaderboard h2,.daily-tasks h2,.shop h2,.achievements h2,.referral-card h2,.weekly-tournament h2{letter-spacing:-.02em}
+.leader-row{border-radius:9px;padding-left:8px;padding-right:8px}
+.energy{border-color:#ffffff20;background:#ffffff0a}
+.bar,.daily-bar,.mission-progress,.achievement-bar{background:#ffffff1b}
+.fill,.daily-fill,.mission-progress>div,.achievement-fill{filter:drop-shadow(0 0 5px #b9ff7040)}
+.profile-showcase{border-radius:22px;background:linear-gradient(145deg,#29213fe8,#191429f2)}
+.mascot-collection{border-radius:20px}
+footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
+@media(max-width:390px){main{padding-left:12px;padding-right:12px}.logo{width:43px;height:43px}.tag{font-size:9px;padding:5px 7px}.stat{padding:12px}.stat strong{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}}
+\n</style>
 </head>
 <body>
 <main>
-<header><img class="logo" src="../gazyava-logo.PNG" alt="Gazyava"><div class="brand">GAZYAVA<span> TAP</span></div><div class="tag">BETA · DEV</div></header>
+<header><img class="logo" src="../gazyava-mark.svg" alt="Gazyava"><div class="brand">GAZYAVA<span> TAP</span></div><div class="tag">BETA · DEV</div></header>
 <h1>Тапай на удачу!</h1><p class="sub">Собирай игровые очки до запуска проекта</p>
 <nav class="game-tabs" role="tablist" aria-label="Разделы игры">
 <button class="game-tab active" type="button" role="tab" aria-selected="true" data-tab-target="play">☁️ Игра</button>
