@@ -2050,7 +2050,10 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     if(tg?.openTelegramLink)tg.openTelegramLink(share);else window.open(share,'_blank','noopener');
   });
   if(!clanChatTimer)clanChatTimer=setInterval(()=>{
-    if(document.querySelector('[data-tab-panel="friends"].active')&&!document.getElementById('clanDashboard')?.hidden)loadClanChat();
+    if(document.querySelector('[data-tab-panel="friends"].active')&&!document.getElementById('clanDashboard')?.hidden){
+      loadClanChat();
+      loadClanBossStatus();
+    }
   },15000);
 
   async function loadClanLeaderboard(){
