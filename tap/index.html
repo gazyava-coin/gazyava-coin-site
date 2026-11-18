@@ -101,7 +101,20 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .streak-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px;margin-top:2px}
 .streak-rewards{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .streak-chip{padding:5px 8px;border-radius:99px;background:#ffd36b18;border:1px solid #ffd36b40;color:#ffe2a0;font-size:11px;font-weight:800}
+
 .streak-message{margin-top:10px;font-size:12px;color:var(--green)}
+.calendar-card{width:100%;margin-top:14px;padding:16px;background:rgba(255,255,255,.06);border:1px solid rgba(168,255,69,.24);border-radius:18px}
+.calendar-card h2{margin:0 0 5px;text-align:center;color:var(--green);font-size:17px}
+.calendar-sub{margin:0 0 13px;text-align:center;color:var(--muted);font-size:12px}
+.calendar-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.calendar-day{padding:10px 5px;border-radius:12px;text-align:center;background:#342a49;border:1px solid #514465;min-width:0}
+.calendar-day.done{background:#a8ff4518;border-color:#a8ff4560}
+.calendar-day.today{outline:2px solid var(--gold);outline-offset:1px}
+.calendar-day-name{font-size:11px;color:var(--muted);font-weight:800}
+.calendar-day-reward{margin-top:4px;color:var(--green);font-size:14px;font-weight:900}
+.calendar-day-status{margin-top:3px;color:var(--muted);font-size:10px}
+.calendar-note{margin-top:11px;text-align:center;color:var(--muted);font-size:11px}
+
 .shop{width:100%;margin-top:18px;padding:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px}
 .shop h2{margin:0 0 5px;color:#f5c84c;font-size:18px;text-align:center}.shop-sub{margin:0 0 12px;text-align:center;color:var(--muted);font-size:12px}
 .shop-balance{text-align:center;color:var(--green);font-weight:900;margin-bottom:10px}.upgrade{padding:12px 0;border-top:1px solid rgba(255,255,255,.09)}
@@ -172,6 +185,14 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     <span class="streak-chip">30 дней · +100</span>
   </div>
   <div class="streak-message" id="streakMessage">Заходи каждый день, чтобы продолжить серию</div>
+</section>
+<section class="calendar-card" aria-labelledby="calendarTitle">
+  <h2 id="calendarTitle">🎁 КАЛЕНДАРЬ НА 7 ДНЕЙ</h2>
+  <p class="calendar-sub">Заходи ежедневно — награда растёт каждый день</p>
+  <div class="calendar-grid" id="streakCalendar">
+    <div class="calendar-day">Загружаем...</div>
+  </div>
+  <div class="calendar-note" id="calendarNote">Награды начисляются автоматически при входе</div>
 </section>
 <section class="referral-card" id="referralCard" aria-labelledby="referralTitle">
   <h2 id="referralTitle">🎁 ПРИГЛАШАЙ ДРУЗЕЙ</h2>
@@ -428,6 +449,56 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
       if (todayEl) todayEl.textContent = 'Не удалось проверить вход';
       if (messageEl) messageEl.textContent = 'Повтори попытку позже';
       console.error('Streak check-in failed:', error);
+    }
+  }
+
+  async function loadStreakCalendar() {
+    const grid = document.getElementById('streakCalendar');
+    const note = document.getElementById('calendarNote');
+    if (!grid) return;
+    const rewards = [2, 3, 5, 7, 10, 12, 25];
+    const names = ['День 1', 'День 2', 'День 3', 'День 4', 'День 5', 'День 6', 'День 7'];
+    try {
+      const data = await request('streak_calendar');
+      const calendar = data.calendar || {};
+      const day = Math.max(1, Math.min(7, Number(calendar.calendar_day || 1)));
+      const reward = Number(calendar.calendar_reward || rewards[day - 1]);
+      const claimedNow = Boolean(calendar.claimed_today);
+
+      grid.replaceChildren();
+      rewards.forEach((amount, index) => {
+        const number = index + 1;
+        const item = document.createElement('div');
+        item.className = 'calendar-day' + (number <= day ? ' done' : '') + (number === day ? ' today' : '');
+
+        const label = document.createElement('div');
+        label.className = 'calendar-day-name';
+        label.textContent = names[index];
+
+        const value = document.createElement('div');
+        value.className = 'calendar-day-reward';
+        value.textContent = '+' + amount;
+
+        const status = document.createElement('div');
+        status.className = 'calendar-day-status';
+        status.textContent = number < day ? '✓ Получено' :
+          number === day ? (claimedNow ? '✓ Начислено' : '✓ Уже получено') : '🔒 Скоро';
+
+        item.append(label, value, status);
+        grid.appendChild(item);
+      });
+
+      if (claimedNow) {
+        score += reward;
+        render();
+        if (note) note.textContent = '🎉 Сегодня начислено +' + reward + ' очков!';
+      } else if (note) {
+        note.textContent = 'Награда за сегодня уже получена. Следующий день — новая награда!';
+      }
+    } catch (error) {
+      grid.textContent = 'Не удалось загрузить календарь';
+      if (note) note.textContent = 'Повтори попытку позже';
+      console.error('Streak calendar loading failed:', error);
     }
   }
 
@@ -691,7 +762,7 @@ if (rankEl) {
   loadReferralInfo();
 
   loadShop();
-  checkInStreak();
+  checkInStreak().then(loadStreakCalendar);
   setInterval(render, 500);
   setInterval(loadLeaderboard, 30000);
 })();
