@@ -935,8 +935,8 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       list.replaceChildren();
       const timeLabel = value => value ? new Date(value).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '';
       const items = [
-        { id: 'double_points', name: '✨ Двойные очки', description: 'Удваивают очки за тап на 60 секунд.', price: 1200, active: Boolean(status.multiplier_active), activeText: status.multiplier_until ? 'Множитель активен до ' + timeLabel(status.multiplier_until) : '' },
-        { id: 'triple_points', name: '🚀 Тройные очки', description: 'Утраивают очки за тап на 45 секунд.', price: 3000, active: Boolean(status.multiplier_active), activeText: status.triple_active ? 'Тройной множитель до ' + timeLabel(status.triple_until) : 'Сначала дождись окончания другого множителя' },
+        { id: 'double_points', name: '✨ Двойные очки', description: 'Удваивают очки за тап на 60 секунд.', price: 1200, active: Boolean(status.multiplier_active && !status.triple_active), blocked: Boolean(status.triple_active), activeText: status.triple_active ? 'Сейчас действует тройной множитель' : status.multiplier_until ? 'Множитель активен до ' + timeLabel(status.multiplier_until) : '' },
+        { id: 'triple_points', name: '🚀 Тройные очки', description: 'Утраивают очки за тап на 45 секунд.', price: 3000, active: Boolean(status.triple_active), blocked: Boolean(status.multiplier_active && !status.triple_active), activeText: status.triple_active ? 'Тройной множитель до ' + timeLabel(status.triple_until) : 'Сначала дождись окончания другого множителя' },
         { id: 'energy_refill', name: '🔋 Полная энергия', description: 'Мгновенно восстанавливает энергию до максимума.', price: 350, active: false, activeText: '' },
         { id: 'energy_surge', name: '⚡ Турбо-регенерация', description: 'Восстановление энергии в 3 раза быстрее в течение 5 минут.', price: 900, active: Boolean(status.regen_active), activeText: status.regen_until ? 'Ускорение до ' + timeLabel(status.regen_until) : '' }
       ];
@@ -947,10 +947,10 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         const price = document.createElement('span'); price.style.color = 'var(--green)'; price.textContent = item.price.toLocaleString('ru-RU') + ' очков';
         head.append(name, price);
         const desc = document.createElement('div'); desc.className = 'upgrade-desc'; desc.textContent = item.description;
-        const state = document.createElement('div'); state.className = 'booster-status'; state.textContent = item.active ? '✓ ' + item.activeText : (item.id === 'double_points' ? 'Не активен' : 'Доступен в любой момент');
+        const state = document.createElement('div'); state.className = 'booster-status'; state.textContent = item.active ? '✓ ' + item.activeText : item.blocked ? item.activeText : (item.id === 'double_points' || item.id === 'triple_points' ? 'Не активен' : 'Доступен в любой момент');
         const btn = document.createElement('button');
-        btn.textContent = item.active ? 'Уже действует' : 'Купить · ' + item.price.toLocaleString('ru-RU') + ' очков';
-        btn.disabled = item.active || score < item.price;
+        btn.textContent = item.active ? 'Уже действует' : item.blocked ? 'Другой множитель активен' : 'Купить · ' + item.price.toLocaleString('ru-RU') + ' очков';
+        btn.disabled = item.active || item.blocked || score < item.price;
         btn.addEventListener('click', async () => {
           btn.disabled = true; btn.textContent = 'Покупаем...';
           try {
