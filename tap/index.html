@@ -198,6 +198,11 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 .stat{background:linear-gradient(145deg,#2b2142ed,#1b162ded);border-color:#ffffff18}
 .stat strong{font-variant-numeric:tabular-nums}
 .game{min-height:390px;gap:4px}
+.golden-cloud{position:absolute;z-index:5;top:34px;right:calc(50% - 135px);width:76px;height:76px;border:2px solid #ffe18a;border-radius:50%;background:radial-gradient(circle at 35% 25%,#fff8c9,#ffc83e 60%,#d98b19);box-shadow:0 0 0 6px #ffd36b22,0 0 30px #ffd36b99;color:#5a3500;font-size:35px;cursor:pointer;animation:goldenFloat 1s ease-in-out infinite alternate;touch-action:manipulation}
+.golden-cloud span{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);padding:2px 7px;border-radius:99px;background:#fff0b3;color:#6b4200;font-size:10px;font-weight:950;white-space:nowrap}
+.golden-cloud[hidden]{display:none}
+@keyframes goldenFloat{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-9px) rotate(6deg)}}
+@media(prefers-reduced-motion:reduce){.golden-cloud{animation:none}}
 .mascot-stage{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:8px}
 .mascot{width:170px;height:156px;z-index:2;filter:drop-shadow(0 15px 22px #a8ff4530);transition:transform .16s}
 .mascot svg{width:100%;height:100%;overflow:visible}
@@ -312,6 +317,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 </section>
 <section class="game">
 <div class="mascot-stage">
+  <button class="golden-cloud" id="goldenCloud" type="button" hidden aria-label="Поймать золотое облако">☁️<span>+?</span></button>
   <div class="mascot-bubble" id="mascotBubble">Погнали! Жми на меня ✨</div>
   <div class="mascot" id="mascot" aria-label="Маскот Gazyava">
     <svg viewBox="0 0 240 220" role="img" aria-label="Зелёный облачный маскот Gazyava">
@@ -1184,7 +1190,6 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         applyServerData(data);
         render();
         loadDailyProgress();
-  loadDailySpinStatus();
       }
     } catch (error) {
       pendingTaps = 0;
@@ -1210,6 +1215,68 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   const comboCaptionEl = document.getElementById('comboCaption');
   const mascotEl = document.getElementById('mascot');
   const mascotBubbleEl = document.getElementById('mascotBubble');
+  let goldenCloudToken = null;
+  let goldenCloudTimer = null;
+  let goldenCloudBusy = false;
+  const goldenCloudButton = document.getElementById('goldenCloud');
+  async function requestGoldenCloud() {
+    if (!initialized || goldenCloudBusy || (goldenCloudButton && !goldenCloudButton.hidden)) return;
+    goldenCloudBusy = true;
+    try {
+      const data = await request('golden_cloud_offer');
+      const cloud = data.cloud || {};
+      if (cloud.available && cloud.cloud_token) {
+        goldenCloudToken = cloud.cloud_token;
+        if (goldenCloudButton) {
+          goldenCloudButton.querySelector('span').textContent = 'Лови!';
+          goldenCloudButton.hidden = false;
+          clearTimeout(goldenCloudTimer);
+          goldenCloudTimer = setTimeout(() => {
+            goldenCloudButton.hidden = true;
+            goldenCloudToken = null;
+          }, 20000);
+        }
+        if (mascotBubbleEl) mascotBubbleEl.textContent = 'Золотое облачко! Быстрее, лови! 🌟';
+        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+      }
+    } catch (error) {
+      console.error('Golden cloud offer failed:', error);
+    } finally {
+      goldenCloudBusy = false;
+    }
+  }
+
+  async function claimGoldenCloud() {
+    if (!goldenCloudToken || !goldenCloudButton || goldenCloudButton.disabled) return;
+    const token = goldenCloudToken;
+    goldenCloudButton.disabled = true;
+    clearTimeout(goldenCloudTimer);
+    try {
+      const data = await request('golden_cloud_claim', { cloud_token: token });
+      const claim = data.claim || {};
+      goldenCloudToken = null;
+      goldenCloudButton.hidden = true;
+      goldenCloudButton.disabled = false;
+      if (claim.claimed) {
+        score = Number(claim.new_score || score);
+        render();
+        if (mascotBubbleEl) mascotBubbleEl.textContent = 'Поймал! +' + Number(claim.reward) + ' очков! ✨';
+        toast.textContent = '+' + Number(claim.reward) + ' GAZY POINT';
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 900);
+        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      }
+    } catch (error) {
+      goldenCloudToken = null;
+      goldenCloudButton.hidden = true;
+      goldenCloudButton.disabled = false;
+      if (mascotBubbleEl) mascotBubbleEl.textContent = 'Облачко улетело — поймаем следующее! ☁️';
+      console.error('Golden cloud claim failed:', error);
+    }
+  }
+  goldenCloudButton?.addEventListener('click', claimGoldenCloud);
+
   let mascotIdleTimer = null;
   function wakeMascot() {
     clearTimeout(mascotIdleTimer);
@@ -1270,11 +1337,13 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   loadLeaderboard();
   loadWeeklyTournament();
   loadDailyProgress();
+  loadDailySpinStatus();
   loadReferralInfo();
 
   loadShop();
   checkInStreak().then(loadStreakCalendar);
   setInterval(render, 500);
+  setInterval(requestGoldenCloud, 15000);
   setInterval(loadLeaderboard, 30000);
   setInterval(loadWeeklyTournament, 60000);
 })();
