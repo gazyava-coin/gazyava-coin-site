@@ -413,6 +413,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .clan-member-tools button{padding:5px 7px;border:1px solid rgba(155,212,255,.25);border-radius:7px;background:rgba(155,212,255,.1);color:#c9e7ff;font-size:10px}
 .clan-share{width:100%;margin-top:10px}
 .clan-member-row{flex-wrap:wrap}
+
+  .clan-war-card{margin:16px 0;padding:15px;border:1px solid rgba(180,160,255,.22);border-radius:16px;background:rgba(120,95,190,.10)}
+  .clan-war-status{padding:12px;margin:10px 0;border-radius:12px;background:rgba(0,0,0,.18);font-weight:700;line-height:1.6}
+  .clan-war-card button{width:100%;margin:6px 0;padding:11px;border:0;border-radius:11px;background:linear-gradient(120deg,#9b83ff,#65d6b0);color:#171329;font-weight:800}
+  .clan-war-card button:disabled{opacity:.55}
 </style>
 </head>
 <body>
@@ -584,6 +589,14 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="clan-stats"><div><small>Тапы за неделю</small><strong id="clanWeeklyTaps">0</strong></div><div><small>Всего тапов</small><strong id="clanTotalTaps">0</strong></div><div><small>Твои тап-очки</small><strong id="clanMyTaps">0</strong></div></div>
     <h3 class="clan-section-title">🎯 Командные задания недели</h3>
     <div id="clanMilestones"></div>
+    <div class="clan-war-card">
+      <h3 class="clan-section-title">⚔️ Клановые войны</h3>
+      <p class="clan-chat-note">Найди соперника: битва длится 24 часа. Каждый подтверждённый тап приносит 1 боевое очко клану.</p>
+      <div id="clanWarStatus" class="clan-war-status">Проверяем статус битвы...</div>
+      <button id="clanWarQueueBtn" type="button">⚔️ Найти соперника</button>
+      <button id="clanWarClaimBtn" type="button" hidden>Забрать награду</button>
+      <small class="clan-chat-note">Победа: +200 очков каждому · Ничья: +100 · Участие: +50</small>
+    </div>
     <h3 class="clan-section-title">👥 Участники и роли</h3>
     <div id="clanMembers"></div>
     <div class="clan-chat">
@@ -1669,7 +1682,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         const milestoneHost=document.getElementById('clanMilestones');milestoneHost.replaceChildren();
         (info.milestones||[]).forEach(m=>{const progress=Number(clan.weekly_taps||0),target=Number(m.target),claimed=Boolean(info.claims?.[m.id]),ready=progress>=target;const card=document.createElement('div');card.className='clan-milestone';const head=document.createElement('div');head.className='clan-milestone-head';const title=document.createElement('span');title.textContent=m.title;const reward=document.createElement('span');reward.textContent='+'+m.reward+' каждому';head.append(title,reward);const meta=document.createElement('div');meta.className='clan-milestone-meta';meta.textContent=progress.toLocaleString('ru-RU')+' / '+target.toLocaleString('ru-RU')+' командных тапов';const bar=document.createElement('div');bar.className='clan-progress';const fill=document.createElement('div');fill.style.width=Math.min(100,progress/target*100)+'%';bar.append(fill);const button=document.createElement('button');button.type='button';button.textContent=claimed?'✓ Забрано всей командой':ready?'Забрать всем участникам':'Выполняется';button.disabled=!ready||claimed;button.addEventListener('click',()=>claimClanReward(m.id,button));card.append(head,meta,bar,button);milestoneHost.append(card);});
       }
-      await Promise.all([loadClanLeaderboard(),loadClanChat()]);
+      await Promise.all([loadClanLeaderboard(),loadClanChat(),loadClanWarStatus()]);
     }catch(error){clanMessage(error.message||'Не удалось загрузить кланы',true);}
   }
   async function clanAction(action,extra={}){
@@ -1702,6 +1715,43 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     const code=document.getElementById('clanInviteCode')?.textContent;if(!code)return;
     try{await navigator.clipboard.writeText(code);clanMessage('Код приглашения скопирован!');}
     catch(_){clanMessage('Код приглашения: '+code);}
+  });
+
+  async function loadClanWarStatus(){
+    const host=document.getElementById('clanWarStatus'),queueBtn=document.getElementById('clanWarQueueBtn'),claimBtn=document.getElementById('clanWarClaimBtn');
+    if(!host||!queueBtn||!clanInfoCache?.clan)return;
+    try{
+      const data=await request('clan_war_status'),status=data.clan_war_status||{};
+      const war=status.war;
+      queueBtn.hidden=Boolean(war&&war.status==='active');
+      queueBtn.disabled=Boolean(status.queued);
+      queueBtn.textContent=status.queued?'⏳ Ищем соперника...':'⚔️ Найти соперника';
+      claimBtn.hidden=!(war&&war.status==='finished');
+      if(!war){host.textContent=status.queued?'Клан в очереди. Как только найдётся соперник, начнётся 24-часовая битва.':'Пока нет активной битвы. Для поиска нужно минимум 3 участника, запускать может лидер.';return;}
+      const mine=war.my_side==='a'?Number(war.score_a):Number(war.score_b),theirs=war.my_side==='a'?Number(war.score_b):Number(war.score_a);
+      const opponent=war.my_side==='a'?war.clan_b:war.clan_a;
+      const left=war.status==='active'?Math.max(0,Math.ceil((new Date(war.ends_at).getTime()-Date.now())/60000)):0;
+      host.textContent=(war.status==='active'?'Соперник: ':'Битва завершена · соперник: ')+opponent+'\n'+mine.toLocaleString('ru-RU')+' : '+theirs.toLocaleString('ru-RU')+' боевых очков'+(war.status==='active'?' · осталось примерно '+left+' мин.':' · '+(war.result==='win'?'ПОБЕДА 🏆':war.result==='draw'?'НИЧЬЯ 🤝':'ПОРАЖЕНИЕ'));
+      host.style.whiteSpace='pre-line';
+    }catch(error){host.textContent='Не удалось загрузить статус клановой войны';console.error(error);}
+  }
+  document.getElementById('clanWarQueueBtn')?.addEventListener('click',async()=>{
+    const button=document.getElementById('clanWarQueueBtn');button.disabled=true;
+    try{
+      const data=await request('clan_war_queue'),result=data.clan_war_queue||{};
+      if(!result.ok)throw new Error(result.error||'Не удалось начать поиск');
+      clanMessage(result.queued?'Клан добавлен в очередь. Ждём соперника!':'Соперник найден! Битва началась на 24 часа.');
+      await loadClanWarStatus();
+    }catch(error){clanMessage(error.message,true);}finally{button.disabled=false;}
+  });
+  document.getElementById('clanWarClaimBtn')?.addEventListener('click',async()=>{
+    const button=document.getElementById('clanWarClaimBtn');button.disabled=true;
+    try{
+      const data=await request('claim_clan_war_reward'),claim=data.clan_war_claim||{};
+      if(!claim.ok)throw new Error(claim.error||'Награда недоступна');
+      await Promise.all([loadPlayer(),loadClanWarStatus()]);
+      clanMessage('🏆 Награда за битву: +'+claim.reward+' очков!');
+    }catch(error){clanMessage(error.message,true);}finally{button.disabled=false;}
   });
 
   async function loadReferralInfo() {
