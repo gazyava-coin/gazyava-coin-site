@@ -112,3 +112,12 @@ The world map now includes six regional treasure chests. A chest becomes availab
 Collecting all six relics unlocks the local-only Secret Chest and the Heart of Gazyava discovery. Four exploration titles track milestones: Scout (3 points of interest), Cartographer (3 regions), Collector (3 relics), and Gazyava Legend (secret chest opened).
 
 Storage keys: `gazyava_world_chests`, `gazyava_world_artifacts`, and `gazyava_world_secret`. These collectibles, titles, and world discovery remain in browser localStorage and are cosmetic only. They do not award game points, affect player balances, or provide server-authoritative ownership. Clearing browser storage or switching devices resets this local collection. Do not use it as eligibility for token distributions or competitive rewards without moving validation to trusted server-side state.
+
+
+## Weekly clan boss raid (November 2026)
+
+Each clan has one shared weekly boss, with a fresh 100,000 HP pool from Monday 00:00 UTC. Boss appearance rotates through Cloud Titan, Frost Golem, Spark Dragon, and Star Guardian. Every server-confirmed tap recorded in `daily_progress` deals 1 damage while the boss is alive. Damage is tracked per player and per clan-week; taps after defeat do not increase contribution.
+
+The Friends tab shows boss HP, phase thresholds (70%, 40%, 10%), personal damage/rank, and the top 10 contributors. A player who contributed at least 1 damage can claim once after defeat. Server rewards: rank 1 +500 points, rank 2 +300, rank 3 +200, all other contributors +100. Claiming is atomic and guarded by a unique key. The Edge Function `game` v38 exposes `clan_boss_status` and `claim_clan_boss_reward`; JWT verification remains enabled. Boss state, damage, and claims are RLS-enabled and inaccessible to anon/authenticated roles; only the service role is granted direct table/function access.
+
+Tables: `clan_bosses`, `clan_boss_damage`, `clan_boss_claims`. Boss damage is driven by a trigger on server-maintained `daily_progress`, not by client-submitted damage. SQL integration test covered initial and incremental damage, lethal hit, no post-defeat damage, status, reward balance, and claim. Browser JavaScript syntax was checked; Telegram live gameplay was not tested.
