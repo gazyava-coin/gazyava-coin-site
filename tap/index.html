@@ -122,6 +122,23 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .achievement-status{margin-top:6px;font-size:11px;color:var(--muted)}
 .achievement-status.done{color:var(--green);font-weight:850}
 
+
+/* Referral card */
+.referral-card{width:100%;margin-top:18px;padding:18px;background:linear-gradient(135deg,rgba(168,255,69,.11),rgba(255,255,255,.045));border:1px solid rgba(168,255,69,.28);border-radius:18px}
+.referral-card h2{margin:0 0 6px;color:var(--green);font-size:18px;text-align:center}
+.referral-sub{margin:0 0 14px;color:var(--muted);font-size:12px;text-align:center}
+.referral-rewards{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.referral-reward{padding:11px;border-radius:12px;background:rgba(255,255,255,.055);text-align:center}
+.referral-reward small{display:block;color:var(--muted);font-size:11px}
+.referral-reward strong{display:block;margin-top:3px;color:var(--green);font-size:22px}
+.referral-link-label{display:block;margin-bottom:7px;color:var(--muted);font-size:11px}
+.referral-link-row{display:flex;gap:8px}
+#referralLink{min-width:0;flex:1;padding:11px 10px;border:1px solid var(--line);border-radius:10px;background:#171226;color:var(--text);font-size:12px}
+#copyReferral{border:0;border-radius:10px;padding:0 13px;background:var(--green);color:#17200d;font-weight:900;white-space:nowrap}
+#copyReferral:disabled{opacity:.5}
+.referral-stats{display:flex;justify-content:space-between;gap:10px;margin-top:13px;color:var(--muted);font-size:12px}
+.referral-stats strong{color:var(--green)}
+#referralStatus{min-height:17px;margin-top:8px;color:var(--green);font-size:11px;text-align:center}
 </style>
 </head>
 <body>
@@ -155,6 +172,24 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     <span class="streak-chip">30 дней · +100</span>
   </div>
   <div class="streak-message" id="streakMessage">Заходи каждый день, чтобы продолжить серию</div>
+</section>
+<section class="referral-card" id="referralCard" aria-labelledby="referralTitle">
+  <h2 id="referralTitle">🎁 ПРИГЛАШАЙ ДРУЗЕЙ</h2>
+  <p class="referral-sub">Поделись ссылкой и получай очки за каждого нового игрока</p>
+  <div class="referral-rewards">
+    <div class="referral-reward"><small>Тебе за друга</small><strong>+100</strong></div>
+    <div class="referral-reward"><small>Другу за вход</small><strong>+50</strong></div>
+  </div>
+  <label class="referral-link-label" for="referralLink">Твоя персональная ссылка</label>
+  <div class="referral-link-row">
+    <input id="referralLink" type="text" readonly value="Загружаем ссылку...">
+    <button id="copyReferral" type="button" disabled>Копировать</button>
+  </div>
+  <div class="referral-stats">
+    <span>Приглашено: <strong id="referralCount">—</strong></span>
+    <span>Заработано: <strong id="referralEarned">—</strong></span>
+  </div>
+  <div id="referralStatus" aria-live="polite"></div>
 </section>
 <section class="shop" aria-labelledby="shopTitle">
   <h2 id="shopTitle">🛒 МАГАЗИН УЛУЧШЕНИЙ</h2>
@@ -512,6 +547,52 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
     }
   }
 
+  async function loadReferralInfo() {
+    const linkInput = document.getElementById('referralLink');
+    const copyButton = document.getElementById('copyReferral');
+    const countEl = document.getElementById('referralCount');
+    const earnedEl = document.getElementById('referralEarned');
+    const statusEl = document.getElementById('referralStatus');
+
+    try {
+      const data = await request('referral_info');
+      const referral = data.referral || {};
+      if (!referral.code) throw new Error('Сервер не вернул реферальный код');
+
+      const link = 'https://t.me/GazyavaTapBot?start=' + encodeURIComponent(referral.code);
+      linkInput.value = link;
+      copyButton.disabled = false;
+      countEl.textContent = Number(referral.invited_count || 0).toLocaleString('ru-RU');
+      earnedEl.textContent = Number(referral.earned || 0).toLocaleString('ru-RU') + ' очков';
+      statusEl.textContent = 'За каждого нового друга начисляется +100 очков';
+    } catch (error) {
+      linkInput.value = 'Не удалось загрузить ссылку';
+      statusEl.textContent = error.message || 'Ошибка загрузки рефералов';
+      console.error('Referral info loading failed:', error);
+    }
+  }
+
+  document.getElementById('copyReferral')?.addEventListener('click', async () => {
+    const linkInput = document.getElementById('referralLink');
+    const statusEl = document.getElementById('referralStatus');
+    const link = linkInput?.value || '';
+    if (!link.startsWith('https://t.me/')) return;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        linkInput.focus();
+        linkInput.select();
+        if (!document.execCommand('copy')) throw new Error('Не удалось скопировать ссылку');
+      }
+      statusEl.textContent = '✓ Ссылка скопирована! Отправь её другу.';
+    } catch (error) {
+      statusEl.textContent = 'Не удалось скопировать автоматически — выдели ссылку и скопируй её.';
+      linkInput.focus();
+      linkInput.select();
+    }
+  });
   async function loadLeaderboard() {
   const list = document.getElementById('leaderboardList');
   if (!list) return;
@@ -607,6 +688,8 @@ if (rankEl) {
   loadPlayer();
   loadLeaderboard();
   loadDailyProgress();
+  loadReferralInfo();
+
   loadShop();
   checkInStreak();
   setInterval(render, 500);
