@@ -722,7 +722,7 @@ input,button{font-family:inherit}
   <div id="mascotSkins" class="mascot-skins" aria-live="polite"></div>
 </section>
 <div class="combo-panel"><div class="combo-line"><span>⚡ КОМБО-СЕРИЯ</span><strong id="comboCount">0</strong></div><div class="combo-track"><div id="comboFill"></div></div><div class="combo-caption" id="comboCaption">Тапай ритмично, чтобы поддерживать серию</div></div>
-<div class="hint" id="hint">Нажимай на Gazyava, чтобы собирать очки</div>
+<div class="hint" id="hint">👆 Тапай одним или двумя пальцами — каждый тап приносит очки</div>
 <div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
 </section>
 <section class="profile-showcase" aria-label="Профиль игрока">
@@ -1806,6 +1806,20 @@ input,button{font-family:inherit}
     }catch(error){button.disabled=false;button.textContent='Повторить';if(toast){toast.textContent=error.message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}}
   }
 
+  let cloudFestivalActive = false;
+  let cloudFestivalEndsAt = 0;
+  function updateCloudFestivalCountdown() {
+    const status=document.getElementById('eventTimeStatus');
+    if(!status || !cloudFestivalActive || !cloudFestivalEndsAt) return;
+    const remaining=Math.max(0,cloudFestivalEndsAt-Date.now());
+    if(!remaining) { status.textContent='Фестиваль завершён'; return; }
+    const days=Math.floor(remaining/86400000);
+    const hours=Math.floor((remaining%86400000)/3600000);
+    const minutes=Math.floor((remaining%3600000)/60000);
+    const seconds=Math.floor((remaining%60000)/1000);
+    status.textContent='● Активно · осталось '+(days?days+' дн. ':'')+[hours,minutes,seconds].map(v=>String(v).padStart(2,'0')).join(':');
+  }
+
   async function loadSeasonEvent() {
     const host=document.getElementById('eventMilestones');
     if(!host) return;
@@ -1820,7 +1834,10 @@ input,button{font-family:inherit}
       const item=document.getElementById('eventItem');
       if(count) count.textContent=taps.toLocaleString('ru-RU');
       if(fill) fill.style.width=Math.min(100,taps/1000*100)+'%';
-      if(status) status.textContent=active?'● Активно · до 25 ноября, 00:00 UTC':'Фестиваль завершён';
+      cloudFestivalActive=active;
+      cloudFestivalEndsAt=event.ends_at?new Date(event.ends_at).getTime():0;
+      if(status) status.textContent=active?'Синхронизируем время...':'Фестиваль завершён';
+      updateCloudFestivalCountdown();
       const nextGoal=(Array.isArray(event.milestones)?event.milestones:[]).find(m=>taps<Number(m.target));
       const nextEl=document.getElementById('eventNextMilestone');
       if(nextEl) {
@@ -2931,6 +2948,7 @@ input,button{font-family:inherit}
   setInterval(requestGoldenCloud, 15000);
   setInterval(loadBoosters, 15000);
   setInterval(loadSeasonEvent, 20000);
+  setInterval(updateCloudFestivalCountdown, 1000);
   setInterval(loadFrostFestival, 20000);
   setInterval(loadLeaderboard, 30000);
   setInterval(loadWeeklyTournament, 60000);
