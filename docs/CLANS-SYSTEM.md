@@ -121,3 +121,8 @@ Each clan has one shared weekly boss, with a fresh 100,000 HP pool from Monday 0
 The Friends tab shows boss HP, phase thresholds (70%, 40%, 10%), personal damage/rank, and the top 10 contributors. A player who contributed at least 1 damage can claim once after defeat. Server rewards: rank 1 +500 points, rank 2 +300, rank 3 +200, all other contributors +100. Claiming is atomic and guarded by a unique key. The Edge Function `game` v38 exposes `clan_boss_status` and `claim_clan_boss_reward`; JWT verification remains enabled. Boss state, damage, and claims are RLS-enabled and inaccessible to anon/authenticated roles; only the service role is granted direct table/function access.
 
 Tables: `clan_bosses`, `clan_boss_damage`, `clan_boss_claims`. Boss damage is driven by a trigger on server-maintained `daily_progress`, not by client-submitted damage. SQL integration test covered initial and incremental damage, lethal hit, no post-defeat damage, status, reward balance, and claim. Browser JavaScript syntax was checked; Telegram live gameplay was not tested.
+
+
+## Player XP and levels (November 2026)
+
+The play screen now displays a server-derived lifetime XP bar. XP equals lifetime server-confirmed taps from `player_achievement_stats.lifetime_taps`; it is not spendable score. Levels and titles: 1 Novice (0), 2 Apprentice (100), 3 Tapper (500), 4 Explorer (1,500), 5 Master (5,000), 6 Expert (10,000), 7 Hero (25,000), 8 Legend (50,000), 9 Myth (100,000). The progression RPC `get_player_progression(bigint)` returns current/next level and progress percentage. Edge Function `game` v39 exposes `player_progression`, with Telegram initData validation and service-role-only RPC execution. Integration checks covered level 1, level 2, level 8 and max level 9.
