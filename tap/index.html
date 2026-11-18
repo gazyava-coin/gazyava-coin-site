@@ -518,6 +518,10 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .clan-boss-head{display:flex;align-items:center;gap:10px}.clan-boss-avatar{font-size:38px;filter:drop-shadow(0 0 12px #ff9b6b66)}.clan-boss-copy{flex:1;min-width:0}.clan-boss-copy h3{margin:0;font-size:15px}.clan-boss-copy small{color:var(--muted);font-size:10px}
 .clan-boss-hp{height:13px;margin:12px 0 5px;border-radius:99px;background:#130f22;overflow:hidden;border:1px solid #ffffff20}.clan-boss-hp>div{height:100%;width:100%;background:linear-gradient(90deg,#ff6b67,#ffbd5e);transition:width .35s}
 .clan-boss-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10px}.clan-boss-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}.clan-boss-stat{padding:9px;border-radius:10px;background:#130f2277}.clan-boss-stat small{display:block;color:var(--muted);font-size:9px}.clan-boss-stat strong{font-size:16px}.clan-boss-board{margin-top:9px}.clan-boss-board .clan-rank-row{grid-template-columns:28px 1fr auto}.clan-boss-actions{display:flex;gap:8px;margin-top:10px}.clan-boss-actions button{flex:1;padding:10px;border:0;border-radius:10px;background:var(--gold);color:#21182c;font-weight:900;font-size:11px}.clan-boss-actions button.secondary{background:#ffffff16;color:var(--text);border:1px solid #ffffff20}.clan-boss-actions button:disabled{opacity:.4}
+
+/* Player level and lifetime XP */
+.player-progression{margin:12px 0;padding:13px 15px;border:1px solid #8d75ff55;border-radius:15px;background:linear-gradient(120deg,#8d75ff18,#a8ff4510)}
+.player-progression-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.player-progression-head strong{font-size:13px}.player-progression-level{color:var(--gold);font-size:11px;font-weight:950}.player-progression-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;color:var(--muted);font-size:10px}.player-progression-track{height:8px;margin-top:7px;border-radius:99px;background:#403657;overflow:hidden}.player-progression-track>div{height:100%;width:0;background:linear-gradient(90deg,#8d75ff,#a8ff45);transition:width .35s}
 </style>
 </head>
 <body>
@@ -536,6 +540,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 <section class="stats">
 <div class="stat"><small>Твои очки</small><strong class="green" id="score">0</strong></div>
 <div class="stat"><small>Энергия</small><strong id="energyStat">500 / 500</strong></div>
+</section>
+<section class="player-progression" aria-label="Уровень игрока">
+  <div class="player-progression-head"><strong>⭐ УРОВЕНЬ ИГРОКА</strong><span class="player-progression-level" id="playerLevel">Ур. 1 · Новичок</span></div>
+  <div class="player-progression-meta"><span id="playerXp">0 XP</span><span id="playerNextLevel">До следующего уровня: 100 XP</span></div>
+  <div class="player-progression-track"><div id="playerProgressFill"></div></div>
 </section>
 <section class="game">
 <div class="mascot-stage">
@@ -1307,11 +1316,23 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     render();
   }
 
+  async function loadPlayerProgression() {
+    try {
+      const data=await request('player_progression'),p=data.progression||{};
+      const level=document.getElementById('playerLevel'),xp=document.getElementById('playerXp'),next=document.getElementById('playerNextLevel'),fill=document.getElementById('playerProgressFill');
+      if(level)level.textContent='Ур. '+Number(p.level||1)+' · '+(p.title||'Новичок');
+      if(xp)xp.textContent=Number(p.xp||0).toLocaleString('ru-RU')+' XP';
+      if(next)next.textContent=p.maxed?'Максимальный уровень достигнут!':('До ур. '+p.next_level+' · '+Math.max(0,Number(p.next_xp||0)-Number(p.xp||0)).toLocaleString('ru-RU')+' XP');
+      if(fill)fill.style.width=Math.max(0,Math.min(100,Number(p.progress_percent||0)))+'%';
+    } catch(error) { console.error('Player progression failed:',error); }
+  }
+
   async function loadPlayer() {
     try {
       const data = await request('load');
       applyServerData(data);
       loadBoosters();
+      loadPlayerProgression();
     } catch (error) {
       hint.textContent = error.message;
       console.error('Profile loading failed:', error);
@@ -2424,6 +2445,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         pendingTaps = Math.max(0, pendingTaps - batchSize);
         applyServerData(data);
         render();
+        loadPlayerProgression();
         loadDailyProgress();
   loadSeasonEvent();
         loadFrostFestival();
