@@ -106,6 +106,9 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .daily-task:last-child{border-bottom:0;padding-bottom:0}
 .event-card{width:100%;margin-top:14px;padding:18px;border:1px solid #8b7bff66;border-radius:18px;background:linear-gradient(145deg,rgba(117,93,255,.16),rgba(70,205,255,.07));box-shadow:0 12px 35px #05030d35}
 .event-card h2{margin:0 0 6px;color:#c8bcff;font-size:18px;text-align:center}
+.frost-event-card{border-color:#75d7ff66;background:linear-gradient(145deg,rgba(69,180,255,.17),rgba(190,220,255,.06))}
+.frost-event-card h2{color:#a9e5ff}
+.frost-progress{background:#1b3851}.frost-progress>div{background:linear-gradient(90deg,#5ccaff,#e1f7ff)}
 .event-summary{display:flex;align-items:baseline;justify-content:center;gap:5px;flex-wrap:wrap;color:var(--muted);font-size:11px}
 .event-summary strong{color:#fff;font-size:22px;font-variant-numeric:tabular-nums}
 #eventTimeStatus{width:100%;text-align:center;color:#b9adff;margin-top:3px}
@@ -320,6 +323,7 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 .mascot.skin-cloud-royal svg{filter:sepia(.65) saturate(2) hue-rotate(325deg) brightness(1.08)}
 .mascot.skin-aurora-sprite svg{filter:hue-rotate(175deg) saturate(1.8) brightness(1.22)}
 .mascot.skin-aurora-emperor svg{filter:hue-rotate(220deg) saturate(2) brightness(1.3) drop-shadow(0 0 7px #a78bfa)}
+.mascot.skin-frost-fox svg{filter:hue-rotate(165deg) saturate(1.4) brightness(1.42) drop-shadow(0 0 9px #8de4ff)}
 @media(max-width:360px){.mascot-skins{grid-template-columns:1fr}.skin-card{padding:8px}}
 .game-tabs{position:sticky;top:6px;z-index:15;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:8px 0 16px;padding:6px;border:1px solid #ffffff20;border-radius:16px;background:#171226ed;backdrop-filter:blur(16px);box-shadow:0 8px 24px #05030d55}
 .game-tab{min-width:0;padding:10px 3px;border:1px solid transparent;border-radius:11px;background:transparent;color:#b9b3cc;font:800 10px/1.2 system-ui;cursor:pointer;white-space:nowrap}
@@ -439,6 +443,19 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div id="eventLeaderboard"><div class="daily-task">Загружаем рейтинг...</div></div>
     <div class="event-rank-self" id="eventMyRank">Твоя позиция: —</div>
     <button id="eventRankClaim" type="button" disabled>Итоговые награды после 25 ноября</button>
+  </div>
+</section>
+<section class="event-card frost-event-card" aria-labelledby="frostEventTitle">
+  <h2 id="frostEventTitle">❄️ ФЕСТИВАЛЬ ЛЕДЯНОГО СИЯНИЯ</h2>
+  <p class="daily-subtitle">Следующий сезон · 1–7 декабря · собери 2 000 тапов и открой скин Ледяной лис</p>
+  <div class="event-summary"><strong id="frostTapCount">—</strong><span> / 2 000 зимних тапов</span><span id="frostTimeStatus">Старт 1 декабря, 00:00 UTC</span></div>
+  <div class="event-progress frost-progress"><div id="frostProgressFill"></div></div>
+  <div id="frostMilestones"><div class="daily-task">Загружаем зимние этапы...</div></div>
+  <div class="event-rankings">
+    <h3>🏆 ЗИМНИЙ РЕЙТИНГ · ТОП-10</h3>
+    <div id="frostLeaderboard"><div class="daily-task">Загружаем рейтинг...</div></div>
+    <div class="event-rank-self" id="frostMyRank">Твоя позиция: —</div>
+    <button id="frostRankClaim" type="button" disabled>Награды после 8 декабря</button>
   </div>
 </section>
 <section class="daily-missions" aria-labelledby="dailyMissionsTitle">
@@ -587,7 +604,8 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     {id:'star_wanderer',name:'Звёздный странник',emoji:'🌠',item:'star_core',itemName:'Звёздное ядро',className:'skin-star-wanderer'},
     {id:'cloud_royal',name:'Король облаков',emoji:'👑',item:'golden_cloud',itemName:'Золотое облачко',className:'skin-cloud-royal'},
     {id:'aurora_sprite',name:'Фея авроры',emoji:'🧚',item:'aurora_shard',itemName:'Осколки авроры',cost:2,className:'skin-aurora-sprite'},
-    {id:'aurora_emperor',name:'Император сияния',emoji:'🌌',item:'aurora_shard',itemName:'Осколки авроры',cost:3,className:'skin-aurora-emperor'}
+    {id:'aurora_emperor',name:'Император сияния',emoji:'🌌',item:'aurora_shard',itemName:'Осколки авроры',cost:3,className:'skin-aurora-emperor'},
+    {id:'frost_fox',name:'Ледяной лис',emoji:'🦊',item:'event_unlock',itemName:'Награда зимнего фестиваля',cost:1,className:'skin-frost-fox'}
   ];
   let festivalShardBalance = 0;
   let cachedCollectibles = [];
@@ -596,7 +614,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     const counts=new Map((Array.isArray(collection)?collection:[]).map(x=>[x.id,Number(x.quantity||0)]));
     const owned=new Set(exclusiveMascotSkins.map(x=>x.id)); list.replaceChildren();
     EXCLUSIVE_SKINS.forEach(skin=>{
-      const count=skin.item==='aurora_shard'?festivalShardBalance:(counts.get(skin.item)||0), cost=Number(skin.cost||3), has=owned.has(skin.id);
+      const count=skin.item==='aurora_shard'?festivalShardBalance:(skin.item==='event_unlock'?(owned.has(skin.id)?1:0):(counts.get(skin.item)||0)), cost=Number(skin.cost||3), has=owned.has(skin.id);
       const card=document.createElement('div'); card.className='skin-card'+(has?' active':'');
       const avatar=document.createElement('div'); avatar.className='skin-avatar'; avatar.textContent=skin.emoji;
       const info=document.createElement('div'); info.className='skin-info';
@@ -628,7 +646,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     const allSkins=[...MASCOT_SKINS,...exclusiveUnlocked];
     if(initialized && exclusiveSkinsLoaded && !unlocked.some(s=>s.id===equippedMascotSkin) && !exclusiveUnlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
     const current=allSkins.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
-    mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden','skin-mint-guardian','skin-star-wanderer','skin-cloud-royal','skin-aurora-sprite','skin-aurora-emperor');
+    mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden','skin-mint-guardian','skin-star-wanderer','skin-cloud-royal','skin-aurora-sprite','skin-aurora-emperor','skin-frost-fox');
     if(current.className) mascot.classList.add(current.className);
     const next=MASCOT_SKINS.find(s=>score<s.unlock);
     const previous=[...unlocked].reverse()[0];
@@ -924,6 +942,64 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     }
   }
 
+
+  async function loadFrostFestival() {
+    const host=document.getElementById('frostMilestones'); if(!host) return;
+    try {
+      const response=await request('frost_event_status');const event=response.event||{};
+      const taps=Number(event.taps||0),active=Boolean(event.active),claims=event.claimed||{};
+      const count=document.getElementById('frostTapCount'),fill=document.getElementById('frostProgressFill'),status=document.getElementById('frostTimeStatus');
+      if(count) count.textContent=taps.toLocaleString('ru-RU');
+      if(fill) fill.style.width=Math.min(100,taps/2000*100)+'%';
+      if(status) status.textContent=active?'Событие активно до 8 декабря, 00:00 UTC':(taps?'Событие завершено':'Старт 1 декабря, 00:00 UTC');
+      host.replaceChildren();
+      (event.milestones||[]).forEach(m=>{
+        const done=taps>=Number(m.target),claimed=Boolean(claims[m.id]);
+        const row=document.createElement('div');row.className='event-milestone';
+        const head=document.createElement('div');head.className='event-milestone-head';
+        const title=document.createElement('span');title.textContent=m.title;
+        const reward=document.createElement('span');reward.textContent='+'+Number(m.reward)+' очков'+(m.skin?' · 🦊 эксклюзивный скин':'');
+        head.append(title,reward);
+        const meta=document.createElement('div');meta.className='event-milestone-meta';meta.textContent=taps.toLocaleString('ru-RU')+' / '+Number(m.target).toLocaleString('ru-RU')+' тапов';
+        const button=document.createElement('button');button.type='button';button.textContent=claimed?'✓ Получено':done?'Забрать награду':'В процессе';button.disabled=!active||!done||claimed;
+        button.addEventListener('click',()=>claimFrostReward(m.id,button));
+        row.append(head,meta,button);host.append(row);
+      });
+      await loadFrostLeaderboard();
+    } catch(error){host.textContent='Не удалось загрузить зимний фестиваль';console.error('Frost event failed:',error);}
+  }
+
+  async function loadFrostLeaderboard() {
+    const list=document.getElementById('frostLeaderboard'),mine=document.getElementById('frostMyRank'),button=document.getElementById('frostRankClaim');
+    if(!list) return;
+    try {
+      const response=await request('frost_event_leaderboard'),data=response.frost_leaderboard||{},rows=data.leaderboard||[];
+      list.replaceChildren();
+      if(!rows.length){const empty=document.createElement('div');empty.className='daily-task';empty.textContent='Пока нет участников — стань первым!';list.append(empty);}
+      rows.forEach(entry=>{const row=document.createElement('div');row.className='event-rank-row';const rank=document.createElement('strong');rank.textContent='#'+entry.rank;const name=document.createElement('span');name.textContent=entry.name||'Игрок';const taps=document.createElement('b');taps.textContent=Number(entry.taps||0).toLocaleString('ru-RU')+' тапов';row.append(rank,name,taps);list.append(row);});
+      const my=data.my_rank;if(mine)mine.textContent=my?.rank?'Твоя позиция: #'+my.rank+' · '+Number(my.taps||0).toLocaleString('ru-RU')+' тапов':'Ты пока не в таблице';
+      const eligible=Boolean(data.finalized)&&Number(my?.rank||99)<=10;
+      if(button){button.disabled=!eligible;button.textContent=data.finalized?(eligible?'Забрать награду за место #'+my.rank:'Итоги завершены · вне топ-10'):'Награды станут доступны 8 декабря';button.onclick=eligible?()=>claimFrostRank(button):null;}
+    }catch(error){list.textContent='Не удалось загрузить зимний рейтинг';console.error(error);}
+  }
+
+  async function claimFrostReward(id,button){
+    button.disabled=true;button.textContent='Забираем...';
+    try{const response=await request('claim_frost_reward',{milestone_id:id}),claim=response.claim||{};
+      if(!claim.ok)throw new Error(claim.reason==='not_ready'?'Пока недостаточно тапов':claim.reason==='already_claimed'?'Уже получено':'Событие недоступно');
+      await Promise.all([loadFrostFestival(),loadPlayer(),loadDailyMissions()]);
+      if(toast){toast.textContent='❄️ Награда: +'+claim.reward+' очков'+(claim.skin?' · скин Ледяной лис открыт':'');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200);}
+    }catch(error){button.disabled=false;button.textContent='Повторить';if(toast){toast.textContent=error.message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}}
+  }
+
+  async function claimFrostRank(button){
+    button.disabled=true;button.textContent='Забираем...';
+    try{const response=await request('claim_frost_rank_reward'),claim=response.frost_rank_claim||{};
+      if(!claim.claimed)throw new Error(claim.reason==='event_not_finished'?'Фестиваль ещё не завершён':claim.reason==='not_in_top_10'?'Ты вне первой десятки':'Награда уже получена');
+      await Promise.all([loadFrostLeaderboard(),loadPlayer(),loadDailyMissions()]);
+      if(toast){toast.textContent='🏆 Зимний фестиваль · #'+claim.rank+' · +'+claim.score_reward+' очков';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200);}
+    }catch(error){button.disabled=false;button.textContent='Повторить';if(toast){toast.textContent=error.message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}}
+  }
 
   async function loadSeasonEvent() {
     const host=document.getElementById('eventMilestones');
@@ -1766,6 +1842,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   loadDailySpinStatus();
   loadReferralInfo();
   loadSeasonEvent();
+  loadFrostFestival();
 
   loadShop();
   loadBoosters();
@@ -1774,6 +1851,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   setInterval(requestGoldenCloud, 15000);
   setInterval(loadBoosters, 15000);
   setInterval(loadSeasonEvent, 20000);
+  setInterval(loadFrostFestival, 20000);
   setInterval(loadLeaderboard, 30000);
   setInterval(loadWeeklyTournament, 60000);
 })();
