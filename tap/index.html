@@ -137,6 +137,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .shop h2{margin:0 0 5px;color:#f5c84c;font-size:18px;text-align:center}.shop-sub{margin:0 0 12px;text-align:center;color:var(--muted);font-size:12px}
 .shop-balance{text-align:center;color:var(--green);font-weight:900;margin-bottom:10px}.upgrade{padding:12px 0;border-top:1px solid rgba(255,255,255,.09)}
 .upgrade-head{display:flex;justify-content:space-between;gap:8px;font-weight:800}.upgrade-desc{font-size:12px;color:var(--muted);margin:4px 0 8px}.upgrade button{width:100%;border:0;border-radius:10px;padding:10px;background:var(--green);color:#17200d;font-weight:900;font-size:14px}.upgrade button:disabled{opacity:.45}
+.booster-shop{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12)}.booster-shop h3{margin:0 0 5px;text-align:center;color:var(--gold);font-size:16px}.booster-status{margin:5px 0 8px;color:var(--green);font-size:11px;font-weight:800}
 
 
 .achievements{width:100%;margin-top:18px;padding:18px;background:rgba(255,255,255,.06);border:1px solid rgba(168,255,69,.22);border-radius:18px}
@@ -413,6 +414,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <p class="shop-sub">Прокачивай игру за накопленные очки</p>
   <div class="shop-balance" id="shopBalance">Загружаем баланс...</div>
   <div id="shopItems">Загружаем улучшения...</div>
+  <div class="booster-shop"><h3>⚡ БУСТЕРЫ</h3><p class="shop-sub">Временные усиления — покупка и действие проверяются сервером</p><div id="boosterItems">Загружаем бустеры...</div></div>
 </section>
 
 <section class="achievements" aria-labelledby="achievementsTitle">
@@ -920,6 +922,58 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   }
 
 
+  async function loadBoosters() {
+    const list = document.getElementById('boosterItems');
+    if (!list) return;
+    try {
+      const data = await request('booster_status');
+      const status = data.booster_status || {};
+      list.replaceChildren();
+      const items = [
+        { id: 'double_points', name: '✨ Двойные очки', description: 'Каждый тап приносит в 2 раза больше очков в течение 60 секунд.', price: 1200, active: Boolean(status.multiplier_active), activeText: status.multiplier_until ? 'Активен до ' + new Date(status.multiplier_until).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '' },
+        { id: 'energy_refill', name: '🔋 Полная энергия', description: 'Мгновенно восстанавливает энергию до максимума.', price: 350, active: false, activeText: '' }
+      ];
+      items.forEach(item => {
+        const card = document.createElement('div'); card.className = 'upgrade';
+        const head = document.createElement('div'); head.className = 'upgrade-head';
+        const name = document.createElement('span'); name.textContent = item.name;
+        const price = document.createElement('span'); price.style.color = 'var(--green)'; price.textContent = item.price.toLocaleString('ru-RU') + ' очков';
+        head.append(name, price);
+        const desc = document.createElement('div'); desc.className = 'upgrade-desc'; desc.textContent = item.description;
+        const state = document.createElement('div'); state.className = 'booster-status'; state.textContent = item.active ? '✓ ' + item.activeText : (item.id === 'double_points' ? 'Не активен' : 'Доступен в любой момент');
+        const btn = document.createElement('button');
+        btn.textContent = item.active ? 'Уже действует' : 'Купить · ' + item.price.toLocaleString('ru-RU') + ' очков';
+        btn.disabled = item.active || score < item.price;
+        btn.addEventListener('click', async () => {
+          btn.disabled = true; btn.textContent = 'Покупаем...';
+          try {
+            const result = await request('buy_booster', { booster: item.id });
+            const purchase = result.booster_purchase || {};
+            if (!purchase.ok) {
+              alert(purchase.reason === 'not_enough_points' ? 'Недостаточно очков' : 'Этот бустер уже активен');
+            } else {
+              applyServerData({ score: purchase.score, energy: purchase.energy });
+              toast.textContent = item.id === 'double_points' ? '✨ Двойные очки на 60 секунд!' : '🔋 Энергия восстановлена!';
+              toast.classList.add('show');
+              clearTimeout(toastTimer);
+              toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
+              if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            }
+            await loadBoosters();
+            await loadShop();
+          } catch (error) {
+            alert(error.message || 'Не удалось купить бустер');
+            await loadBoosters();
+          }
+        });
+        card.append(head, desc, state, btn); list.appendChild(card);
+      });
+    } catch (error) {
+      list.textContent = 'Не удалось загрузить бустеры';
+      console.error('Booster status loading failed:', error);
+    }
+  }
+
   async function loadAchievements() {
     const list = document.getElementById('achievementsList');
     if (!list) return;
@@ -1341,6 +1395,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   loadReferralInfo();
 
   loadShop();
+  loadBoosters();
   checkInStreak().then(loadStreakCalendar);
   setInterval(render, 500);
   setInterval(requestGoldenCloud, 15000);
