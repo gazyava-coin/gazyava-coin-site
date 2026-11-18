@@ -92,6 +92,13 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   font-weight: 800;
 }
 
+.daily-spin{width:100%;margin:0 0 16px;padding:18px;border:1px solid #ffd36b55;border-radius:18px;background:linear-gradient(135deg,rgba(255,211,107,.16),rgba(168,255,69,.08));text-align:center;box-shadow:0 12px 35px #05030d45}
+.daily-spin h2{margin:0 0 5px;color:var(--gold);font-size:18px}.daily-spin p{margin:0 0 12px;color:var(--muted);font-size:12px}
+.spin-wheel{width:76px;height:76px;margin:0 auto 12px;border:5px solid #ffd36b;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#ffd36b 0 16.6%,#b5ff62 16.6% 33.2%,#8e70cf 33.2% 49.8%,#ffd36b 49.8% 66.4%,#b5ff62 66.4% 83%,#8e70cf 83%);box-shadow:0 0 22px #ffd36b35;font-size:28px}
+.spin-wheel.spinning{animation:spinWheel 1.15s cubic-bezier(.15,.75,.2,1)}@keyframes spinWheel{to{transform:rotate(1080deg)}}
+.daily-spin button{width:100%;border:0;border-radius:11px;padding:12px;background:var(--gold);color:#2b210d;font-size:14px;font-weight:950}.daily-spin button:disabled{opacity:.55}
+#dailySpinResult{min-height:18px;margin-top:9px;color:var(--green);font-size:12px;font-weight:850}.daily-spin-odds{margin-top:9px;color:var(--muted);font-size:10px;line-height:1.5}
+@media(prefers-reduced-motion:reduce){.spin-wheel.spinning{animation:none}}
 .daily-tasks{width:100%;margin-top:22px;padding:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px}
 .daily-tasks h2{margin:0 0 6px;color:#f5c84c;font-size:18px;text-align:center}
 .daily-subtitle{margin:0 0 14px;color:var(--muted);font-size:12px;text-align:center}
@@ -337,6 +344,13 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 </section>
 </div>
 <div class="tab-panel" data-tab-panel="tasks">
+<section class="daily-spin" aria-labelledby="dailySpinTitle">
+  <h2 id="dailySpinTitle">🎰 ЕЖЕДНЕВНАЯ РУЛЕТКА</h2><p>Один бесплатный спин в день — забирай игровые очки</p>
+  <div class="spin-wheel" id="dailySpinWheel" aria-hidden="true">🎁</div>
+  <button id="dailySpinButton" type="button" disabled>Проверяем доступность...</button>
+  <div id="dailySpinResult" aria-live="polite"></div>
+  <div class="daily-spin-odds">Шансы: +2 (35%), +5 (30%), +10 (20%), +20 (10%), +50 (4%), +100 (1%). Награды — только игровые очки.</div>
+</section>
 <section class="daily-tasks" aria-labelledby="dailyTasksTitle">
   <h2 id="dailyTasksTitle">🎯 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</h2>
   <p class="daily-subtitle">Тапай каждый день и забирай дополнительные очки</p>
@@ -515,6 +529,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   }
 
   let taskNoticeCount = 0;
+  let spinAvailable = false;
   let friendNoticeCount = 0;
   function updateTabNotices() {
     const tasksNotice = document.getElementById('tasksNotice');
@@ -653,7 +668,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
     taskNoticeCount = DAILY_TASKS.filter(task =>
       taps >= task.target && !Boolean(progress?.[task.claimedKey])
-    ).length;
+    ).length + (spinAvailable ? 1 : 0);
     updateTabNotices();
 
     DAILY_TASKS.forEach((task) => {
@@ -707,6 +722,49 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       list.appendChild(item);
     });
   }
+
+  async function loadDailySpinStatus() {
+    const button = document.getElementById('dailySpinButton');
+    const resultEl = document.getElementById('dailySpinResult');
+    if (!button) return;
+    try {
+      const data = await request('daily_spin_status');
+      const spin = data.spin || {};
+      spinAvailable = !spin.spun_today;
+      button.disabled = !spinAvailable;
+      button.textContent = spinAvailable ? '🎰 Крутить рулетку' : '✓ Сегодня уже крутили';
+      if (spin.spun_today && resultEl && spin.reward != null) resultEl.textContent = 'Сегодня выпало: +' + Number(spin.reward).toLocaleString('ru-RU') + ' очков';
+      updateTabNotices();
+    } catch (error) {
+      button.disabled = true; button.textContent = 'Рулетка временно недоступна';
+      console.error('Daily spin status failed:', error);
+    }
+  }
+
+  async function spinDailyReward() {
+    const button = document.getElementById('dailySpinButton');
+    const wheel = document.getElementById('dailySpinWheel');
+    const resultEl = document.getElementById('dailySpinResult');
+    if (!button || button.disabled) return;
+    button.disabled = true; button.textContent = 'Крутим...';
+    if (wheel) { wheel.classList.remove('spinning'); void wheel.offsetWidth; wheel.classList.add('spinning'); }
+    if (resultEl) resultEl.textContent = 'Удачи! ✨';
+    try {
+      const data = await request('daily_spin');
+      const spin = data.spin || {}; spinAvailable = false;
+      const reward = Number(spin.reward || 0);
+      if (resultEl) resultEl.textContent = spin.already_spun ? 'Сегодня уже крутили: +' + reward + ' очков' : '🎉 Тебе выпало +' + reward + ' игровых очков!';
+      button.textContent = '✓ До завтра!';
+      applyServerData(await request('load'));
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      await loadDailyProgress(); updateTabNotices();
+    } catch (error) {
+      button.disabled = false; button.textContent = 'Попробовать ещё раз';
+      if (resultEl) resultEl.textContent = error.message || 'Не удалось прокрутить рулетку';
+      console.error('Daily spin failed:', error);
+    } finally { if (wheel) wheel.classList.remove('spinning'); }
+  }
+  document.getElementById('dailySpinButton')?.addEventListener('click', spinDailyReward);
 
   async function loadDailyProgress() {
     const list = document.getElementById('dailyTasksList');
@@ -1123,6 +1181,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         applyServerData(data);
         render();
         loadDailyProgress();
+  loadDailySpinStatus();
       }
     } catch (error) {
       pendingTaps = 0;
