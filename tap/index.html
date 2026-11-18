@@ -559,7 +559,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
       const referral = data.referral || {};
       if (!referral.code) throw new Error('Сервер не вернул реферальный код');
 
-      const link = 'https://t.me/GazyavaTapBot?start=' + encodeURIComponent(referral.code);
+      const link = 'https://t.me/GazyavaTapBot/gazyavatap?startapp=' + encodeURIComponent(referral.code);
       linkInput.value = link;
       copyButton.disabled = false;
       countEl.textContent = Number(referral.invited_count || 0).toLocaleString('ru-RU');
