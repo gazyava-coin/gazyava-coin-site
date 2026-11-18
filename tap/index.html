@@ -685,6 +685,8 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="world-artifacts" id="worldArtifactGrid"></div>
     <div class="world-secret-chest" id="worldSecretChest"><strong>🌟 Тайник Первого Облака</strong><p id="worldSecretText">Собери все шесть региональных артефактов.</p><button id="worldSecretOpen" type="button" disabled>Тайна запечатана</button></div>
     <p class="world-treasure-sub" id="worldTreasureStatus" aria-live="polite">Сокровища сохраняются на этом устройстве и не дают игровые очки.</p>
+    <div class="world-poi-head" style="margin-top:12px"><strong style="font-size:11px">🏅 Экспедиционные звания</strong><span class="world-poi-count" id="worldQuestCount">0 / 4</span></div>
+    <div id="worldQuestList" class="world-journal-list"></div>
   </section>
 
 </section>
@@ -1054,6 +1056,17 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     if(secretButton){secretButton.disabled=artifactCount<6||openedWorldSecret;secretButton.textContent=openedWorldSecret?'🏆 Сокровище найдено':artifactCount===6?'Открыть тайник':'Тайна запечатана';}
     const status=document.getElementById('worldTreasureStatus');
     if(status)status.textContent=openedWorldSecret?'Коллекция завершена! Сердце Gazyava добавлено в журнал.':'Открыто сундуков: '+openedWorldChests.length+'/6 · Артефактов: '+artifactCount+'/6. Это локальная косметическая коллекция без игровых начислений.';
+    const totalPoi=discoveredWorldPois.filter(key=>{const [z,p]=key.split(':');return Boolean(WORLD_POIS[z]?.some(item=>item[0]===p));}).length;
+    const visited=discoveredWorldZones.length;
+    const quests=[
+      {id:'scout',name:'Следопыт',desc:'Найти 3 достопримечательности',done:totalPoi>=3,icon:'🧭'},
+      {id:'cartographer',name:'Картограф',desc:'Исследовать 3 региона',done:visited>=3,icon:'🗺️'},
+      {id:'collector',name:'Коллекционер',desc:'Собрать 3 артефакта',done:artifactCount>=3,icon:'💎'},
+      {id:'legend',name:'Легенда Gazyava',desc:'Открыть все сундуки и тайник',done:openedWorldSecret,icon:'👑'}
+    ];
+    const questCount=document.getElementById('worldQuestCount'),questList=document.getElementById('worldQuestList');
+    if(questCount)questCount.textContent=quests.filter(q=>q.done).length+' / '+quests.length;
+    if(questList){questList.replaceChildren();quests.forEach(q=>{const row=document.createElement('div');row.className='world-journal-row';const icon=document.createElement('span');icon.textContent=q.done?'🏅':q.icon;const copy=document.createElement('strong');copy.textContent=q.name+' · '+q.desc;const state=document.createElement('small');state.textContent=q.done?'Получено':'В процессе';row.append(icon,copy,state);questList.appendChild(row);});}
   }
 
   try {
