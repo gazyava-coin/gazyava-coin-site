@@ -531,6 +531,13 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .profile-showcase-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#d7e6c7}.profile-showcase-foot button{border:1px solid #a8ff4544;border-radius:9px;padding:7px 9px;background:#a8ff4518;color:#dfffbd;font-size:10px;font-weight:800}
 .profile-featured{margin-top:9px;font-size:11px;color:var(--muted);line-height:1.5}.profile-featured .featured-trophy{display:inline-flex;align-items:center;gap:4px;margin:4px 5px 0 0;padding:5px 8px;border-radius:9px;background:#ffffff0b;color:#f5e7b5}
 
+
+.season-pass-card{margin:16px 0;padding:16px;border:1px solid #b69cff45;border-radius:19px;background:linear-gradient(145deg,rgba(141,117,255,.15),rgba(255,255,255,.035));box-shadow:0 12px 30px #0003}
+.season-pass-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.season-pass-head h2{margin:4px 0;font-size:18px;color:#e4d7ff}.season-pass-kicker{font-size:9px;letter-spacing:1.5px;color:#b9a4ff;font-weight:900}.season-pass-head>span{font-size:10px;color:var(--muted);text-align:right}
+.season-pass-total{display:flex;align-items:baseline;gap:5px;margin:12px 0 7px}.season-pass-total strong{font-size:24px;color:#d6c4ff}.season-pass-total span{font-size:11px;color:var(--muted)}
+.season-pass-track{height:9px;background:#ffffff13;border-radius:99px;overflow:hidden;margin-bottom:13px}.season-pass-track>div{height:100%;width:0;background:linear-gradient(90deg,#8d75ff,#b8a2ff);border-radius:99px;transition:width .3s}
+.season-pass-tier{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:9px;padding:10px;margin:7px 0;border-radius:12px;background:#ffffff09;border:1px solid #ffffff0b}.season-pass-tier.done{border-color:#a8ff4535;background:#a8ff4509}.season-pass-tier-icon{font-size:20px}.season-pass-tier-info{display:flex;flex-direction:column;gap:3px;min-width:0}.season-pass-tier-info strong{font-size:12px}.season-pass-tier-info small{font-size:10px;color:var(--muted)}.season-pass-tier button{border:0;border-radius:9px;padding:8px 10px;background:#b49cff;color:#211735;font-size:10px;font-weight:900}.season-pass-tier button:disabled{background:#ffffff14;color:#9c98a8}.season-pass-foot{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.45}
+
 </style>
 </head>
 <body>
@@ -607,6 +614,14 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <button id="dailySpinButton" type="button" disabled>Проверяем доступность...</button>
   <div id="dailySpinResult" aria-live="polite"></div>
   <div class="daily-spin-odds">Шансы: +2 (35%), +5 (30%), +10 (20%), +20 (10%), +50 (4%), +100 (1%). Награды — только игровые очки.</div>
+</section>
+<section class="season-pass-card" aria-labelledby="seasonPassTitle">
+  <div class="season-pass-head"><div><div class="season-pass-kicker">MONTHLY REWARDS TRACK</div><h2 id="seasonPassTitle">🎟️ СЕЗОННЫЙ ПРОПУСК</h2></div><span id="seasonPassDates">Загрузка...</span></div>
+  <p class="daily-subtitle">Набирай подтверждённые сервером тапы в течение месяца и забирай награды по этапам.</p>
+  <div class="season-pass-total"><strong id="seasonPassPoints">0</strong><span> / 3 000 очков пропуска</span></div>
+  <div class="season-pass-track"><div id="seasonPassFill"></div></div>
+  <div id="seasonPassTiers"><div class="daily-task">Загружаем награды сезона...</div></div>
+  <div class="season-pass-foot">Все награды — внутриигровые очки. Каждый этап можно забрать один раз за сезон.</div>
 </section>
 <section class="daily-tasks" aria-labelledby="dailyTasksTitle">
   <h2 id="dailyTasksTitle">🎯 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</h2>
@@ -1381,6 +1396,40 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     else if(navigator.clipboard)navigator.clipboard.writeText(shareText+' '+shareUrl).then(()=>{hint.textContent='Ссылка на профиль скопирована';}).catch(()=>{});
   });
 
+
+  async function loadSeasonPass() {
+    const list=document.getElementById('seasonPassTiers');
+    if(!list)return;
+    try{
+      const data=await request('season_pass_status');
+      const pass=data.season_pass||{};
+      const points=Math.max(0,Number(pass.points||0));
+      const tiers=Array.isArray(pass.tiers)?pass.tiers:[];
+      const total=document.getElementById('seasonPassPoints');if(total)total.textContent=points.toLocaleString('ru-RU');
+      const fill=document.getElementById('seasonPassFill');if(fill)fill.style.width=Math.min(100,points/3000*100)+'%';
+      const dates=document.getElementById('seasonPassDates');
+      if(dates&&pass.season_start&&pass.season_end){const fmt=v=>new Date(v+'T00:00:00Z').toLocaleDateString('ru-RU',{day:'numeric',month:'short',timeZone:'UTC'});dates.textContent=fmt(pass.season_start)+' — '+fmt(pass.season_end);}
+      list.replaceChildren();
+      const claimed=pass.claimed||{};
+      tiers.forEach(t=>{
+        const isClaimed=Boolean(claimed[t.id]),ready=points>=Number(t.required||0);
+        const row=document.createElement('div');row.className='season-pass-tier'+(isClaimed?' done':'');
+        const icon=document.createElement('div');icon.className='season-pass-tier-icon';icon.textContent=isClaimed?'✅':ready?'🎁':'🔒';
+        const info=document.createElement('div');info.className='season-pass-tier-info';
+        const title=document.createElement('strong');title.textContent=t.title;
+        const meta=document.createElement('small');meta.textContent=Number(t.required).toLocaleString('ru-RU')+' тапов · награда +'+Number(t.reward).toLocaleString('ru-RU')+' очков';
+        info.append(title,meta);
+        const btn=document.createElement('button');btn.type='button';btn.disabled=!ready||isClaimed;btn.textContent=isClaimed?'Получено':ready?'Забрать':'В процессе';
+        btn.addEventListener('click',async()=>{
+          btn.disabled=true;btn.textContent='Забираем...';
+          try{const claim=await request('claim_season_pass_reward',{tier_id:t.id});const reward=claim.season_pass_claim?.reward||t.reward;hint.textContent='Награда пропуска: +'+Number(reward).toLocaleString('ru-RU')+' очков';await loadPlayer();await loadSeasonPass();}
+          catch(err){hint.textContent=err.message||'Не удалось забрать награду';btn.disabled=false;btn.textContent='Забрать';}
+        });
+        row.append(icon,info,btn);list.append(row);
+      });
+    }catch(error){console.error('Season pass loading failed:',error);list.textContent='Не удалось загрузить сезонный пропуск';}
+  }
+
   async function loadPlayer() {
     try {
       const data = await request('load');
@@ -1388,6 +1437,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       loadBoosters();
       loadPlayerProgression();
       loadProfileShowcase();
+      loadSeasonPass();
     } catch (error) {
       hint.textContent = error.message;
       console.error('Profile loading failed:', error);
