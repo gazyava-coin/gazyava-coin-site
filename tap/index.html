@@ -538,6 +538,13 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .season-pass-track{height:9px;background:#ffffff13;border-radius:99px;overflow:hidden;margin-bottom:13px}.season-pass-track>div{height:100%;width:0;background:linear-gradient(90deg,#8d75ff,#b8a2ff);border-radius:99px;transition:width .3s}
 .season-pass-tier{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:9px;padding:10px;margin:7px 0;border-radius:12px;background:#ffffff09;border:1px solid #ffffff0b}.season-pass-tier.done{border-color:#a8ff4535;background:#a8ff4509}.season-pass-tier-icon{font-size:20px}.season-pass-tier-info{display:flex;flex-direction:column;gap:3px;min-width:0}.season-pass-tier-info strong{font-size:12px}.season-pass-tier-info small{font-size:10px;color:var(--muted)}.season-pass-tier button{border:0;border-radius:9px;padding:8px 10px;background:#b49cff;color:#211735;font-size:10px;font-weight:900}.season-pass-tier button:disabled{background:#ffffff14;color:#9c98a8}.season-pass-foot{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.45}
 
+
+.pet-companions{margin-top:12px;padding:13px;border:1px solid #ffffff18;border-radius:17px;background:linear-gradient(135deg,#182a38,#28213d)}
+.pet-companions-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.pet-companions-head>div{display:grid;gap:3px}.pet-companions-head strong{font-size:11px;letter-spacing:.08em}.pet-companions-head small,.pet-companion-note{font-size:10px;color:var(--muted)}
+.pet-companions-head button,.pet-companion-card button{border:0;border-radius:10px;padding:9px 11px;background:#b49cff;color:#211735;font-size:10px;font-weight:900}
+.pet-companion-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin-top:12px;font-size:11px;color:var(--muted)}
+.pet-companion-card{padding:10px;border-radius:13px;background:#ffffff0b;border:1px solid #ffffff12;display:grid;gap:5px}.pet-companion-card.active{border-color:#91e6b1}.pet-companion-card strong{font-size:12px;color:#fff}.pet-companion-card small{font-size:10px;color:var(--muted)}.pet-companion-card button{padding:7px;margin-top:3px}.pet-companion-card button:disabled{opacity:.55}.pet-companion-note{display:block;line-height:1.45;margin-top:9px}
+
 </style>
 </head>
 <body>
@@ -572,6 +579,11 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   </div>
   <div class="profile-showcase-foot"><span>🏅 Коллекция достижений</span><div style="display:flex;gap:6px"><button type="button" id="profileShare">Поделиться</button><button type="button" id="profileRefresh">Обновить</button></div></div>
   <div class="profile-featured" id="profileFeatured">Твои редкие трофеи появятся здесь</div>
+  <section class="pet-companions" aria-label="Питомцы">
+    <div class="pet-companions-head"><div><strong>🐾 СПУТНИКИ</strong><small id="petCompanionCount">Коллекция: 0/5</small></div><button type="button" id="buyPetEgg">🥚 Яйцо · 5 000</button></div>
+    <div class="pet-companion-list" id="petCompanionList">Открой яйцо, чтобы найти первого спутника</div>
+    <small class="pet-companion-note">Спутник получает 1 XP за каждый серверно подтверждённый тап. Каждые 100 XP — новый уровень. Дубликат превращается в +100 XP.</small>
+  </section>
 </section>
 <section class="game">
 <div class="mascot-stage">
@@ -1430,6 +1442,42 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     }catch(error){console.error('Season pass loading failed:',error);list.textContent='Не удалось загрузить сезонный пропуск';}
   }
 
+
+  const PET_META = {
+    cloudling:{name:'Облачок',icon:'☁️'}, mint_fox:{name:'Мятный лис',icon:'🦊'},
+    spark_drake:{name:'Искродракон',icon:'🐉'}, frost_owl:{name:'Морозная сова',icon:'🦉'},
+    star_whale:{name:'Звёздный кит',icon:'🐋'}
+  };
+  const PET_RARITY = {common:'Обычный',uncommon:'Необычный',rare:'Редкий',epic:'Эпический',legendary:'Легендарный'};
+  async function loadPetCollection(){
+    const list=document.getElementById('petCompanionList');if(!list)return;
+    try{
+      const data=await request('pet_collection'),pets=Array.isArray(data.pet_collection?.pets)?data.pet_collection.pets:[];
+      const count=document.getElementById('petCompanionCount');if(count)count.textContent='Коллекция: '+pets.length+'/5';
+      list.replaceChildren();
+      if(!pets.length){list.textContent='Открой яйцо, чтобы найти первого спутника';return;}
+      pets.forEach(p=>{
+        const meta=PET_META[p.pet_id]||{name:p.pet_id,icon:'🐾'};
+        const card=document.createElement('div');card.className='pet-companion-card'+(p.equipped?' active':'');
+        const name=document.createElement('strong');name.textContent=meta.icon+' '+meta.name;
+        const rarity=document.createElement('small');rarity.textContent=PET_RARITY[p.rarity]||p.rarity;
+        const level=document.createElement('small');level.textContent='Уровень '+p.level+' · '+p.level_xp+'/100 XP';
+        const btn=document.createElement('button');btn.type='button';btn.textContent=p.equipped?'Надет':'Выбрать';btn.disabled=Boolean(p.equipped);
+        btn.addEventListener('click',async()=>{btn.disabled=true;try{await request('equip_pet',{pet_id:p.pet_id});await loadPetCollection();}catch(e){btn.disabled=false;hint.textContent=e.message;}});
+        card.append(name,rarity,level,btn);list.append(card);
+      });
+    }catch(e){console.error('Pet collection failed:',e);list.textContent='Не удалось загрузить спутников';}
+  }
+  document.getElementById('buyPetEgg')?.addEventListener('click',async()=>{
+    const btn=document.getElementById('buyPetEgg');btn.disabled=true;
+    try{
+      const data=await request('buy_pet_egg'),p=data.pet_action||{},meta=PET_META[p.pet_id]||{name:'Спутник',icon:'🐾'};
+      hint.textContent=p.duplicate?'Дубликат '+meta.name+' превращён в +100 XP':'Новый спутник: '+meta.icon+' '+meta.name+' · '+(PET_RARITY[p.rarity]||p.rarity);
+      await loadPlayer();await loadPetCollection();
+    }catch(e){hint.textContent=e.message||'Не удалось открыть яйцо';}
+    finally{btn.disabled=false;}
+  });
+
   async function loadPlayer() {
     try {
       const data = await request('load');
@@ -1438,6 +1486,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       loadPlayerProgression();
       loadProfileShowcase();
       loadSeasonPass();
+      loadPetCollection();
     } catch (error) {
       hint.textContent = error.message;
       console.error('Profile loading failed:', error);
