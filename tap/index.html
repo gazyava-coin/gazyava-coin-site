@@ -556,7 +556,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <div class="player-progression-track"><div id="playerProgressFill"></div></div>
 </section>
 <section class="profile-showcase" aria-label="Профиль игрока">
-  <div class="profile-showcase-head"><div class="profile-avatar" id="profileAvatar">☁️</div><div class="profile-identity"><strong id="profileName">Путешественник</strong><span id="profileTitle">Новичок Gazyava</span><small id="profileLevelLabel">Уровень 1</small></div><div class="profile-rank" id="profileRank">#—</div></div>
+  <div class="profile-showcase-head"><div class="profile-avatar" id="profileAvatar">☁️</div><div class="profile-identity"><strong id="profileName">Путешественник</strong><span id="profileTitle">Новичок Gazyava</span><small id="profileLevelLabel">Уровень 1</small></div><div class="profile-rank" id="profileRank">ПРОФИЛЬ</div></div>
   <div class="profile-stats-grid">
     <div><strong id="profileScore">0</strong><small>Очки</small></div>
     <div><strong id="profileXp">0</strong><small>Опыт</small></div>
@@ -1328,6 +1328,8 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     celebrateEvolution(previousServerScore, incomingScore);
     previousServerScore = incomingScore;
     score = incomingScore;
+    const profileScoreEl = document.getElementById('profileScore');
+    if (profileScoreEl) profileScoreEl.textContent = score.toLocaleString('ru-RU');
     const shopBalanceEl = document.getElementById('shopBalance');
     if (shopBalanceEl) shopBalanceEl.textContent = 'Твой баланс: ' + score.toLocaleString('ru-RU') + ' очков';
     energy = Math.max(0, Math.min(MAX, Number(data.energy)));
