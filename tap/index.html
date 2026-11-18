@@ -246,6 +246,14 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 .mascot.skin-cosmic svg{filter:hue-rotate(205deg) saturate(1.5)}
 .mascot.skin-golden svg{filter:sepia(.8) saturate(1.8) hue-rotate(350deg)}
 @media(max-width:360px){.mascot-skins{grid-template-columns:1fr}.skin-card{padding:8px}}
+.game-tabs{position:sticky;top:6px;z-index:15;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:8px 0 16px;padding:6px;border:1px solid #ffffff20;border-radius:16px;background:#171226ed;backdrop-filter:blur(16px);box-shadow:0 8px 24px #05030d55}
+.game-tab{min-width:0;padding:10px 3px;border:1px solid transparent;border-radius:11px;background:transparent;color:#b9b3cc;font:800 10px/1.2 system-ui;cursor:pointer;white-space:nowrap}
+.game-tab.active{background:linear-gradient(145deg,#b5ff6228,#ffd36b18);border-color:#b5ff6255;color:#eaffd3;box-shadow:inset 0 0 16px #b5ff6210}
+.tab-panel{display:none;animation:tabReveal .2s ease-out}
+.tab-panel.active{display:block}
+@keyframes tabReveal{from{opacity:.65;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:370px){.game-tab{font-size:9px;padding:9px 1px}.game-tabs{gap:2px;padding:4px}}
+@media(prefers-reduced-motion:reduce){.tab-panel{animation:none}}
 
 </style>
 </head>
@@ -253,6 +261,14 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 <main>
 <header><img class="logo" src="../gazyava-logo.PNG" alt="Gazyava"><div class="brand">GAZYAVA<span> TAP</span></div><div class="tag">BETA · DEV</div></header>
 <h1>Тапай на удачу!</h1><p class="sub">Собирай игровые очки до запуска проекта</p>
+<nav class="game-tabs" role="tablist" aria-label="Разделы игры">
+<button class="game-tab active" type="button" role="tab" aria-selected="true" data-tab-target="play">☁️ Игра</button>
+<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="tasks">🎯 Задания</button>
+<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="friends">🎁 Друзья</button>
+<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="upgrade">🛒 Развитие</button>
+<button class="game-tab" type="button" role="tab" aria-selected="false" data-tab-target="ranking">🏆 Топ</button>
+</nav>
+<div class="tab-panel active" data-tab-panel="play">
 <section class="stats">
 <div class="stat"><small>Твои очки</small><strong class="green" id="score">0</strong></div>
 <div class="stat"><small>Энергия</small><strong id="energyStat">500 / 500</strong></div>
@@ -289,6 +305,8 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 <div class="hint" id="hint">Нажимай на Gazyava, чтобы собирать очки</div>
 <div class="energy"><div class="energy-head"><span>⚡ ВОССТАНОВЛЕНИЕ ЭНЕРГИИ</span><span id="energyLabel">500 / 500</span></div><div class="bar"><div class="fill" id="energyFill"></div></div></div>
 </section>
+</div>
+<div class="tab-panel" data-tab-panel="tasks">
 <section class="daily-tasks" aria-labelledby="dailyTasksTitle">
   <h2 id="dailyTasksTitle">🎯 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</h2>
   <p class="daily-subtitle">Тапай каждый день и забирай дополнительные очки</p>
@@ -316,6 +334,8 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
   </div>
   <div class="calendar-note" id="calendarNote">Награды начисляются автоматически при входе</div>
 </section>
+</div>
+<div class="tab-panel" data-tab-panel="friends">
 <section class="referral-card" id="referralCard" aria-labelledby="referralTitle">
   <h2 id="referralTitle">🎁 ПРИГЛАШАЙ ДРУЗЕЙ</h2>
   <p class="referral-sub">Поделись ссылкой и получай очки за каждого нового игрока</p>
@@ -336,6 +356,8 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
   <div id="referralMilestones" class="referral-milestones" aria-live="polite"></div>
   <div id="referralStatus" aria-live="polite"></div>
 </section>
+</div>
+<div class="tab-panel" data-tab-panel="upgrade">
 <section class="shop" aria-labelledby="shopTitle">
   <h2 id="shopTitle">🛒 МАГАЗИН УЛУЧШЕНИЙ</h2>
   <p class="shop-sub">Прокачивай игру за накопленные очки</p>
@@ -348,8 +370,8 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
   <p class="achievements-sub">Выполняй цели, открывай награды и прокачивай свой профиль</p>
   <div id="achievementsList"><div class="achievement">Загружаем достижения...</div></div>
 </section>
-
-
+</div>
+<div class="tab-panel" data-tab-panel="ranking">
 <section class="weekly-tournament" aria-labelledby="weeklyTitle">
   <div class="weekly-head"><h2 id="weeklyTitle">⚡ ТУРНИР НЕДЕЛИ</h2><button id="refreshWeekly" type="button">↻ Обновить</button></div>
   <p class="weekly-sub">Рейтинг по количеству тапов за последние 7 дней</p>
@@ -363,6 +385,7 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
   <div id="leaderboardList">Загружаем рейтинг...</div>
   <div id="myRank" class="my-rank">Твоё место: загружаем...</div>
 </section>
+</div>
 <footer>ДЕМО-ВЕРСИЯ. Игровые очки сохраняются на сервере и привязаны к Telegram-профилю. Это игровые баллы, не токены GZV, не криптоактив и не обещание будущей награды. Не подключай кошелёк и не отправляй деньги.</footer>
 </main><div class="toast" id="toast">+1 GAZY POINT</div>
 <script>
@@ -417,7 +440,7 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
     const mascot=document.getElementById('mascot');
     if(!list || !mascot) return;
     const unlocked=MASCOT_SKINS.filter(s=>score>=s.unlock);
-    if(!unlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
+    if(initialized && !unlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
     const current=MASCOT_SKINS.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
     mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden');
     if(current.className) mascot.classList.add(current.className);
@@ -460,6 +483,23 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
       card.append(avatar,info,button);list.appendChild(card);
     });
   }
+
+  const gameTabs = Array.from(document.querySelectorAll('[data-tab-target]'));
+  const gamePanels = Array.from(document.querySelectorAll('[data-tab-panel]'));
+  function activateGameTab(name) {
+    gameTabs.forEach(button => {
+      const active = button.dataset.tabTarget === name;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    gamePanels.forEach(panel => panel.classList.toggle('active', panel.dataset.tabPanel === name));
+    try { localStorage.setItem('gazyava_active_tab', name); } catch (_) {}
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  gameTabs.forEach(button => button.addEventListener('click', () => activateGameTab(button.dataset.tabTarget)));
+  let savedTab = 'play';
+  try { savedTab = localStorage.getItem('gazyava_active_tab') || 'play'; } catch (_) {}
+  if (gamePanels.some(panel => panel.dataset.tabPanel === savedTab)) activateGameTab(savedTab);
 
   function render() {
     const e = Math.max(0, Math.floor(currentEnergy()) - pendingTaps);
