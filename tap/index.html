@@ -163,6 +163,15 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .referral-stats{display:flex;justify-content:space-between;gap:10px;margin-top:13px;color:var(--muted);font-size:12px}
 .referral-stats strong{color:var(--green)}
 #referralStatus{min-height:17px;margin-top:8px;color:var(--green);font-size:11px;text-align:center}
+
+.weekly-tournament{width:100%;margin-top:18px;padding:18px;background:linear-gradient(145deg,rgba(168,255,69,.09),rgba(255,211,107,.07));border:1px solid rgba(168,255,69,.28);border-radius:18px}
+.weekly-tournament h2{margin:0;color:var(--green);font-size:18px;text-align:center}
+.weekly-sub{margin:5px 0 12px;color:var(--muted);font-size:12px;text-align:center}
+.weekly-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#refreshWeekly{border:1px solid #78633a;border-radius:10px;padding:7px 10px;background:#ffd36b18;color:#ffd36b;font-size:11px;font-weight:850}
+#weeklyList .leader-row{border-bottom:1px solid rgba(255,255,255,.08)}
+#weeklyMyRank{margin-top:12px;padding:10px;border-radius:11px;background:rgba(155,227,109,.1);color:var(--green);text-align:center;font-size:13px;font-weight:850}
+
 </style>
 </head>
 <body>
@@ -234,6 +243,14 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   <h2 id="achievementsTitle">🏅 ДОСТИЖЕНИЯ</h2>
   <p class="achievements-sub">Выполняй цели, открывай награды и прокачивай свой профиль</p>
   <div id="achievementsList"><div class="achievement">Загружаем достижения...</div></div>
+</section>
+
+
+<section class="weekly-tournament" aria-labelledby="weeklyTitle">
+  <div class="weekly-head"><h2 id="weeklyTitle">⚡ ТУРНИР НЕДЕЛИ</h2><button id="refreshWeekly" type="button">↻ Обновить</button></div>
+  <p class="weekly-sub">Рейтинг по количеству тапов за последние 7 дней</p>
+  <div id="weeklyList"><div class="leader-row">Загружаем турнир...</div></div>
+  <div id="weeklyMyRank">Твоё место за неделю: загружаем...</div>
 </section>
 
 <section class="leaderboard">
@@ -749,6 +766,52 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   
   document.getElementById('refreshLeaderboard')?.addEventListener('click', loadLeaderboard);
 
+
+  async function loadWeeklyTournament() {
+    const list = document.getElementById('weeklyList');
+    const rankEl = document.getElementById('weeklyMyRank');
+    const refresh = document.getElementById('refreshWeekly');
+    if (!list || !rankEl) return;
+    if (refresh) refresh.disabled = true;
+    try {
+      const [data, rankData] = await Promise.all([
+        request('weekly_leaderboard'),
+        request('my_weekly_rank')
+      ]);
+      const players = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+      list.replaceChildren();
+      if (!players.length) {
+        list.textContent = 'Пока нет активности за последние 7 дней — начни турнир первым!';
+      } else {
+        players.forEach((player, index) => {
+          const row = document.createElement('div');
+          row.className = 'leader-row';
+          const rank = document.createElement('span');
+          rank.className = 'leader-rank';
+          rank.textContent = Number(player.rank || index + 1) + '.';
+          const name = document.createElement('span');
+          name.className = 'leader-name';
+          name.textContent = player.username ? '@' + player.username : (player.first_name || 'Игрок');
+          const score = document.createElement('span');
+          score.className = 'leader-score';
+          score.textContent = Number(player.score || 0).toLocaleString('ru-RU') + ' тапов';
+          row.append(rank, name, score);
+          list.appendChild(row);
+        });
+      }
+      rankEl.textContent = rankData.rank
+        ? 'Твоё место за 7 дней: №' + Number(rankData.rank).toLocaleString('ru-RU')
+        : 'Твоё место за неделю: пока нет тапов';
+    } catch (error) {
+      list.textContent = 'Не удалось загрузить недельный турнир';
+      rankEl.textContent = 'Попробуй обновить рейтинг позже';
+      console.error('Weekly tournament loading failed:', error);
+    } finally {
+      if (refresh) refresh.disabled = false;
+    }
+  }
+  document.getElementById('refreshWeekly')?.addEventListener('click', loadWeeklyTournament);
+
   let toastTimer;
 
   tap.addEventListener('click', async () => {
@@ -791,6 +854,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   render();
   loadPlayer();
   loadLeaderboard();
+  loadWeeklyTournament();
   loadDailyProgress();
   loadReferralInfo();
 
@@ -798,6 +862,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   checkInStreak().then(loadStreakCalendar);
   setInterval(render, 500);
   setInterval(loadLeaderboard, 30000);
+  setInterval(loadWeeklyTournament, 60000);
 })();
 </script>
 </body></html>
