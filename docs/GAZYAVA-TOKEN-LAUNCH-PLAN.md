@@ -1,39 +1,43 @@
-# GAZYAVA — token launch blueprint (working draft)
+# GAZYAVA — GZV token launch plan
 
-**Status:** approved working baseline as of 2026-11-19. This is still a planning model, not a deployed token, final legal disclosure, sale offer, or guarantee of value. GZV / Gazyava-Coin, Solana, a proposed fixed supply of 1,000,000,000 units, and the allocation below are the current project decisions for further design. Mainnet minting and any public distribution remain on hold pending legal, security, custody, and operational gates.
+**Status (19 November 2026): approved working baseline.** The project has selected Solana, the GZV ticker, a proposed fixed supply of 1,000,000,000 GZV, and the allocation split below for further design. This is not a deployed token, final legal disclosure, sale offer, or promise of value. Mainnet minting and public distribution are on hold until all legal, security, custody, and operational launch gates are completed.
 
 ## 1. Product principles
 
 1. The tap game remains playable without buying a token.
 2. Game points are an off-chain gameplay score, not a token, deposit, claim, or promise of conversion.
-3. Do not publish a fixed points-to-token rate before anti-abuse rules, eligibility, snapshot dates, supply, and legal review are complete.
+3. No fixed points-to-token conversion rate is promised. Any community distribution needs separately published eligibility, snapshot, anti-abuse, and legal rules.
 4. No paid gameplay advantage that makes rewards depend on spending.
 5. Publish allocation, vesting, treasury wallets, unlock schedule, and material changes before any token distribution.
 
-## 2. Current game baseline (database snapshot, 2026-11-18)
+## 2. Approved working token parameters
 
-- Registered players: 20
-- Players updated in the last 7 days: 20
-- Aggregate game points: 31,973
-- Highest individual balance: 25,204
+| Parameter | Working decision |
+|---|---|
+| Project / token name | Gazyava-Coin |
+| Ticker | GZV |
+| Network | Solana |
+| Proposed total supply | 1,000,000,000 GZV |
+| Supply model | Fixed initial supply; no discretionary ongoing emissions intended |
+| Status | Not created / not launched |
 
-These are a small, early-stage sample, not a reliable basis for setting token supply or an airdrop conversion. The concentration of points in one account also means raw points should not be the only eligibility criterion.
+The exact Solana token program (classic SPL Token or Token-2022), decimals, metadata authority, mint authority and freeze authority policy still require technical review. Do not assume any authority has been revoked until verified on-chain.
 
-## 3. Illustrative allocation model — discussion only
+## 3. Approved working allocation baseline
 
-A possible starting framework for community feedback; percentages are not approved:
+The following split is approved as the working baseline. It remains subject to legal, tax, liquidity, custody, and operational review before minting or distribution.
 
-| Bucket | Illustrative share | Intended use |
-|---|---:|---|
-| Community & player rewards | 40% | Season rewards, quests, referral and ecosystem campaigns |
-| Liquidity | 20% | Initial and ongoing liquidity, subject to a published policy |
-| Ecosystem & development | 15% | Integrations, product development, grants |
-| Core contributors | 10% | Long-term contributor incentives with vesting |
-| Treasury / reserve | 10% | Audited, governed future needs |
-| Marketing & partnerships | 5% | Disclosed campaigns and partnerships |
-| **Total** | **100%** | |
+| Allocation | Share | Amount at proposed supply | Intended use |
+|---|---:|---:|---|
+| Community & player rewards | 40% | 400,000,000 GZV | Season rewards, quests and ecosystem campaigns |
+| Liquidity | 20% | 200,000,000 GZV | Initial and ongoing liquidity under a published policy |
+| Ecosystem & development | 15% | 150,000,000 GZV | Product development, integrations and grants |
+| Core contributors | 10% | 100,000,000 GZV | Long-term contributor incentives with vesting |
+| Treasury / reserve | 10% | 100,000,000 GZV | Disclosed, governed future needs |
+| Marketing & partnerships | 5% | 50,000,000 GZV | Disclosed campaigns and partnerships |
+| **Total** | **100%** | **1,000,000,000 GZV** | |
 
-Working allocation amounts at the proposed 1 billion supply: Community & player rewards 400,000,000 GZV; liquidity 200,000,000 GZV; ecosystem & development 150,000,000 GZV; core contributors 100,000,000 GZV; treasury / reserve 100,000,000 GZV; marketing & partnerships 50,000,000 GZV. These are allocation budgets, not existing balances or wallet reserves.\n\nBefore mainnet creation, publish recipient / wallet policy, vesting and cliff schedules, liquidity deployment policy, multisig signers and thresholds, treasury reporting, and treatment of unclaimed community allocations. Contributor tokens should have a cliff and linear vesting rather than being fully unlocked at launch.
+These are allocation budgets, not existing balances, wallet reserves, or circulating supply. Before launch, publish recipient / wallet policy, vesting and cliff schedules, liquidity deployment policy, multisig signers and thresholds, treasury reporting, and treatment of unclaimed community allocations. Contributor tokens should have a cliff and linear vesting rather than being fully unlocked at launch.
 
 ## 4. Fair player-reward design
 
@@ -44,33 +48,36 @@ Use a multi-signal eligibility model rather than a simple balance conversion:
 - Referral quality checks; exclude self-referrals, duplicate identities and suspicious clusters.
 - Completed daily tasks and streak participation as supporting signals.
 - A published snapshot window and dispute process.
-- Per-account caps or diminishing returns to reduce whale concentration.
+- Per-account caps or diminishing returns to reduce concentration.
 - Anti-bot review and a documented appeals process.
 
-A future season points score may inform a reward pool, but the formula and snapshot must be announced before the season starts. Never retroactively change a published formula.
+A future season points score may inform a reward pool, but the formula and snapshot must be announced before the qualifying season starts. Never retroactively change a published formula. Game points remain separate from any future token claim ledger.
 
 ## 5. Launch gates
 
-- [x] Select Solana as the target chain for the working design.\n- [ ] Confirm the exact Solana token program / mint configuration after technical and security review.
-- [ ] Obtain legal advice for target jurisdictions, token classification, marketing, sanctions and distribution restrictions.
-- [ ] Finalize token utility that exists beyond speculative trading; do not promise profit or price appreciation.
-- [x] Approve a working fixed-supply target of 1,000,000,000 GZV and the 40 / 20 / 15 / 10 / 10 / 5 allocation split.\n- [ ] Finalize vesting, emissions (intended: no discretionary minting after initial supply), treasury policy, and wallet controls.
-- [ ] Publish smart-contract source and obtain an independent security audit before mainnet deployment.
-- [ ] Establish multisig custody, role separation, emergency pause policy and public wallet disclosures.
-- [ ] Define airdrop eligibility, snapshot, Sybil review, claim window, unclaimed-token handling and support process.
-- [ ] Test claim flow and wallet recovery/support on testnet.
-- [ ] Publish risks, terms, privacy notice and a clear statement that game points are not tokens.
+- [x] Select Solana as the target network for the working design.
+- [x] Approve GZV as the working ticker.
+- [x] Approve the 1,000,000,000 GZV working supply target.
+- [x] Approve the 40 / 20 / 15 / 10 / 10 / 5 working allocation split.
+- [ ] Confirm final legal name, metadata and ticker availability.
+- [ ] Select classic SPL Token vs. Token-2022 after feature and security review.
+- [ ] Confirm decimals and exact mint / freeze authority policy.
+- [ ] Obtain Netherlands / EU legal advice on MiCA, white-paper and notification requirements, marketing, consumer disclosures, sanctions, tax, and geographic restrictions. Do not assume an exemption applies.
+- [ ] Finalize token utility, vesting, treasury policy and recipient wallet rules; do not promise profit or price appreciation.
+- [ ] Establish hardware-wallet-backed multisig custody, role separation and public wallet disclosures.
+- [ ] Publish smart-contract / program configuration and obtain an independent security review before mainnet deployment.
+- [ ] Define community reward eligibility, snapshot, Sybil review, claim window, unclaimed-token handling and appeals process.
+- [ ] Test mint, transfers, authority changes and any claim flow on devnet.
+- [ ] Publish risk disclosures, terms, privacy notice and a clear statement that game points are not tokens.
 
-## 6. Decisions still required
+## 6. Execution sequence
 
-- Token ticker and final name
-- Chain and contract standard
-- Fixed supply vs. capped / emissions-based supply
-- Actual utility and governance scope
-- Jurisdictions and eligible / excluded regions
-- Whether player rewards are an airdrop, season-based claims, or another compliant mechanism
-- Launch timing and liquidity policy
+1. Reconcile all public tokenomics references and retire outdated allocation drafts.
+2. Obtain qualified legal advice for the intended jurisdictions before any public offer, promotion, distribution or admission to trading.
+3. Finalize token metadata, token program, decimals, supply, mint / freeze authority handling, and an independently reviewed creation runbook.
+4. Set up hardware-wallet-backed multisig custody for treasury and liquidity. Never put seed phrases or private keys in source code, GitHub, chat, or a hosted backend.
+5. Publish community reward eligibility, anti-Sybil process, snapshot timing, claims and appeals before the qualifying period begins.
+6. Test the mint, transfers, authority changes and claim flow on devnet; obtain an independent security review.
+7. Only after all gates are signed off, create the mainnet mint, verify it on a Solana explorer, publish the mint address and authority state, and execute liquidity under the disclosed policy.
 
-## 7. Immediate next implementation step
-
-Do not mint or promise token balances yet. First add a transparent season system to the game: season start/end, eligible activity metrics, anti-abuse flags, immutable snapshot record, and a public rules page. Keep the game-point ledger separate from any future token claim ledger.
+**No mainnet token has been created by this plan.** Never share seed phrases or private keys with anyone, including project contributors or support staff.
