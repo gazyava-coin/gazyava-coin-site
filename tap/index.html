@@ -610,7 +610,7 @@ input,button{font-family:inherit}
 @media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}.game-tab,#tap,.skin-card{transition:none}}
 
 /* Living mascot + play-first screen */
-[data-tab-panel="play"]{display:flex;flex-direction:column;gap:13px}
+.tab-panel.active[data-tab-panel="play"]{display:flex;flex-direction:column;gap:13px}
 [data-tab-panel="play"]>.stats{order:0;margin:0}
 [data-tab-panel="play"]>.player-progression{order:1;margin:0}
 [data-tab-panel="play"]>.game{order:2;margin:0;padding:15px 12px 16px;border:1px solid #b5ff6240;border-radius:24px;background:radial-gradient(ellipse at 50% 24%,#b5ff6212,transparent 47%),linear-gradient(155deg,#2b2142f2,#171326f5);box-shadow:0 18px 45px #05030d65,inset 0 1px #ffffff12}
