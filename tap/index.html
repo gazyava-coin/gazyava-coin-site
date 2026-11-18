@@ -489,8 +489,8 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
       });
 
       if (claimedNow) {
-        score += reward;
-        render();
+        const player = await request('load');
+        applyServerData(player);
         if (note) note.textContent = '🎉 Сегодня начислено +' + reward + ' очков!';
       } else if (note) {
         note.textContent = 'Награда за сегодня уже получена. Следующий день — новая награда!';
