@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Gazyava-Coin — a community-driven meme token project in development on Solana. Make Crypto Funnier.">
   <meta name="theme-color" content="#17112b">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" type="image/svg+xml" href="gazyava-mark.svg">
   <title>Gazyava-Coin (GZV) — Make Crypto Funnier</title>
   <style>
     :root{--bg:#130f22;--panel:#1d1732;--panel2:#241d3b;--green:#a8ff45;--gold:#ffd36b;--white:#f8f7ff;--muted:#b9b3cc;--line:#3b3157}
@@ -33,11 +35,70 @@
     .community p{color:var(--muted);margin-bottom:0}.socials{display:flex;gap:10px;flex-wrap:wrap}.socials a{padding:10px 15px;border:1px solid var(--line);border-radius:999px;text-decoration:none;font-weight:750}
     footer{padding:30px 0 45px;color:var(--muted);font-size:12px}.footerline{border-top:1px solid var(--line);padding-top:22px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     @media(max-width:760px){nav{display:none}.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.roadmap{grid-template-columns:1fr}.community{align-items:flex-start;flex-direction:column}.hero{padding-top:66px}}
-  </style>
+  
+    /* Gazyava brand refresh */
+    :root{--bg:#100d1e;--panel:#211a35;--panel2:#2a2142;--green:#b9ff70;--gold:#ffd77d;--white:#fbfaff;--muted:#bdb6cf;--line:#44385f}
+    body{background:radial-gradient(ellipse at 50% -12%,#493266 0,transparent 42%),radial-gradient(ellipse at 100% 45%,#1d3a3540 0,transparent 34%),var(--bg);background-attachment:fixed}
+    header{background:rgba(16,13,30,.82);border-bottom:1px solid #ffffff12;box-shadow:0 10px 35px #05030d30}
+    .nav{min-height:76px}
+    .brand{display:flex;align-items:center;gap:10px;font-size:17px;white-space:nowrap;letter-spacing:.055em}
+    .brand img{width:42px;height:42px;display:block;border-radius:14px;box-shadow:0 5px 18px #a8ff4525}
+    .brand b{color:var(--green)}
+    nav{gap:clamp(10px,1.6vw,22px)}
+    nav a{font-weight:650;transition:color .18s ease}
+    nav a:hover{color:var(--green);text-shadow:0 0 18px #b9ff7040}
+    .lang{border-color:#ffffff24;background:#ffffff0b;transition:.18s}
+    .lang:hover{border-color:var(--green);color:var(--green)}
+    .hero{position:relative;isolation:isolate;padding:86px 28px 72px;margin-top:24px;border:1px solid #ffffff17;border-radius:34px;background:radial-gradient(ellipse at 50% 10%,#b9ff7012,transparent 48%),linear-gradient(145deg,#251d3bdb,#171327d9);box-shadow:0 28px 90px #05030d55,inset 0 1px #ffffff12;overflow:hidden}
+    .hero:before,.hero:after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+    .hero:before{width:260px;height:260px;right:-110px;top:-125px;background:#b9ff7010;filter:blur(4px)}
+    .hero:after{width:180px;height:180px;left:-90px;bottom:-110px;background:#9d80ff16;filter:blur(4px)}
+    .eyebrow{display:inline-flex;padding:8px 13px;border:1px solid #b9ff7040;border-radius:999px;background:#b9ff700d;letter-spacing:.12em}
+    h1{font-size:clamp(46px,8vw,88px);text-shadow:0 12px 50px #0005}
+    .mascot{width:142px;height:142px;margin:30px auto 4px;border-radius:38px;background:linear-gradient(145deg,#b9ff7018,#ffffff08);border:1px solid #d7ff9d35;box-shadow:0 20px 65px #8fff3925,inset 0 1px #ffffff28;overflow:visible;transform:none}
+    .mascot img{width:120%!important;height:120%!important;object-fit:contain;filter:drop-shadow(0 12px 20px #a8ff4540)}
+    .actions{margin-top:28px}
+    .btn{padding:14px 22px;border-radius:14px;box-shadow:0 8px 24px #a8ff4520;transition:transform .18s,box-shadow .18s,filter .18s}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 13px 30px #a8ff4530;filter:brightness(1.04)}
+    .btn.secondary{background:#ffffff08;border-color:#ffffff25;box-shadow:none}
+    .btn.game-link{background:linear-gradient(135deg,#ffd77d,#ffbd62);border-color:#ffdf9b;color:#30200d;box-shadow:0 8px 24px #ffd36b20}
+    .notice{border-color:#ffd77d45;background:#ffd77d0d;border-radius:15px}
+    section{padding:82px 0;border-top-color:#ffffff10}
+    .section-kicker{letter-spacing:.16em}
+    .grid{gap:18px}
+    .card,.stat,.community{border-color:#ffffff16;background:linear-gradient(145deg,#261e3bd9,#1a152bd9);box-shadow:0 12px 32px #05030d22}
+    .card{border-radius:22px;transition:transform .2s,border-color .2s,box-shadow .2s}
+    .card:hover{transform:translateY(-4px);border-color:#b9ff7050;box-shadow:0 18px 38px #05030d45}
+    .card .icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:#b9ff7012;border:1px solid #b9ff7020}
+    .stat{border-radius:18px}
+    .stat strong{color:var(--green)}
+    .token-table{border:1px solid #ffffff14;border-radius:18px;overflow:hidden}
+    .token-table tbody tr:hover{background:#ffffff08}
+    .tag{border-color:#b9ff7040;background:#b9ff700b}
+    .phase{border-left-color:var(--green)}
+    .community{border-radius:24px}
+    .socials a{border-color:#ffffff22;background:#ffffff08;transition:.18s}
+    .socials a:hover{border-color:var(--green);color:var(--green);transform:translateY(-2px)}
+    footer{color:#aaa2c0}
+    @media(max-width:900px){nav{gap:12px}nav a{font-size:12px}.brand{font-size:14px}.brand img{width:38px;height:38px}}
+    @media(max-width:760px){
+      header .nav{height:auto;min-height:66px;flex-wrap:wrap;padding:10px 0 8px;gap:8px}
+      nav{display:flex;order:3;width:100%;overflow-x:auto;gap:17px;padding:5px 0 8px;scrollbar-width:none}
+      nav::-webkit-scrollbar{display:none}nav a{flex:none;font-size:12px}
+      .lang{margin-left:auto}
+      .hero{margin-top:14px;padding:58px 17px 42px;border-radius:25px}
+      section{padding:60px 0}
+      .grid{grid-template-columns:1fr}
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .roadmap{grid-template-columns:1fr}
+      .community{align-items:flex-start;flex-direction:column}
+    }
+    @media(max-width:390px){.wrap{width:min(100% - 26px,1100px)}.brand{font-size:13px}.brand img{width:34px;height:34px}.hero{padding-left:13px;padding-right:13px}.actions .btn{width:100%;text-align:center}}
+\n  </style>
 </head>
 <body>
 <header><div class="wrap nav">
-  <a class="brand" href="#home">GAZYAVA<span style="color:var(--green)">-COIN</span></a>
+  <a class="brand" href="#home"><img src="gazyava-mark.svg" alt="" aria-hidden="true"><span>GAZYAVA<b>-COIN</b></span></a>
   <nav><a href="#about" data-en="About" data-ru="О проекте">About</a><a href="#tokenomics" data-en="Tokenomics" data-ru="Токеномика">Tokenomics</a><a href="#roadmap" data-en="Roadmap" data-ru="План">Roadmap</a><a href="#faq" data-en="FAQ" data-ru="Вопросы">FAQ</a><a href="#security" data-en="Security" data-ru="Безопасность">Security</a><a href="#transparency" data-en="Transparency" data-ru="Прозрачность">Transparency</a><a href="#community" data-en="Community" data-ru="Сообщество">Community</a></nav>
   <button class="lang" id="langToggle" type="button" aria-label="Switch language">RU</button>
 </div></header>
@@ -54,7 +115,7 @@
     <p class="lead" data-en="Make Crypto Funnier. A playful community project in development on Solana — built around humor, creativity and transparency." data-ru="Сделаем крипту веселее. Развлекательный проект на Solana, который сейчас находится в разработке и объединяет юмор, творчество и прозрачность.">Make Crypto Funnier. A playful community project in development on Solana — built around humor, creativity and transparency.</p>
     <div class="actions">
       <a class="btn" href="#community" data-en="Join the community" data-ru="В сообщество">Join the community</a>
-      <a class="btn secondary" href="#about" data-en="Explore the project" data-ru="О проекте">Explore the project</a>
+      <a class="btn secondary" href="#about" data-en="Explore the project" data-ru="О проекте">Explore the project</a>\n      <a class="btn game-link" href="https://t.me/GazyavaTapBot/gazyavatap" target="_blank" rel="noopener noreferrer" data-en="Play Gazyava Tap" data-ru="Играть в Gazyava Tap">Play Gazyava Tap</a>
     </div>
     <div class="notice" data-en="Development stage: the GZV token has not been created or launched. Token details and allocations below are proposals and may change." data-ru="Стадия разработки: токен GZV ещё не создан и не запущен. Приведённые ниже параметры и распределение — предварительные предложения и могут измениться.">Development stage: the GZV token has not been created or launched. Token details and allocations below are proposals and may change.</div>
   </div>
