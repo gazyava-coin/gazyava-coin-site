@@ -402,6 +402,7 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
     {id:'golden',name:'Золотой',emoji:'👑',unlock:50000,level:5,description:'Легенда Gazyava',className:'skin-golden'}
   ];
   let equippedMascotSkin = 'classic';
+  let mascotCollectionSignature = '';
   try { equippedMascotSkin = localStorage.getItem('gazyava_mascot_skin') || 'classic'; } catch (_) {}
   function updateMascotCollection() {
     const list=document.getElementById('mascotSkins');
@@ -410,7 +411,8 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
     const unlocked=MASCOT_SKINS.filter(s=>score>=s.unlock);
     if(!unlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
     const current=MASCOT_SKINS.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
-    mascot.className='mascot '+current.className;
+    mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden');
+    if(current.className) mascot.classList.add(current.className);
     const next=MASCOT_SKINS.find(s=>score<s.unlock);
     const previous=[...unlocked].reverse()[0];
     const levelEl=document.getElementById('mascotLevel');
@@ -424,6 +426,9 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
       const pct=next ? Math.max(0,Math.min(100,(score-previous.unlock)/(next.unlock-previous.unlock)*100)) : 100;
       fillEl.style.width=pct+'%';
     }
+    const signature=unlocked.map(s=>s.id).join('|')+'|'+equippedMascotSkin;
+    if(signature===mascotCollectionSignature) return;
+    mascotCollectionSignature=signature;
     list.replaceChildren();
     MASCOT_SKINS.forEach(skin=>{
       const isUnlocked=score>=skin.unlock;
