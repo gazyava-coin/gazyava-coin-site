@@ -672,7 +672,24 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
       copyButton.disabled = false;
       countEl.textContent = Number(referral.invited_count || 0).toLocaleString('ru-RU');
       earnedEl.textContent = Number(referral.earned || 0).toLocaleString('ru-RU') + ' очков';
-      statusEl.textContent = 'За каждого нового друга начисляется +100 очков';
+      const activeEl = document.getElementById('referralActive');
+      if (activeEl) activeEl.textContent = Number(referral.active_invited_7d || 0).toLocaleString('ru-RU');
+      const milestonesEl = document.getElementById('referralMilestones');
+      if (milestonesEl) {
+        milestonesEl.replaceChildren();
+        const milestones = Array.isArray(referral.milestones) ? referral.milestones : [];
+        milestones.forEach((milestone) => {
+          const row = document.createElement('div');
+          row.className = 'referral-milestone' + (milestone.claimed ? ' done' : '');
+          const label = document.createElement('span');
+          label.textContent = (milestone.claimed ? '✓ ' : '🎯 ') + milestone.invites + ' приглашённых друзей';
+          const reward = document.createElement('strong');
+          reward.textContent = '+' + Number(milestone.bonus).toLocaleString('ru-RU') + ' очков' + (milestone.claimed ? ' · получено' : '');
+          row.append(label, reward);
+          milestonesEl.appendChild(row);
+        });
+      }
+      statusEl.textContent = 'Дополнительные бонусы начисляются автоматически при достижении цели';
     } catch (error) {
       linkInput.value = 'Не удалось загрузить ссылку';
       statusEl.textContent = error.message || 'Ошибка загрузки рефералов';
