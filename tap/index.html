@@ -280,6 +280,9 @@ h1{font-size:clamp(28px,7vw,36px);margin-top:22px;text-shadow:0 4px 24px #a8ff45
 .mascot.skin-flame svg{filter:hue-rotate(305deg) saturate(1.3)}
 .mascot.skin-cosmic svg{filter:hue-rotate(205deg) saturate(1.5)}
 .mascot.skin-golden svg{filter:sepia(.8) saturate(1.8) hue-rotate(350deg)}
+.mascot.skin-mint-guardian svg{filter:hue-rotate(45deg) saturate(1.5) brightness(1.08)}
+.mascot.skin-star-wanderer svg{filter:hue-rotate(245deg) saturate(1.7) brightness(1.12)}
+.mascot.skin-cloud-royal svg{filter:sepia(.65) saturate(2) hue-rotate(325deg) brightness(1.08)}
 @media(max-width:360px){.mascot-skins{grid-template-columns:1fr}.skin-card{padding:8px}}
 .game-tabs{position:sticky;top:6px;z-index:15;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:8px 0 16px;padding:6px;border:1px solid #ffffff20;border-radius:16px;background:#171226ed;backdrop-filter:blur(16px);box-shadow:0 8px 24px #05030d55}
 .game-tab{min-width:0;padding:10px 3px;border:1px solid transparent;border-radius:11px;background:transparent;color:#b9b3cc;font:800 10px/1.2 system-ui;cursor:pointer;white-space:nowrap}
@@ -395,6 +398,9 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="collection-title">💎 КОЛЛЕКЦИЯ РЕДКОСТЕЙ</div>
     <p class="daily-subtitle">Собирай уникальные предметы за финальную миссию</p>
     <div id="collectiblesList" class="collectibles-list">Загружаем коллекцию...</div>
+    <div class="collection-title" style="margin-top:14px">🛠️ МАСТЕРСКАЯ ОБЛИКОВ</div>
+    <p class="daily-subtitle">Обменивай 3 одинаковых предмета на постоянный эксклюзивный скин</p>
+    <div id="skinCraftList" class="collectibles-list">Загружаем рецепты...</div>
   </div>
 </section>
 <section class="streak-card" aria-labelledby="streakTitle">
@@ -517,17 +523,53 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     {id:'cosmic',name:'Космический',emoji:'🌌',unlock:15000,level:4,description:'Звезда тапов',className:'skin-cosmic'},
     {id:'golden',name:'Золотой',emoji:'👑',unlock:50000,level:5,description:'Легенда Gazyava',className:'skin-golden'}
   ];
+  let exclusiveMascotSkins = [];
   let equippedMascotSkin = 'classic';
   let mascotCollectionSignature = '';
   try { equippedMascotSkin = localStorage.getItem('gazyava_mascot_skin') || 'classic'; } catch (_) {}
+  const EXCLUSIVE_SKINS = [
+    {id:'mint_guardian',name:'Мятный страж',emoji:'🛡️',item:'mint_feather',itemName:'Мятное перо',className:'skin-mint-guardian'},
+    {id:'star_wanderer',name:'Звёздный странник',emoji:'🌠',item:'star_core',itemName:'Звёздное ядро',className:'skin-star-wanderer'},
+    {id:'cloud_royal',name:'Король облаков',emoji:'👑',item:'golden_cloud',itemName:'Золотое облачко',className:'skin-cloud-royal'}
+  ];
+  function renderSkinCrafting(collection) {
+    const list=document.getElementById('skinCraftList'); if(!list) return;
+    const counts=new Map((Array.isArray(collection)?collection:[]).map(x=>[x.id,Number(x.quantity||0)]));
+    const owned=new Set(exclusiveMascotSkins.map(x=>x.id)); list.replaceChildren();
+    EXCLUSIVE_SKINS.forEach(skin=>{
+      const count=counts.get(skin.item)||0, has=owned.has(skin.id);
+      const card=document.createElement('div'); card.className='skin-card'+(has?' active':'');
+      const avatar=document.createElement('div'); avatar.className='skin-avatar'; avatar.textContent=skin.emoji;
+      const info=document.createElement('div'); info.className='skin-info';
+      const title=document.createElement('div'); title.className='skin-name'; title.textContent=skin.name;
+      const detail=document.createElement('div'); detail.className='skin-unlock'; detail.textContent=has?'✓ Уже создан · навсегда':skin.itemName+': '+count+'/3';
+      info.append(title,detail);
+      const button=document.createElement('button'); button.type='button'; button.textContent=has?'Создано':'Создать';
+      button.disabled=has||count<3; button.addEventListener('click',()=>craftExclusiveSkin(skin,button));
+      card.append(avatar,info,button); list.append(card);
+    });
+  }
+  async function craftExclusiveSkin(skin,button) {
+    button.disabled=true; button.textContent='Создаём...';
+    try {
+      const data=await request('craft_skin',{skin_id:skin.id}); const craft=data.craft||{};
+      if(!craft.ok) { const reasons={not_enough_items:'Нужно 3 предмета для обмена',already_owned:'Этот облик уже есть',player_not_found:'Профиль не найден'}; throw new Error(reasons[craft.reason]||'Не удалось создать облик'); }
+      await loadDailyMissions();
+      if(toast){toast.textContent='✨ Получен эксклюзивный скин: '+(craft.name||skin.name);toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000);}
+      if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    } catch(error) { button.disabled=false; button.textContent='Повторить'; if(toast){toast.textContent=error.message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);} }
+  }
+
   function updateMascotCollection() {
     const list=document.getElementById('mascotSkins');
     const mascot=document.getElementById('mascot');
     if(!list || !mascot) return;
     const unlocked=MASCOT_SKINS.filter(s=>score>=s.unlock);
-    if(initialized && !unlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
-    const current=MASCOT_SKINS.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
-    mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden');
+    const exclusiveUnlocked=EXCLUSIVE_SKINS.filter(s=>exclusiveMascotSkins.some(x=>x.id===s.id));
+    const allSkins=[...MASCOT_SKINS,...exclusiveUnlocked];
+    if(initialized && !unlocked.some(s=>s.id===equippedMascotSkin) && !exclusiveUnlocked.some(s=>s.id===equippedMascotSkin)) equippedMascotSkin='classic';
+    const current=allSkins.find(s=>s.id===equippedMascotSkin)||MASCOT_SKINS[0];
+    mascot.classList.remove('skin-sprout','skin-flame','skin-cosmic','skin-golden','skin-mint-guardian','skin-star-wanderer','skin-cloud-royal');
     if(current.className) mascot.classList.add(current.className);
     const next=MASCOT_SKINS.find(s=>score<s.unlock);
     const previous=[...unlocked].reverse()[0];
@@ -542,18 +584,18 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const pct=next ? Math.max(0,Math.min(100,(score-previous.unlock)/(next.unlock-previous.unlock)*100)) : 100;
       fillEl.style.width=pct+'%';
     }
-    const signature=unlocked.map(s=>s.id).join('|')+'|'+equippedMascotSkin;
+    const signature=unlocked.map(s=>s.id).join('|')+'|'+exclusiveUnlocked.map(s=>s.id).join('|')+'|'+equippedMascotSkin;
     if(signature===mascotCollectionSignature) return;
     mascotCollectionSignature=signature;
     list.replaceChildren();
-    MASCOT_SKINS.forEach(skin=>{
-      const isUnlocked=score>=skin.unlock;
+    allSkins.forEach(skin=>{
+      const isUnlocked=skin.unlock===undefined ? exclusiveUnlocked.some(s=>s.id===skin.id) : score>=skin.unlock;
       const card=document.createElement('div');
       card.className='skin-card'+(skin.id===equippedMascotSkin?' active':'');
       const avatar=document.createElement('div');avatar.className='skin-avatar';avatar.textContent=skin.emoji;
       const info=document.createElement('div');info.className='skin-info';
       const title=document.createElement('div');title.className='skin-name';title.textContent=skin.name;
-      const detail=document.createElement('div');detail.className='skin-unlock';detail.textContent=isUnlocked?skin.description:'🔒 '+skin.unlock.toLocaleString('ru-RU')+' очков';
+      const detail=document.createElement('div');detail.className='skin-unlock';detail.textContent=isUnlocked?(skin.description||'Эксклюзивный коллекционный облик'):'🔒 '+skin.unlock.toLocaleString('ru-RU')+' очков';
       info.append(title,detail);
       const button=document.createElement('button');button.type='button';
       button.textContent=!isUnlocked?'Закрыт':skin.id===equippedMascotSkin?'Выбран':'Надеть';
@@ -853,6 +895,10 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       const taps = Number(state.taps || 0);
       const claimed = state.claimed || {};
       renderCollectibles(state.collection || []);
+      const skinData = await request('exclusive_skins');
+      exclusiveMascotSkins = Array.isArray(skinData.exclusive_skins) ? skinData.exclusive_skins : [];
+      renderSkinCrafting(state.collection || []);
+      mascotCollectionSignature = ''; updateMascotCollection();
       const missions = Array.isArray(state.missions) ? state.missions : [];
       missionReadyNoticeCount = missions.filter(m => taps >= Number(m.target) && !claimed[m.id]).length;
       taskNoticeCount = readyTaskNoticeCount + missionReadyNoticeCount + (spinAvailable ? 1 : 0);
