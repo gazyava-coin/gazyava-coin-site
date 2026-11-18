@@ -118,6 +118,15 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 .event-milestone button{margin-top:7px;border:0;border-radius:9px;padding:7px 11px;background:#bcb0ff;color:#1c1631;font-size:10px;font-weight:900}
 .event-milestone button:disabled{opacity:.45}
 .event-item{margin-top:10px;padding:9px;border-radius:10px;background:#8d75ff16;color:#d9d0ff;text-align:center;font-size:11px;font-weight:850}
+.event-rankings{margin-top:14px;padding-top:13px;border-top:1px solid #ffffff18}
+.event-rankings h3{margin:0 0 8px;text-align:center;color:#d9d0ff;font-size:14px}
+.event-rank-row{display:flex;align-items:center;gap:8px;padding:7px 5px;border-bottom:1px solid #ffffff10;font-size:11px}
+.event-rank-row strong:first-child{width:24px;color:#c8bcff}
+.event-rank-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.event-rank-row b{color:#b5ff62;white-space:nowrap}
+.event-rank-self{margin-top:9px;padding:9px;border-radius:10px;background:#b5ff6214;color:#b5ff62;text-align:center;font-size:11px;font-weight:850}
+#eventRankClaim{width:100%;margin-top:9px;padding:10px;border:0;border-radius:10px;background:#c8bcff;color:#1c1631;font-weight:950;font-size:12px}
+#eventRankClaim:disabled{opacity:.45}
 .daily-missions{width:100%;margin-top:14px;padding:18px;border:1px solid #ffd36b55;border-radius:18px;background:linear-gradient(145deg,rgba(255,211,107,.11),rgba(168,255,69,.06));box-shadow:0 12px 35px #05030d35}
 .daily-missions h2{margin:0 0 6px;color:var(--gold);font-size:18px;text-align:center}
 .mission-card{padding:13px 0;border-bottom:1px solid #ffffff14}
@@ -411,6 +420,12 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   <div class="event-progress"><div id="eventProgressFill"></div></div>
   <div id="eventMilestones"><div class="daily-task">Загружаем этапы фестиваля...</div></div>
   <div class="event-item" id="eventItem">✨ Осколки авроры: 0</div>
+  <div class="event-rankings">
+    <h3>🏆 ТАБЛИЦА ФЕСТИВАЛЯ · ТОП-10</h3>
+    <div id="eventLeaderboard"><div class="daily-task">Загружаем рейтинг...</div></div>
+    <div class="event-rank-self" id="eventMyRank">Твоя позиция: —</div>
+    <button id="eventRankClaim" type="button" disabled>Итоговые награды после 25 ноября</button>
+  </div>
 </section>
 <section class="daily-missions" aria-labelledby="dailyMissionsTitle">
   <h2 id="dailyMissionsTitle">⚡ ЦЕПОЧКА МИССИЙ</h2>
@@ -923,9 +938,65 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         button.addEventListener('click',()=>claimSeasonReward(m.id,button));
         row.append(head,meta,button);host.append(row);
       });
+      await loadSeasonLeaderboard();
     } catch(error) {
       host.textContent='Не удалось загрузить событие';
       console.error('Season event loading failed:',error);
+    }
+  }
+
+  async function loadSeasonLeaderboard() {
+    const list=document.getElementById('eventLeaderboard');
+    const mine=document.getElementById('eventMyRank');
+    const claimButton=document.getElementById('eventRankClaim');
+    if(!list) return;
+    try {
+      const response=await request('event_leaderboard');
+      const data=response.event_leaderboard||{};
+      const rows=Array.isArray(data.leaderboard)?data.leaderboard:[];
+      list.replaceChildren();
+      if(!rows.length) {
+        const empty=document.createElement('div');empty.className='daily-task';empty.textContent='Пока нет участников — сделай первый тап!';list.append(empty);
+      }
+      rows.forEach(entry=>{
+        const row=document.createElement('div');row.className='event-rank-row';
+        const rank=document.createElement('strong');rank.textContent='#'+entry.rank;
+        const name=document.createElement('span');name.textContent=entry.name||'Игрок';
+        const taps=document.createElement('b');taps.textContent=Number(entry.taps||0).toLocaleString('ru-RU')+' тапов';
+        row.append(rank,name,taps);list.append(row);
+      });
+      const my=data.my_rank;
+      if(mine) mine.textContent=my?.rank?'Твоя позиция: #'+my.rank+' · '+Number(my.taps||0).toLocaleString('ru-RU')+' тапов':'Ты пока не в таблице';
+      const finalized=Boolean(data.finalized);
+      if(claimButton) {
+        const eligible=finalized&&Number(my?.rank||99)<=10;
+        claimButton.disabled=!eligible;
+        claimButton.textContent=finalized?(eligible?'Забрать награду за место #'+my.rank:'Итоги завершены · вне топ-10'):'Награды станут доступны 25 ноября';
+        claimButton.onclick=eligible?()=>claimSeasonRankReward(claimButton):null;
+      }
+      if(!finalized&&mine) mine.textContent+=(data.participant_count?' · участников: '+data.participant_count:'');
+    } catch(error) {
+      list.textContent='Не удалось загрузить рейтинг';
+      console.error('Season leaderboard loading failed:',error);
+    }
+  }
+
+  async function claimSeasonRankReward(button) {
+    button.disabled=true;button.textContent='Забираем награду...';
+    try {
+      const response=await request('claim_event_rank_reward');
+      const claim=response.rank_claim||{};
+      if(!claim.claimed) {
+        const messages={event_not_finished:'Фестиваль ещё не завершён',not_in_top_10:'Ты вне первой десятки',already_claimed:'Награда уже получена'};
+        throw new Error(messages[claim.reason]||'Не удалось получить награду');
+      }
+      button.textContent='✓ Награда за место #'+claim.rank+' получена';
+      if(toast){toast.textContent='🏆 #'+claim.rank+' · +'+claim.score_reward+' очков · '+claim.shard_reward+' осколков';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200);}
+      if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      await Promise.all([loadSeasonLeaderboard(),loadPlayer(),loadSeasonEvent()]);
+    } catch(error) {
+      button.disabled=false;button.textContent='Повторить получение';
+      if(toast){toast.textContent=error.message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}
     }
   }
 
