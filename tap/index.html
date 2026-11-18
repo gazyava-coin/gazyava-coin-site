@@ -290,6 +290,7 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   let energy = MAX;
   let lastSync = Date.now();
   let busy = false;
+  let pendingTaps = 0;
   let initialized = false;
 
   const scoreEl = document.getElementById('score');
@@ -306,19 +307,19 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   }
 
   function render() {
-    const e = Math.floor(currentEnergy());
+    const e = Math.max(0, Math.floor(currentEnergy()) - pendingTaps);
 
-    scoreEl.textContent = score.toLocaleString('ru-RU');
+    scoreEl.textContent = (score + pendingTaps * TAP_POWER).toLocaleString('ru-RU');
     energyEl.textContent = e + ' / ' + MAX;
     energyLabel.textContent = e + ' / ' + MAX;
     fill.style.width = (e / MAX * 100) + '%';
 
-    tap.disabled = busy || !initialized || e < 1;
+    tap.disabled = !initialized || e < 1;
 
     if (!initialized) {
       hint.textContent = 'Загружаем профиль...';
-    } else if (busy) {
-      hint.textContent = 'Сохраняем результат...';
+    } else if (pendingTaps > 0) {
+      hint.textContent = 'Тапы засчитываются...';
     } else if (e < 1) {
       hint.textContent = 'Энергия восстанавливается: +1 в секунду';
     } else {
@@ -838,42 +839,50 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
   document.getElementById('refreshWeekly')?.addEventListener('click', loadWeeklyTournament);
 
   let toastTimer;
+  let tapQueueRunning = false;
 
-  tap.addEventListener('click', async () => {
-    if (busy || !initialized || currentEnergy() < 1) {
+  async function flushTapQueue() {
+    if (tapQueueRunning) return;
+    tapQueueRunning = true;
+    try {
+      while (pendingTaps > 0) {
+        const data = await request('tap');
+        pendingTaps = Math.max(0, pendingTaps - 1);
+        applyServerData(data);
+        render();
+      }
+    } catch (error) {
+      pendingTaps = 0;
+      hint.textContent = error.message || 'Не удалось сохранить тап';
+      console.error('Tap sync failed:', error);
+      try {
+        const player = await request('load');
+        applyServerData(player);
+      } catch (reloadError) {
+        console.error('Player resync failed:', reloadError);
+      }
+    } finally {
+      tapQueueRunning = false;
+      render();
+    }
+  }
+
+  tap.addEventListener('click', () => {
+    if (!initialized || Math.floor(currentEnergy()) - pendingTaps < 1) {
       render();
       return;
     }
 
-    busy = true;
+    pendingTaps += 1;
     render();
+    toast.textContent = '+' + TAP_POWER + ' GAZY POINT';
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 450);
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
-    try {
-      const previousScore = score;
-      const data = await request('tap');
-      applyServerData(data);
-      toast.textContent = '+' + TAP_POWER + ' GAZY POINT';
-      await loadDailyProgress();
-
-      if (score > previousScore) {
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(
-          () => toast.classList.remove('show'),
-          450
-        );
-
-        if (tg?.HapticFeedback) {
-          tg.HapticFeedback.impactOccurred('light');
-        }
-      }
-    } catch (error) {
-      hint.textContent = error.message;
-      console.error('Tap failed:', error);
-    } finally {
-      busy = false;
-      render();
-    }
+    flushTapQueue();
+    loadDailyProgress();
   });
 
   render();
