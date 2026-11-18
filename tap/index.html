@@ -499,6 +499,19 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
 @media(max-width:370px){.world-map{min-height:470px}.world-node{width:94px;min-height:84px}.node-village{left:2%}.node-forest{right:2%}.node-mountains{left:2%}.node-frost{right:2%}.node-cosmos{left:2%}.node-kingdom{right:2%}.world-map-heading h2{font-size:17px}}
 
+
+/* World treasure & relic collection */
+.world-treasure{margin-top:15px;padding:15px;border:1px solid #ffd36b55;border-radius:16px;background:linear-gradient(145deg,#ffd36b12,#8d75ff12)}
+.world-treasure h3{margin:0;color:#ffd36b;font-size:14px}.world-treasure-sub{margin:5px 0 10px;color:var(--muted);font-size:10px;line-height:1.45}
+.world-chest-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.world-chest{padding:10px 8px;border:1px solid #ffffff18;border-radius:12px;background:#171226;text-align:center;min-width:0}
+.world-chest-icon{font-size:27px}.world-chest-name{margin-top:4px;font-size:10px;font-weight:900}.world-chest-state{margin-top:3px;color:var(--muted);font-size:9px}
+.world-chest button{width:100%;margin-top:7px;padding:8px 5px;border:0;border-radius:8px;background:var(--gold);color:#21182c;font-size:10px;font-weight:950}
+.world-chest button:disabled{opacity:.4}.world-artifacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.world-artifact{padding:9px 5px;border:1px solid #ffffff18;border-radius:11px;background:#171226;text-align:center;min-width:0}
+.world-artifact.locked{opacity:.35;filter:grayscale(1)}.world-artifact-icon{font-size:23px}.world-artifact-name{margin-top:4px;font-size:9px;font-weight:900;line-height:1.25}.world-artifact-rarity{margin-top:3px;color:#c8a5ff;font-size:8px;font-weight:900;text-transform:uppercase}
+.world-collection-progress{height:7px;margin-top:9px;border-radius:99px;background:#403657;overflow:hidden}.world-collection-progress>div{height:100%;background:linear-gradient(90deg,#8d75ff,#ffd36b);width:0;transition:width .3s}
+.world-secret-chest{margin-top:10px;padding:11px;border:1px dashed #ffd36b70;border-radius:12px;text-align:center;background:#ffd36b0b}.world-secret-chest strong{display:block;color:#ffd36b;font-size:12px}.world-secret-chest p{margin:4px 0;color:var(--muted);font-size:10px}.world-secret-chest button{padding:9px 13px;border:0;border-radius:9px;background:linear-gradient(120deg,#ffd36b,#b5ff62);color:#21182c;font-size:10px;font-weight:950}.world-secret-chest button:disabled{opacity:.4}
 </style>
 </head>
 <body>
@@ -663,6 +676,17 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     <div class="world-poi-head"><h3>🧭 ТАЙНЫ И ДОСТОПРИМЕЧАТЕЛЬНОСТИ</h3><span class="world-poi-count" id="worldPoiCount">0 / 3</span></div>
     <div class="world-poi-list" id="worldPoiList"><div class="world-journal-empty">Открой регион, чтобы искать тайные места.</div></div>
   </div>
+  <section class="world-treasure" aria-labelledby="worldTreasureTitle">
+    <h3 id="worldTreasureTitle">🎁 СОКРОВИЩА И АРТЕФАКТЫ</h3>
+    <p class="world-treasure-sub">Исследуй все три места региона, чтобы открыть его сундук. Собери шесть реликвий и найди тайное сокровище.</p>
+    <div class="world-chest-grid" id="worldChestGrid"><div class="world-journal-empty">Загружаем сокровища...</div></div>
+    <div class="world-collection-progress"><div id="worldArtifactFill"></div></div>
+    <div class="world-poi-head" style="margin-top:10px"><strong style="font-size:11px">Коллекция артефактов</strong><span class="world-poi-count" id="worldArtifactCount">0 / 6</span></div>
+    <div class="world-artifacts" id="worldArtifactGrid"></div>
+    <div class="world-secret-chest" id="worldSecretChest"><strong>🌟 Тайник Первого Облака</strong><p id="worldSecretText">Собери все шесть региональных артефактов.</p><button id="worldSecretOpen" type="button" disabled>Тайна запечатана</button></div>
+    <p class="world-treasure-sub" id="worldTreasureStatus" aria-live="polite">Сокровища сохраняются на этом устройстве и не дают игровые очки.</p>
+  </section>
+
 </section>
 </div>
 <div class="tab-panel" data-tab-panel="friends">
@@ -972,6 +996,65 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   };
   let discoveredWorldPois = [];
   try { discoveredWorldPois = JSON.parse(localStorage.getItem('gazyava_world_pois') || '[]').filter(key => /^[a-z]+:[a-z]+$/.test(key)); } catch (_) {}
+  const WORLD_ARTIFACTS = [
+    {zone:'village',id:'cloud_compass',icon:'🧭',name:'Облачный компас',rarity:'Обычный'},
+    {zone:'forest',id:'mint_crystal',icon:'💚',name:'Мятный кристалл',rarity:'Необычный'},
+    {zone:'mountains',id:'spark_heart',icon:'❤️‍🔥',name:'Сердце искры',rarity:'Редкий'},
+    {zone:'frost',id:'frost_rune',icon:'❄️',name:'Ледяная руна',rarity:'Редкий'},
+    {zone:'cosmos',id:'star_lens',icon:'🔭',name:'Звёздная линза',rarity:'Эпический'},
+    {zone:'kingdom',id:'royal_seal',icon:'👑',name:'Королевская печать',rarity:'Легендарный'}
+  ];
+  let openedWorldChests=[];
+  let collectedWorldArtifacts=[];
+  let openedWorldSecret=false;
+  try {
+    openedWorldChests=JSON.parse(localStorage.getItem('gazyava_world_chests')||'[]').filter(id=>WORLD_ZONES.some(z=>z.id===id));
+    collectedWorldArtifacts=JSON.parse(localStorage.getItem('gazyava_world_artifacts')||'[]').filter(id=>WORLD_ARTIFACTS.some(a=>a.id===id));
+    openedWorldSecret=localStorage.getItem('gazyava_world_secret')==='1';
+  } catch (_) {}
+  function persistWorldTreasures(){
+    try{
+      localStorage.setItem('gazyava_world_chests',JSON.stringify(openedWorldChests));
+      localStorage.setItem('gazyava_world_artifacts',JSON.stringify(collectedWorldArtifacts));
+      localStorage.setItem('gazyava_world_secret',openedWorldSecret?'1':'0');
+    }catch(_){}
+  }
+  function updateWorldTreasures(){
+    const chestGrid=document.getElementById('worldChestGrid'),artifactGrid=document.getElementById('worldArtifactGrid');
+    const artifactCount=collectedWorldArtifacts.length;
+    const countEl=document.getElementById('worldArtifactCount'),fillEl=document.getElementById('worldArtifactFill');
+    if(countEl)countEl.textContent=artifactCount+' / 6';
+    if(fillEl)fillEl.style.width=(artifactCount/6*100)+'%';
+    if(artifactGrid){
+      artifactGrid.replaceChildren();
+      WORLD_ARTIFACTS.forEach(artifact=>{
+        const owned=collectedWorldArtifacts.includes(artifact.id),card=document.createElement('div');
+        card.className='world-artifact'+(owned?'':' locked');
+        const icon=document.createElement('div');icon.className='world-artifact-icon';icon.textContent=owned?artifact.icon:'❔';
+        const name=document.createElement('div');name.className='world-artifact-name';name.textContent=owned?artifact.name:'Неизвестная реликвия';
+        const rarity=document.createElement('div');rarity.className='world-artifact-rarity';rarity.textContent=owned?artifact.rarity:'Не найдено';
+        card.append(icon,name,rarity);artifactGrid.appendChild(card);
+      });
+    }
+    if(chestGrid){
+      chestGrid.replaceChildren();
+      WORLD_ZONES.forEach(zone=>{
+        const found=(WORLD_POIS[zone.id]||[]).filter(p=>discoveredWorldPois.includes(zone.id+':'+p[0])).length;
+        const opened=openedWorldChests.includes(zone.id),unlocked=Number(score||0)+pendingTaps*TAP_POWER>=zone.unlock,ready=unlocked&&found===3&&!opened;
+        const card=document.createElement('div');card.className='world-chest';
+        const icon=document.createElement('div');icon.className='world-chest-icon';icon.textContent=opened?'✨':ready?'🎁':'🔒';
+        const name=document.createElement('div');name.className='world-chest-name';name.textContent=zone.name;
+        const state=document.createElement('div');state.className='world-chest-state';state.textContent=opened?'Артефакт найден':!unlocked?'Сначала открой регион':found+'/3 мест исследовано';
+        const button=document.createElement('button');button.type='button';button.dataset.chest=zone.id;button.textContent=opened?'Открыто':ready?'Открыть сундук':'Исследуй 3 места';button.disabled=!ready;
+        card.append(icon,name,state,button);chestGrid.appendChild(card);
+      });
+    }
+    const secretText=document.getElementById('worldSecretText'),secretButton=document.getElementById('worldSecretOpen');
+    if(secretText)secretText.textContent=openedWorldSecret?'Тайник открыт — ты нашёл Сердце Gazyava!':'Собери все шесть региональных артефактов.';
+    if(secretButton){secretButton.disabled=artifactCount<6||openedWorldSecret;secretButton.textContent=openedWorldSecret?'🏆 Сокровище найдено':artifactCount===6?'Открыть тайник':'Тайна запечатана';}
+    const status=document.getElementById('worldTreasureStatus');
+    if(status)status.textContent=openedWorldSecret?'Коллекция завершена! Сердце Gazyava добавлено в журнал.':'Открыто сундуков: '+openedWorldChests.length+'/6 · Артефактов: '+artifactCount+'/6. Это локальная косметическая коллекция без игровых начислений.';
+  }
 
   try {
     discoveredWorldZones = JSON.parse(localStorage.getItem('gazyava_world_discovered') || '[]').filter(id => WORLD_ZONES.some(zone => zone.id === id));
@@ -1056,6 +1139,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
         item.append(emoji,copy,action);poiList.appendChild(item);
       });
     }
+    updateWorldTreasures();
   }
   document.getElementById('worldMap')?.addEventListener('click',event=>{
     const button=event.target.closest('[data-zone]');
@@ -1094,6 +1178,26 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     try{localStorage.setItem('gazyava_world_pois',JSON.stringify(discoveredWorldPois));}catch(_){}
     if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
     updateWorldMap();
+  });
+
+
+  document.getElementById('worldChestGrid')?.addEventListener('click',event=>{
+    const button=event.target.closest('button[data-chest]');if(!button||button.disabled)return;
+    const zone=WORLD_ZONES.find(z=>z.id===button.dataset.chest);if(!zone||openedWorldChests.includes(zone.id))return;
+    const found=(WORLD_POIS[zone.id]||[]).filter(p=>discoveredWorldPois.includes(zone.id+':'+p[0])).length;
+    const totalScore=Math.max(0,Number(score||0)+pendingTaps*TAP_POWER);
+    if(totalScore<zone.unlock||found!==3)return;
+    const artifact=WORLD_ARTIFACTS.find(a=>a.zone===zone.id);if(!artifact)return;
+    openedWorldChests.push(zone.id);if(!collectedWorldArtifacts.includes(artifact.id))collectedWorldArtifacts.push(artifact.id);
+    persistWorldTreasures();updateWorldMap();
+    const status=document.getElementById('worldTreasureStatus');if(status)status.textContent='🎉 Найден артефакт: '+artifact.icon+' '+artifact.name+' · '+artifact.rarity+'!';
+    if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
+  });
+  document.getElementById('worldSecretOpen')?.addEventListener('click',()=>{
+    if(collectedWorldArtifacts.length!==6||openedWorldSecret)return;
+    openedWorldSecret=true;persistWorldTreasures();updateWorldMap();
+    const status=document.getElementById('worldTreasureStatus');if(status)status.textContent='🌟 Секретное сокровище открыто: Сердце Gazyava!';
+    if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
   });
 
   function render() {
