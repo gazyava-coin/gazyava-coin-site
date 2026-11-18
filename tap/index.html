@@ -590,7 +590,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
     } else if (pendingTaps > 0) {
       hint.textContent = 'Тапы засчитываются...';
     } else if (e < 1) {
-      hint.textContent = 'Энергия восстанавливается: +1 в секунду';
+      hint.textContent = 'Энергия восстанавливается: +' + ENERGY_REGEN_RATE + ' в секунду';
     } else {
       hint.textContent = 'Нажимай на облачко, чтобы получить +' + TAP_POWER + ' очк.';
     }
@@ -1406,6 +1406,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
   checkInStreak().then(loadStreakCalendar);
   setInterval(render, 500);
   setInterval(requestGoldenCloud, 15000);
+  setInterval(loadBoosters, 15000);
   setInterval(loadLeaderboard, 30000);
   setInterval(loadWeeklyTournament, 60000);
 })();
