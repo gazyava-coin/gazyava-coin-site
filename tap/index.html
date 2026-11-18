@@ -1726,7 +1726,7 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
       queueBtn.hidden=Boolean(war&&war.status==='active');
       queueBtn.disabled=Boolean(status.queued);
       queueBtn.textContent=status.queued?'⏳ Ищем соперника...':'⚔️ Найти соперника';
-      claimBtn.hidden=!(war&&war.status==='finished');
+      claimBtn.hidden=!(war&&war.status==='finished'&&war.can_claim);
       if(!war){host.textContent=status.queued?'Клан в очереди. Как только найдётся соперник, начнётся 24-часовая битва.':'Пока нет активной битвы. Для поиска нужно минимум 3 участника, запускать может лидер.';return;}
       const mine=war.my_side==='a'?Number(war.score_a):Number(war.score_b),theirs=war.my_side==='a'?Number(war.score_b):Number(war.score_a);
       const opponent=war.my_side==='a'?war.clan_b:war.clan_a;
