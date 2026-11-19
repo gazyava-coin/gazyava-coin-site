@@ -778,6 +778,32 @@ h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff
 @media(max-width:420px){main{padding:12px 12px calc(112px + env(safe-area-inset-bottom))}.game-tabs{top:auto;bottom:calc(8px + env(safe-area-inset-bottom));gap:4px}.game-tab{padding:9px 7px;font-size:10px}.cloud-wrap{transform:scale(.94);margin:-5px 0}.stats{gap:7px}}
 @media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}.new-player-day,.game-tab{transition:none}}
 
+
+/* Community Rewards admin */
+.admin-rewards{display:none;width:100%;margin:18px 0;padding:18px;border:1px solid #b5ff6270;border-radius:18px;background:linear-gradient(145deg,#1b2b24,#211a35);box-shadow:0 12px 35px #05030d45}
+.admin-rewards h2{margin:0 0 6px;color:#b5ff62;text-align:center;font-size:19px}
+.admin-rewards p{color:var(--muted);font-size:12px}
+.admin-rewards .admin-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.admin-rewards button,.admin-rewards select,.admin-rewards input{min-width:0;border:1px solid #65734b;border-radius:10px;padding:10px;background:#171226;color:var(--text);font:inherit;font-size:12px}
+.admin-rewards button{background:#b5ff62;color:#17200d;border:0;font-weight:900;cursor:pointer}
+.admin-rewards button.secondary{background:#ffd36b;color:#2b210d}
+.admin-rewards button.danger{background:#ff8a8a;color:#2b1010}
+.admin-rewards button:disabled{opacity:.45;cursor:not-allowed}
+.admin-rewards input{flex:1}
+.admin-status{padding:10px;border-radius:10px;background:#ffffff0a;color:#d8f7c2;font-size:12px;white-space:pre-wrap}
+.admin-rule,.admin-snapshot,.admin-player{margin-top:9px;padding:11px;border:1px solid #ffffff18;border-radius:12px;background:#ffffff08;font-size:11px;overflow-wrap:anywhere}
+.admin-table-wrap{max-width:100%;overflow:auto;margin-top:9px}
+.admin-table{width:100%;border-collapse:collapse;font-size:10px;white-space:nowrap}
+.admin-table th,.admin-table td{padding:7px;border-bottom:1px solid #ffffff18;text-align:left}
+.admin-table th{color:#b5ff62}
+.admin-player-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:850}
+.admin-player-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.admin-player-actions button{padding:7px 9px;font-size:10px}
+.admin-player input{width:100%;margin-top:7px}
+.admin-divider{height:1px;background:#ffffff20;margin:14px 0}
+.admin-label{display:block;margin:9px 0 4px;color:#ffd36b;font-size:11px;font-weight:850}
+.admin-small{font-size:10px;color:var(--muted)}
+
 </style>
 </head>
 <body>
@@ -1151,6 +1177,41 @@ h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff
   <div id="myRank" class="my-rank">Твоё место: загружаем...</div>
 </section>
 </div>
+
+<section id="communityRewardsAdmin" class="admin-rewards" aria-labelledby="communityRewardsAdminTitle">
+  <h2 id="communityRewardsAdminTitle">🔐 COMMUNITY REWARDS · АДМИН</h2>
+  <p>Закрытый инструмент модерации. Доступ дополнительно проверяется сервером по подписанному Telegram initData.</p>
+  <div id="adminRulesStatus" class="admin-status" role="status" aria-live="polite">Проверяем доступ и настройки кампании...</div>
+  <div class="admin-row">
+    <button id="adminRefresh" type="button">Обновить статус</button>
+    <button id="adminPreview" class="secondary" type="button">Предпросмотр расчёта</button>
+    <button id="adminCreateSnapshot" type="button">Создать черновик snapshot</button>
+  </div>
+  <div id="adminPreviewResult"></div>
+  <div class="admin-divider"></div>
+  <label class="admin-label" for="adminSnapshotId">Snapshot ID</label>
+  <div class="admin-row">
+    <input id="adminSnapshotId" type="text" placeholder="UUID snapshot">
+    <button id="adminLoadQueue" class="secondary" type="button">Загрузить очередь</button>
+  </div>
+  <div id="adminSnapshotList"></div>
+  <div id="adminReviewQueue"></div>
+  <div class="admin-divider"></div>
+  <label class="admin-label" for="adminTargetStatus">Изменить статус snapshot</label>
+  <div class="admin-row">
+    <select id="adminTargetStatus">
+      <option value="review">Открыть проверку (review)</option>
+      <option value="frozen">Заморозить (frozen)</option>
+      <option value="approved">Утвердить (approved)</option>
+      <option value="cancelled">Отменить (cancelled)</option>
+    </select>
+    <button id="adminTransition" type="button">Применить переход</button>
+    <button id="adminExport" class="secondary" type="button">Экспорт approved CSV</button>
+  </div>
+  <div id="adminActionStatus" class="admin-status" aria-live="polite">Действия доступны только администратору.</div>
+  <p class="admin-small">Важно: snapshot — расчётная ведомость, а не перевод токенов. Экспорт не содержит адресов кошельков и не инициирует выплаты.</p>
+</section>
+
 <footer>Игровые очки сохраняются на сервере и привязаны к Telegram-профилю. Это игровые баллы, а не токены GZV или криптоактив; они не гарантируют будущую награду. Для игры не требуется подключать кошелёк или отправлять деньги.</footer>
 
 <section class="feedback-card" aria-labelledby="feedbackTitle">
@@ -1700,6 +1761,217 @@ h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff
 
     return data;
   }
+
+
+
+  // Community Rewards admin panel. Frontend visibility is cosmetic; every action is re-authorized server-side.
+  const adminPanel = document.getElementById('communityRewardsAdmin');
+  const adminUserId = Number(tg?.initDataUnsafe?.user?.id || 0);
+  if (adminPanel && adminUserId === 1298808232) adminPanel.style.display = 'block';
+
+  const adminStatusEl = document.getElementById('adminRulesStatus');
+  const adminActionStatus = document.getElementById('adminActionStatus');
+  const adminSnapshotInput = document.getElementById('adminSnapshotId');
+  const adminPreviewHost = document.getElementById('adminPreviewResult');
+  const adminQueueHost = document.getElementById('adminReviewQueue');
+  const adminSnapshotsHost = document.getElementById('adminSnapshotList');
+
+  async function communityAdminCall(action, extra = {}) {
+    if (!tg?.initData) throw new Error('Открой Mini App из Telegram');
+    const response = await fetch(SUPABASE_URL + '/functions/v1/community-rewards-admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      },
+      body: JSON.stringify({ action, ...extra, initData: tg.initData })
+    });
+    if (!response.ok) {
+      let message = 'Ошибка административного API';
+      try { const data = await response.json(); message = data.error || message; } catch (_) {}
+      throw new Error(message);
+    }
+    return response;
+  }
+
+  function adminSetStatus(message, target = adminActionStatus) {
+    if (target) target.textContent = message;
+  }
+
+  function adminCell(value) {
+    const cell = document.createElement('td');
+    cell.textContent = value === null || value === undefined ? '—' :
+      (typeof value === 'object' ? JSON.stringify(value) : String(value));
+    return cell;
+  }
+
+  function adminRenderTable(host, rows, preferredKeys = null) {
+    host.replaceChildren();
+    if (!Array.isArray(rows) || !rows.length) {
+      host.textContent = 'Нет строк для отображения.';
+      return;
+    }
+    const keys = preferredKeys || Object.keys(rows[0]);
+    const wrap = document.createElement('div');
+    wrap.className = 'admin-table-wrap';
+    const table = document.createElement('table');
+    table.className = 'admin-table';
+    const head = document.createElement('tr');
+    keys.forEach(key => { const th=document.createElement('th'); th.textContent=key; head.append(th); });
+    const thead=document.createElement('thead'); thead.append(head); table.append(thead);
+    const tbody=document.createElement('tbody');
+    rows.slice(0, 100).forEach(row => {
+      const tr=document.createElement('tr');
+      keys.forEach(key => tr.append(adminCell(row[key])));
+      tbody.append(tr);
+    });
+    table.append(tbody); wrap.append(table); host.append(wrap);
+  }
+
+  async function adminRefreshStatus() {
+    if (!adminPanel || adminPanel.style.display !== 'block') return;
+    adminStatusEl.textContent = 'Проверяем настройки кампании...';
+    try {
+      const response = await communityAdminCall('status');
+      const data = await response.json();
+      const rules = data.rules;
+      if (!rules) {
+        adminStatusEl.textContent = 'Черновые правила Community Rewards не найдены.';
+      } else {
+        const start = rules.campaign_starts_at
+          ? new Date(rules.campaign_starts_at).toLocaleString('ru-RU', { timeZone: 'UTC' }) + ' UTC'
+          : 'НЕ ЗАДАНА — кампания не запущена';
+        adminStatusEl.textContent =
+          'Правила: ' + rules.rules_version + ' · Статус: ' + rules.status +
+          '\nСтарт кампании: ' + start +
+          '\nМинимум активных дней: ' + rules.min_active_days +
+          ' · Лимит игрока: ' + (Number(rules.max_player_share_bps) / 100) + '%' +
+          '\nЧерновой пул: ' + Number(rules.proposed_pool_tokens).toLocaleString('ru-RU') + ' GZV' +
+          '\nВес категорий: прогресс ' + rules.progress_weight + '%, активность ' + rules.activity_weight +
+          '%, миссии ' + rules.missions_weight + '%, рефералы ' + rules.referrals_weight +
+          '%, социальная активность ' + rules.social_weight + '%';
+      }
+      adminSnapshotsHost.replaceChildren();
+      const title=document.createElement('div'); title.className='admin-label'; title.textContent='Последние snapshot'; adminSnapshotsHost.append(title);
+      (data.snapshots || []).forEach(snapshot => {
+        const card=document.createElement('div'); card.className='admin-snapshot';
+        const line=document.createElement('div');
+        line.textContent=snapshot.status.toUpperCase()+' · '+snapshot.id+' · eligible: '+snapshot.eligible_players_count+' · '+new Date(snapshot.cutoff_at).toLocaleString('ru-RU');
+        const use=document.createElement('button'); use.type='button'; use.className='secondary'; use.textContent='Выбрать';
+        use.addEventListener('click',()=>{adminSnapshotInput.value=snapshot.id; adminLoadReviewQueue();});
+        card.append(line,use); adminSnapshotsHost.append(card);
+      });
+    } catch (error) {
+      adminStatusEl.textContent = error.message;
+    }
+  }
+
+  async function adminLoadPreview() {
+    adminPreviewHost.textContent='Считаем предварительные доли...';
+    try {
+      const response=await communityAdminCall('preview');
+      const data=await response.json();
+      adminRenderTable(adminPreviewHost,data.rows || []);
+      adminSetStatus('Предпросмотр получен. Это расчёт, не snapshot и не выплата.');
+    } catch(error) { adminPreviewHost.textContent=error.message; }
+  }
+
+  async function adminCreateSnapshot() {
+    if (!confirm('Создать черновой snapshot на текущий момент? Он не утверждает выплаты.')) return;
+    adminSetStatus('Создаём черновик...');
+    try {
+      const response=await communityAdminCall('create_snapshot');
+      const data=await response.json();
+      const result=Array.isArray(data.snapshot)?data.snapshot[0]:data.snapshot;
+      const snapshotId=result?.snapshot_id || result?.id;
+      if (snapshotId) adminSnapshotInput.value=snapshotId;
+      adminSetStatus('Черновой snapshot создан: '+(snapshotId || JSON.stringify(result)));
+      await adminRefreshStatus();
+      if (snapshotId) await adminLoadReviewQueue();
+    } catch(error) { adminSetStatus(error.message); }
+  }
+
+  async function adminLoadReviewQueue() {
+    const snapshotId=adminSnapshotInput.value.trim();
+    if (!snapshotId) { adminSetStatus('Сначала укажи Snapshot ID.'); return; }
+    adminQueueHost.textContent='Загружаем очередь модерации...';
+    try {
+      const response=await communityAdminCall('review_queue',{snapshot_id:snapshotId});
+      const data=await response.json();
+      const rows=data.rows || [];
+      adminQueueHost.replaceChildren();
+      if (!rows.length) { adminQueueHost.textContent='Очередь пуста: нет ожидающих проверку eligible игроков.'; return; }
+      rows.forEach(player => {
+        const card=document.createElement('div'); card.className='admin-player';
+        const head=document.createElement('div'); head.className='admin-player-head';
+        const identity=document.createElement('span'); identity.textContent='Telegram ID: '+player.telegram_id+' · '+player.active_days+' активных дней';
+        const score=document.createElement('span'); score.textContent='Score: '+Number(player.total_score).toFixed(3)+' · ≈ '+Number(player.proposed_tokens).toFixed(2)+' GZV';
+        head.append(identity,score);
+        const state=document.createElement('div'); state.className='admin-small';
+        state.textContent='Статус: '+player.player_review_status+' · pending events: '+player.pending_events+' · review events: '+player.review_events+' · open reviews: '+player.open_reviews;
+        const reason=document.createElement('input'); reason.type='text'; reason.maxLength=500; reason.placeholder='Причина решения (обязательно для flagged / excluded / appealed)';
+        const actions=document.createElement('div'); actions.className='admin-player-actions';
+        [['clear','Подтвердить',''],['flagged','Пометить','secondary'],['excluded','Исключить','danger'],['appealed','Апелляция','secondary']].forEach(([decision,label,cls])=>{
+          const button=document.createElement('button'); button.type='button'; button.textContent=label; if(cls)button.className=cls;
+          button.addEventListener('click',async()=>{
+            let why=reason.value.trim();
+            if(!why && decision==='clear') why='Проверено администратором';
+            if(!why) { reason.focus(); adminSetStatus('Укажи причину решения для игрока '+player.telegram_id); return; }
+            button.disabled=true;
+            try {
+              const result=await communityAdminCall('review_player',{
+                snapshot_id:snapshotId,telegram_id:Number(player.telegram_id),decision,reason:why
+              });
+              const payload=await result.json();
+              adminSetStatus('Решение сохранено: '+decision+' · '+JSON.stringify(payload.result || {}));
+              await adminLoadReviewQueue();
+              await adminRefreshStatus();
+            } catch(error) { adminSetStatus(error.message); button.disabled=false; }
+          });
+          actions.append(button);
+        });
+        card.append(head,state,reason,actions); adminQueueHost.append(card);
+      });
+    } catch(error) { adminQueueHost.textContent=error.message; }
+  }
+
+  async function adminTransitionSnapshot() {
+    const snapshotId=adminSnapshotInput.value.trim();
+    if (!snapshotId) { adminSetStatus('Укажи Snapshot ID.'); return; }
+    const target=document.getElementById('adminTargetStatus').value;
+    const reason=prompt('Причина перехода snapshot в статус '+target+':','Ручное решение администратора');
+    if (reason===null) return;
+    if (!confirm('Подтвердить переход snapshot в статус '+target+'?')) return;
+    adminSetStatus('Применяем переход...');
+    try {
+      const response=await communityAdminCall('transition_snapshot',{snapshot_id:snapshotId,target_status:target,reason});
+      const data=await response.json();
+      adminSetStatus('Статус snapshot изменён: '+JSON.stringify(data.result || {}));
+      await adminRefreshStatus();
+    } catch(error) { adminSetStatus(error.message); }
+  }
+
+  async function adminExportCsv() {
+    const snapshotId=adminSnapshotInput.value.trim();
+    if (!snapshotId) { adminSetStatus('Укажи Snapshot ID.'); return; }
+    try {
+      const response=await communityAdminCall('export_approved_csv',{snapshot_id:snapshotId});
+      const blob=await response.blob();
+      const url=URL.createObjectURL(blob);
+      const link=document.createElement('a'); link.href=url; link.download='community-rewards-'+snapshotId+'.csv';
+      document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+      adminSetStatus('CSV экспортирован. Проверь файл перед любым дальнейшим использованием.');
+    } catch(error) { adminSetStatus(error.message); }
+  }
+
+  document.getElementById('adminRefresh')?.addEventListener('click',adminRefreshStatus);
+  document.getElementById('adminPreview')?.addEventListener('click',adminLoadPreview);
+  document.getElementById('adminCreateSnapshot')?.addEventListener('click',adminCreateSnapshot);
+  document.getElementById('adminLoadQueue')?.addEventListener('click',adminLoadReviewQueue);
+  document.getElementById('adminTransition')?.addEventListener('click',adminTransitionSnapshot);
+  document.getElementById('adminExport')?.addEventListener('click',adminExportCsv);
+  if (adminPanel && adminPanel.style.display === 'block') adminRefreshStatus();
 
 
   const feedbackForm = document.getElementById('gameFeedbackForm');
