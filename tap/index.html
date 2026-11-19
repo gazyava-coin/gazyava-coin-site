@@ -696,7 +696,22 @@ input{border-radius:12px}
 footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
 @media(max-width:390px){main{padding-left:12px;padding-right:12px}.logo{width:43px;height:43px}.tag{font-size:9px;padding:5px 7px}.stat{padding:12px}.stat strong{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}}
-\n</style>
+\n
+/* Prestige */
+.prestige-card{width:100%;margin-top:18px;padding:18px;border:1px solid #ffd36b66;border-radius:18px;background:linear-gradient(145deg,rgba(255,211,107,.15),rgba(168,255,69,.07));box-shadow:0 12px 35px #05030d35}
+.prestige-card h2{margin:0 0 6px;text-align:center;color:var(--gold);font-size:18px}
+.prestige-sub{margin:0 0 13px;text-align:center;color:var(--muted);font-size:12px}
+.prestige-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.prestige-stat{padding:10px;border-radius:12px;background:#171226;border:1px solid #ffffff12;text-align:center}
+.prestige-stat strong{display:block;color:var(--green);font-size:20px}
+.prestige-stat small{display:block;color:var(--muted);font-size:10px}
+.prestige-progress{height:8px;margin:10px 0 12px;background:#342a49;border-radius:99px;overflow:hidden}
+.prestige-progress>div{height:100%;width:0;background:linear-gradient(90deg,#75d84a,#ffd36b);border-radius:99px;transition:width .25s}
+.prestige-card button{width:100%;border:0;border-radius:11px;padding:12px;background:var(--gold);color:#2b210d;font-size:13px;font-weight:950}
+.prestige-card button:disabled{opacity:.45}
+.prestige-note{margin-top:10px;color:var(--muted);font-size:10px;line-height:1.5;text-align:center}
+
+</style>
 </head>
 <body>
 <main>
@@ -1004,6 +1019,19 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
   <div class="shop-balance" id="shopBalance">Загружаем баланс...</div>
   <div id="shopItems">Загружаем улучшения...</div>
   <div class="booster-shop"><h3>⚡ БУСТЕРЫ</h3><p class="shop-sub">Временные усиления — покупка и действие проверяются сервером</p><div id="boosterItems">Загружаем бустеры...</div></div>
+</section>
+
+<section class="prestige-card" aria-labelledby="prestigeTitle">
+  <h2 id="prestigeTitle">♻️ ПРЕСТИЖ</h2>
+  <p class="prestige-sub">Начни новый круг развития и получи постоянный бонус к силе тапа</p>
+  <div class="prestige-stats" id="prestigeStats">
+    <div class="prestige-stat"><strong id="prestigeCount">0</strong><small>Престижей</small></div>
+    <div class="prestige-stat"><strong id="prestigeBonus">+0%</strong><small>Постоянный бонус к тапу</small></div>
+  </div>
+  <div class="prestige-progress"><div id="prestigeFill"></div></div>
+  <div id="prestigeStatus" class="prestige-note">Для престижа нужно накопить 1 000 000 очков</div>
+  <button type="button" id="prestigeButton" disabled>Перерождение · 1 000 000 очков</button>
+  <div class="prestige-note">Сбросится только текущий баланс и 4 обычных улучшения. Достижения, XP, скины, трофеи, клан и статистика тапов сохраняются. Престиж добровольный.</div>
 </section>
 
 <section class="achievements" aria-labelledby="achievementsTitle">
@@ -2245,6 +2273,65 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
   }
 
 
+
+  async function loadPrestige() {
+    const button = document.getElementById('prestigeButton');
+    if (!button) return;
+    const status = document.getElementById('prestigeStatus');
+    try {
+      const data = await request('prestige_status');
+      const p = data.prestige_status || {};
+      const count = Number(p.prestige_count || 0);
+      const currentScore = Number(p.score || score || 0);
+      const threshold = Number(p.threshold || 1000000);
+      const bonus = Number(p.total_bonus_percent || count * 5);
+      const countEl = document.getElementById('prestigeCount');
+      const bonusEl = document.getElementById('prestigeBonus');
+      const fill = document.getElementById('prestigeFill');
+      if (countEl) countEl.textContent = count.toLocaleString('ru-RU');
+      if (bonusEl) bonusEl.textContent = '+' + bonus.toLocaleString('ru-RU') + '%';
+      if (fill) fill.style.width = Math.min(100, currentScore / threshold * 100) + '%';
+      if (status) status.textContent = currentScore >= threshold
+        ? 'Порог достигнут! Можно получить ещё +5% к силе тапа.'
+        : 'Накоплено ' + currentScore.toLocaleString('ru-RU') + ' / ' + threshold.toLocaleString('ru-RU') + ' очков';
+      button.disabled = currentScore < threshold;
+      button.textContent = currentScore >= threshold
+        ? 'Переродиться · +5% к силе тапа'
+        : 'Нужно ещё ' + Math.max(0, threshold - currentScore).toLocaleString('ru-RU') + ' очков';
+      if (!button.dataset.bound) {
+        button.dataset.bound = '1';
+        button.addEventListener('click', async () => {
+          const confirmed = confirm('Подтверди престиж. Текущие очки и 4 обычных улучшения будут сброшены. Достижения, XP, скины, трофеи, клан и статистика сохранятся. Продолжить?');
+          if (!confirmed) return;
+          button.disabled = true;
+          button.textContent = 'Выполняем престиж...';
+          try {
+            const result = await request('prestige');
+            if (!result.prestige?.ok) {
+              alert(result.prestige?.reason === 'not_enough_points'
+                ? 'Для престижа нужно 1 000 000 очков.'
+                : 'Не удалось выполнить престиж. Попробуй позже.');
+            } else {
+              if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+              alert('Престиж получен! Постоянный бонус теперь +' + Number(result.prestige.total_bonus_percent || 5) + '% к силе тапа.');
+              const player = await request('load');
+              applyServerData(player);
+              await Promise.all([loadShop(), loadAchievements(), loadPrestige()]);
+            }
+          } catch (error) {
+            alert(error.message || 'Ошибка престижа');
+          } finally {
+            await loadPrestige();
+          }
+        });
+      }
+    } catch (error) {
+      if (status) status.textContent = 'Не удалось загрузить данные престижа. Повтори попытку позже.';
+      button.disabled = true;
+      console.error('Prestige status failed:', error);
+    }
+  }
+
   async function loadBoosters() {
     const list = document.getElementById('boosterItems');
     if (!list) return;
@@ -2980,11 +3067,13 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
   loadFrostFestival();
 
   loadShop();
+  loadPrestige();
   loadBoosters();
   checkInStreak().then(loadStreakCalendar);
   setInterval(render, 500);
   setInterval(requestGoldenCloud, 15000);
   setInterval(loadBoosters, 15000);
+  setInterval(loadPrestige, 30000);
   setInterval(loadSeasonEvent, 20000);
   setInterval(updateCloudFestivalCountdown, 1000);
   setInterval(loadFrostFestival, 20000);
