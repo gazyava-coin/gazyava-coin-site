@@ -100,6 +100,29 @@
     .game-launch p{margin:5px 0 12px;color:var(--muted);font-size:13px}
     .game-launch a{display:inline-block;color:#171b12;background:var(--green);padding:9px 15px;border-radius:999px;text-decoration:none;font-weight:900;font-size:13px}
 
+
+/* Brand polish — layered gradients, stronger hierarchy, clearer actions */
+body{background:radial-gradient(ellipse at 82% -5%,#69438a38 0,transparent 38%),radial-gradient(ellipse at 5% 48%,#a8ff450b 0,transparent 32%),var(--bg)}
+header{background:#130f22e8;box-shadow:0 8px 28px #05030d25}
+.hero{position:relative;isolation:isolate;overflow:hidden;margin-top:22px;padding:78px 30px 66px;border:1px solid #ffffff12;border-radius:32px;background:linear-gradient(145deg,#ffffff0a,#ffffff02 60%),radial-gradient(ellipse at 50% 5%,#a8ff4510,transparent 60%)}
+.hero:before,.hero:after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+.hero:before{width:260px;height:260px;top:-150px;left:-100px;border:1px solid #a8ff4518;box-shadow:0 0 0 28px #a8ff4506,0 0 0 58px #a8ff4504}
+.hero:after{width:210px;height:210px;right:-100px;bottom:-140px;border:1px solid #ffd36b20;box-shadow:0 0 0 30px #ffd36b06}
+.mascot{border:1px solid #ffffff28;box-shadow:0 20px 70px #8fff3940,0 0 0 9px #a8ff450b;transition:transform .25s}
+.mascot:hover{transform:translateY(-4px) rotate(2deg)}
+h1{ text-shadow:0 8px 40px #a8ff4517}
+.actions .btn{box-shadow:0 9px 24px #05030d30;transition:transform .18s,box-shadow .18s}
+.actions .btn:hover{transform:translateY(-3px);box-shadow:0 14px 30px #05030d50}
+.card,.phase,.stat,.community{box-shadow:0 12px 34px #05030d25}
+.card{transition:transform .2s,border-color .2s,background .2s}
+.card:hover{transform:translateY(-4px);border-color:#a8ff4545;background:linear-gradient(145deg,#2a2241,#201a34)}
+section h2{letter-spacing:-.035em}
+.game-launch{box-shadow:0 16px 42px #05030d40;border-color:#a8ff4570}
+.game-launch a{box-shadow:0 6px 18px #a8ff4525;transition:transform .18s}
+.game-launch a:hover{transform:translateY(-2px)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+@media(max-width:760px){.hero{margin-top:12px;padding:48px 17px 38px;border-radius:24px}.mascot{width:96px;height:112px}.actions{gap:10px}}
+
 </style>
 </head>
 <body>
