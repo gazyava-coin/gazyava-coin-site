@@ -533,6 +533,16 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 .new-player-day small{display:block;color:var(--muted);font-size:10px}
 .new-player-day .day-icon{font-size:19px}
 .new-player-dismiss{border:0;background:transparent;color:var(--muted);font-size:11px;padding:3px 0;white-space:nowrap}
+.onboarding-rewards{margin-top:12px;padding:12px;border:1px solid #ffd36b35;border-radius:13px;background:#ffd36b0a}
+.onboarding-rewards-head{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px}
+.onboarding-rewards-head strong{color:var(--gold)}
+#onboardingDay{color:var(--muted)}
+.onboarding-milestone{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid #ffffff12;font-size:11px}
+.onboarding-milestone:last-child{border-bottom:0}
+.onboarding-milestone small{display:block;color:var(--muted);font-size:10px}
+.onboarding-milestone button{border:0;border-radius:8px;padding:7px 10px;background:var(--green);color:#17200d;font-size:10px;font-weight:900;white-space:nowrap}
+.onboarding-milestone button:disabled{background:#ffffff18;color:var(--muted);opacity:.8}
+.onboarding-note{margin:8px 0 0;color:var(--muted);font-size:9px;line-height:1.4}
 @media(max-width:350px){.new-player-days{grid-template-columns:1fr}}
 .player-progression-track{height:8px;margin-top:7px;border-radius:99px;background:#403657;overflow:hidden}.player-progression-track>div{height:100%;width:0;background:linear-gradient(90deg,#8d75ff,#a8ff45);transition:width .35s}
 
@@ -772,6 +782,11 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
     <button class="new-player-day" type="button" data-onboarding-tab="friends"><span class="day-icon">🛡️</span><span><strong>День 5 · Кланы</strong><small>Найди команду или создай свою</small></span></button>
     <button class="new-player-day" type="button" data-onboarding-tab="map"><span class="day-icon">🗺️</span><span><strong>День 6 · Исследование</strong><small>Загляни в игровой мир и события</small></span></button>
     <button class="new-player-day" type="button" data-onboarding-tab="ranking"><span class="day-icon">🏆</span><span><strong>День 7 · Результат</strong><small>Посмотри рейтинг и свой прогресс</small></span></button>
+  </div>
+  <div class="onboarding-rewards" id="onboardingRewards" aria-live="polite">
+    <div class="onboarding-rewards-head"><strong>Награды за возвращение</strong><span id="onboardingDay">Загрузка…</span></div>
+    <div id="onboardingMilestones"></div>
+    <p class="onboarding-note">Игровые очки начисляются один раз за каждый этап. Для действующих игроков отсчёт начинается с первого входа после обновления.</p>
   </div>
 </section>
 <section class="game">
@@ -1304,6 +1319,56 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
     if (newPlayerPath) newPlayerPath.hidden = true;
     try { localStorage.setItem('gazyava_new_player_path_dismissed', '1'); } catch (_) {}
   });
+  async function loadOnboarding() {
+    const list = document.getElementById('onboardingMilestones');
+    const dayLabel = document.getElementById('onboardingDay');
+    if (!list || !dayLabel) return;
+    try {
+      const data = await request('onboarding_status');
+      dayLabel.textContent = 'День ' + Number(data.day_number || 1) + ' из 7';
+      list.replaceChildren();
+      const names = {day1:'Первое возвращение',day3:'Три дня с Gazyava',day7:'Неделя в игре'};
+      (Array.isArray(data.milestones) ? data.milestones : []).forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'onboarding-milestone';
+        const info = document.createElement('div');
+        const title = document.createElement('strong');
+        title.textContent = names[item.id] || item.id;
+        const detail = document.createElement('small');
+        detail.textContent = '+' + Number(item.reward || 0) + ' игровых очков';
+        info.append(title,detail);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.onboardingClaim = item.id;
+        button.textContent = item.eligible ? 'Забрать' : (data.claimed?.[item.id] ? 'Получено ✓' : 'Скоро');
+        button.disabled = !item.eligible;
+        row.append(info,button);
+        list.append(row);
+      });
+    } catch (error) {
+      dayLabel.textContent = 'Пока недоступно';
+      console.warn('Onboarding status failed:', error);
+    }
+  }
+  document.getElementById('onboardingMilestones')?.addEventListener('click', async event => {
+    const button = event.target.closest('[data-onboarding-claim]');
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    try {
+      const result = await request('onboarding_claim', {milestone:button.dataset.onboardingClaim});
+      if (result.success) {
+        hint.textContent = 'Бонус за возвращение: +' + Number(result.reward) + ' игровых очков!';
+        await loadPlayer();
+        await loadOnboarding();
+      }
+    } catch (error) {
+      hint.textContent = error.message || 'Не удалось забрать награду';
+      await loadOnboarding();
+    } finally {
+      button.disabled = false;
+    }
+  });
+  loadOnboarding();
   let savedTab = 'play';
   try { savedTab = localStorage.getItem('gazyava_active_tab') || 'play'; } catch (_) {}
   if (gamePanels.some(panel => panel.dataset.tabPanel === savedTab)) activateGameTab(savedTab);
