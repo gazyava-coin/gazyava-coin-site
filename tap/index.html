@@ -521,7 +521,20 @@ main{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
 /* Player level and lifetime XP */
 .player-progression{margin:12px 0;padding:13px 15px;border:1px solid #8d75ff55;border-radius:15px;background:linear-gradient(120deg,#8d75ff18,#a8ff4510)}
-.player-progression-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.player-progression-head strong{font-size:13px}.player-progression-level{color:var(--gold);font-size:11px;font-weight:950}.player-progression-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;color:var(--muted);font-size:10px}.player-progression-track{height:8px;margin-top:7px;border-radius:99px;background:#403657;overflow:hidden}.player-progression-track>div{height:100%;width:0;background:linear-gradient(90deg,#8d75ff,#a8ff45);transition:width .35s}
+.player-progression-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.player-progression-head strong{font-size:13px}.player-progression-level{color:var(--gold);font-size:11px;font-weight:950}.player-progression-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;color:var(--muted);font-size:10px}.new-player-path{margin:0 0 14px;padding:15px;border:1px solid #b5ff6240;border-radius:18px;background:linear-gradient(145deg,#2b3a2b55,#211a35)}
+.new-player-path[hidden]{display:none}
+.new-player-path-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.new-player-path h2{margin:0;color:#dfffba;font-size:15px}
+.new-player-path p{margin:4px 0 12px;color:var(--muted);font-size:11px}
+.new-player-days{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.new-player-day{display:flex;align-items:center;gap:8px;width:100%;padding:9px;border:1px solid #ffffff18;border-radius:11px;background:#ffffff08;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.new-player-day:active{transform:scale(.985)}
+.new-player-day strong{display:block;font-size:11px}
+.new-player-day small{display:block;color:var(--muted);font-size:10px}
+.new-player-day .day-icon{font-size:19px}
+.new-player-dismiss{border:0;background:transparent;color:var(--muted);font-size:11px;padding:3px 0;white-space:nowrap}
+@media(max-width:350px){.new-player-days{grid-template-columns:1fr}}
+.player-progression-track{height:8px;margin-top:7px;border-radius:99px;background:#403657;overflow:hidden}.player-progression-track>div{height:100%;width:0;background:linear-gradient(90deg,#8d75ff,#a8ff45);transition:width .35s}
 
 .profile-showcase{margin:16px 0;padding:15px;border:1px solid #a8ff4533;border-radius:19px;background:linear-gradient(145deg,rgba(168,255,69,.09),rgba(141,117,255,.10));box-shadow:0 12px 30px #0003}
 .profile-showcase-head{display:flex;align-items:center;gap:11px}.profile-avatar{width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#cfff85,#6bc64a);font-size:28px;box-shadow:0 5px 18px #8be65a33}
@@ -745,6 +758,21 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
   <div class="player-progression-head"><strong>⭐ УРОВЕНЬ ИГРОКА</strong><span class="player-progression-level" id="playerLevel">Ур. 1 · Новичок</span></div>
   <div class="player-progression-meta"><span id="playerXp">0 XP</span><span id="playerNextLevel">До следующего уровня: 100 XP</span></div>
   <div class="player-progression-track"><div id="playerProgressFill"></div></div>
+</section>
+<section class="new-player-path" id="newPlayerPath" aria-labelledby="newPlayerPathTitle">
+  <div class="new-player-path-head">
+    <div><h2 id="newPlayerPathTitle">🚀 ТВОИ ПЕРВЫЕ 7 ДНЕЙ</h2><p>Небольшой маршрут, чтобы освоиться и открыть все возможности игры</p></div>
+    <button class="new-player-dismiss" id="dismissNewPlayerPath" type="button">Скрыть</button>
+  </div>
+  <div class="new-player-days">
+    <button class="new-player-day" type="button" data-onboarding-tab="play"><span class="day-icon">☁️</span><span><strong>День 1 · Знакомство</strong><small>Сделай первые тапы и изучи облако</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="tasks"><span class="day-icon">🎯</span><span><strong>День 2 · Задания</strong><small>Посмотри ежедневные цели и награды</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="upgrade"><span class="day-icon">⚡</span><span><strong>День 3 · Улучшения</strong><small>Выбери усиление под свой стиль</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="friends"><span class="day-icon">🎁</span><span><strong>День 4 · Друзья</strong><small>Получи личную ссылку-приглашение</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="friends"><span class="day-icon">🛡️</span><span><strong>День 5 · Кланы</strong><small>Найди команду или создай свою</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="map"><span class="day-icon">🗺️</span><span><strong>День 6 · Исследование</strong><small>Загляни в игровой мир и события</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="ranking"><span class="day-icon">🏆</span><span><strong>День 7 · Результат</strong><small>Посмотри рейтинг и свой прогресс</small></span></button>
+  </div>
 </section>
 <section class="game">
 <div class="mascot-stage">
@@ -1264,6 +1292,18 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
     window.scrollTo({top:0,behavior:'smooth'});
   }
   gameTabs.forEach(button => button.addEventListener('click', () => activateGameTab(button.dataset.tabTarget)));
+  document.querySelectorAll('[data-onboarding-tab]').forEach(button => {
+    button.addEventListener('click', () => activateGameTab(button.dataset.onboardingTab));
+  });
+  const newPlayerPath = document.getElementById('newPlayerPath');
+  const dismissNewPlayerPath = document.getElementById('dismissNewPlayerPath');
+  try {
+    if (localStorage.getItem('gazyava_new_player_path_dismissed') === '1' && newPlayerPath) newPlayerPath.hidden = true;
+  } catch (_) {}
+  dismissNewPlayerPath?.addEventListener('click', () => {
+    if (newPlayerPath) newPlayerPath.hidden = true;
+    try { localStorage.setItem('gazyava_new_player_path_dismissed', '1'); } catch (_) {}
+  });
   let savedTab = 'play';
   try { savedTab = localStorage.getItem('gazyava_active_tab') || 'play'; } catch (_) {}
   if (gamePanels.some(panel => panel.dataset.tabPanel === savedTab)) activateGameTab(savedTab);
