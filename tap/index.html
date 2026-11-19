@@ -711,6 +711,17 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
 .prestige-card button:disabled{opacity:.45}
 .prestige-note{margin-top:10px;color:var(--muted);font-size:10px;line-height:1.5;text-align:center}
 
+
+.feedback-card{width:100%;margin-top:18px;padding:16px;background:linear-gradient(145deg,rgba(168,255,69,.08),rgba(255,255,255,.04));border:1px solid rgba(168,255,69,.24);border-radius:16px}
+.feedback-card h2{margin:0 0 5px;color:var(--green);font-size:16px;text-align:center}
+.feedback-sub{margin:0 0 12px;color:var(--muted);font-size:11px;text-align:center}
+.feedback-card label{display:block;margin:10px 0 5px;color:var(--muted);font-size:11px}
+.feedback-card select,.feedback-card textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#171226;color:var(--text);font:inherit;font-size:13px}
+.feedback-card textarea{min-height:86px;resize:vertical}
+.feedback-card button{width:100%;margin-top:10px;padding:11px;border:0;border-radius:10px;background:var(--green);color:#17200d;font-weight:900}
+.feedback-card button:disabled{opacity:.5}
+#feedbackStatus{min-height:17px;margin-top:8px;text-align:center;color:var(--green);font-size:11px}
+
 </style>
 </head>
 <body>
@@ -1056,6 +1067,24 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
 </section>
 </div>
 <footer>Игровые очки сохраняются на сервере и привязаны к Telegram-профилю. Это игровые баллы, а не токены GZV или криптоактив; они не гарантируют будущую награду. Для игры не требуется подключать кошелёк или отправлять деньги.</footer>
+
+<section class="feedback-card" aria-labelledby="feedbackTitle">
+  <h2 id="feedbackTitle">💬 ОБРАТНАЯ СВЯЗЬ</h2>
+  <p class="feedback-sub">Нашёл ошибку или есть идея? Напиши нам — сообщение попадёт команде проекта.</p>
+  <form id="gameFeedbackForm">
+    <label for="feedbackCategory">Тема</label>
+    <select id="feedbackCategory" required>
+      <option value="bug">🐞 Ошибка в игре</option>
+      <option value="idea">💡 Идея или предложение</option>
+      <option value="other">💬 Другое</option>
+    </select>
+    <label for="feedbackMessage">Сообщение</label>
+    <textarea id="feedbackMessage" maxlength="1000" required placeholder="Опиши, что произошло или что хотелось бы улучшить..."></textarea>
+    <button id="feedbackSubmit" type="submit">Отправить сообщение</button>
+    <div id="feedbackStatus" role="status" aria-live="polite"></div>
+  </form>
+</section>
+
 </main><div class="toast" id="toast">+1 GAZY POINT</div>
 <script>
 (() => {
@@ -1524,6 +1553,47 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
 
     return data;
   }
+
+
+  const feedbackForm = document.getElementById('gameFeedbackForm');
+  feedbackForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = document.getElementById('feedbackSubmit');
+    const status = document.getElementById('feedbackStatus');
+    const category = document.getElementById('feedbackCategory')?.value || 'other';
+    const message = document.getElementById('feedbackMessage')?.value?.trim() || '';
+    if (!message) return;
+    button.disabled = true;
+    status.textContent = 'Отправляем...';
+    try {
+      await request('feedback', { category, message, context: { page: 'tap' } });
+      feedbackForm.reset();
+      status.textContent = 'Спасибо! Сообщение отправлено команде 💚';
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    } catch (error) {
+      status.textContent = error.message || 'Не удалось отправить. Попробуй позже.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  let lastClientErrorAt = 0;
+  function reportClientError(message) {
+    const now = Date.now();
+    if (!tg?.initData || now - lastClientErrorAt < 60000) return;
+    lastClientErrorAt = now;
+    request('client_error', {
+      message: String(message || 'Unknown client error').slice(0, 700),
+      context: { page: 'tap', source: 'browser' }
+    }).catch(() => {});
+  }
+  window.addEventListener('error', event => {
+    reportClientError(event.message || 'Uncaught browser error');
+  });
+  window.addEventListener('unhandledrejection', event => {
+    const reason = event.reason;
+    reportClientError(reason?.message || String(reason || 'Unhandled promise rejection'));
+  });
 
   let previousServerScore = null;
   function celebrateEvolution(oldScore, newScore) {
