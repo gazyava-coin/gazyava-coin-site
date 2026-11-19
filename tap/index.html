@@ -954,6 +954,8 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
     <input id="referralLink" type="text" readonly value="Загружаем ссылку...">
     <button id="copyReferral" type="button" disabled>Копировать</button>
   </div>
+  <button id="shareReferral" type="button" disabled style="width:100%;margin-top:9px;padding:12px;border:0;border-radius:11px;background:linear-gradient(135deg,#a8ff45,#d2ff83);color:#17200d;font-weight:900">📨 Пригласить друга в Telegram</button>
+  <p class="referral-sub" style="margin:10px 0 0">Новичок получает стартовый бонус, а ты — награду за приглашение. Отправь ссылку лично друзьям.</p>
   <div class="referral-stats">
     <span>Приглашено: <strong id="referralCount">—</strong></span>
     <span>Заработано: <strong id="referralEarned">—</strong></span>
@@ -2777,6 +2779,8 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
       const link = 'https://t.me/GazyavaTapBot/gazyavatap?startapp=' + encodeURIComponent(referral.code);
       linkInput.value = link;
       copyButton.disabled = false;
+      const shareButton = document.getElementById('shareReferral');
+      if (shareButton) shareButton.disabled = false;
       countEl.textContent = Number(referral.invited_count || 0).toLocaleString('ru-RU');
       earnedEl.textContent = Number(referral.earned || 0).toLocaleString('ru-RU') + ' очков';
       const activeEl = document.getElementById('referralActive');
@@ -2829,6 +2833,15 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
       linkInput.select();
     }
   });
+  document.getElementById('shareReferral')?.addEventListener('click', () => {
+    const link = document.getElementById('referralLink')?.value || '';
+    if (!link.startsWith('https://t.me/')) return;
+    const text = 'Присоединяйся ко мне в Gazyava Tap! ☁️ Играй, выполняй задания и развивай своё облако. Заходи по моей ссылке:';
+    const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+    if (tg?.openTelegramLink) tg.openTelegramLink(shareUrl);
+    else window.open(shareUrl, '_blank', 'noopener,noreferrer');
+  });
+
   async function loadLeaderboard() {
   const list = document.getElementById('leaderboardList');
   const podium = document.getElementById('leaderboardPodium');
