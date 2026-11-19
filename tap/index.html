@@ -1208,6 +1208,20 @@ h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff
     <button id="adminTransition" type="button">Применить переход</button>
     <button id="adminExport" class="secondary" type="button">Экспорт approved CSV</button>
   </div>
+  <div class="admin-divider"></div>
+  <h3>🎮 Управление игровыми очками</h3>
+  <p class="admin-small">Начисление и списание игровых баллов. Все операции записываются в журнал; GZV-токены не затрагиваются.</p>
+  <div class="admin-row">
+    <input id="adminScoreTelegramId" type="number" min="1" step="1" inputmode="numeric" placeholder="Telegram ID игрока">
+    <button id="adminScoreLookup" class="secondary" type="button">Найти игрока</button>
+  </div>
+  <div id="adminScorePlayer" class="admin-status" aria-live="polite">Введи Telegram ID игрока.</div>
+  <div class="admin-row">
+    <input id="adminScoreDelta" type="number" step="1" placeholder="+1000 или -500">
+    <input id="adminScoreReason" type="text" maxlength="500" placeholder="Причина изменения очков">
+    <button id="adminScoreApply" type="button" disabled>Применить</button>
+  </div>
+  <div id="adminScoreHistory"></div>
   <div id="adminActionStatus" class="admin-status" aria-live="polite">Действия доступны только администратору.</div>
   <p class="admin-small">Важно: snapshot — расчётная ведомость, а не перевод токенов. Экспорт не содержит адресов кошельков и не инициирует выплаты.</p>
 </section>
@@ -1964,6 +1978,77 @@ h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff
       adminSetStatus('CSV экспортирован. Проверь файл перед любым дальнейшим использованием.');
     } catch(error) { adminSetStatus(error.message); }
   }
+
+  let adminSelectedScorePlayer = null;
+  async function adminLookupScorePlayer() {
+    const telegramId = Number(document.getElementById('adminScoreTelegramId')?.value);
+    const host = document.getElementById('adminScorePlayer');
+    const historyHost = document.getElementById('adminScoreHistory');
+    const applyButton = document.getElementById('adminScoreApply');
+    if (!Number.isSafeInteger(telegramId) || telegramId <= 0) {
+      host.textContent = 'Введи корректный Telegram ID.';
+      return;
+    }
+    host.textContent = 'Ищем игрока...';
+    historyHost.replaceChildren();
+    applyButton.disabled = true;
+    try {
+      const response = await communityAdminCall('player_lookup', { telegram_id: telegramId });
+      const data = await response.json();
+      adminSelectedScorePlayer = data.player;
+      const p = data.player;
+      host.textContent = (p.username ? '@' + p.username : (p.first_name || 'Игрок')) +
+        ' · Telegram ID: ' + p.telegram_id + ' · Баланс: ' + Number(p.score).toLocaleString('ru-RU') + ' очков';
+      applyButton.disabled = false;
+      const title = document.createElement('div');
+      title.className = 'admin-label';
+      title.textContent = 'История ручных корректировок';
+      historyHost.append(title);
+      adminRenderTable(historyHost, data.history || [],
+        ['created_at','delta','balance_before','balance_after','reason','actor_telegram_id']);
+    } catch (error) {
+      adminSelectedScorePlayer = null;
+      host.textContent = error.message;
+    }
+  }
+
+  async function adminApplyScoreAdjustment() {
+    if (!adminSelectedScorePlayer) { adminSetStatus('Сначала найди игрока.'); return; }
+    const delta = Number(document.getElementById('adminScoreDelta').value);
+    const reason = document.getElementById('adminScoreReason').value.trim();
+    if (!Number.isSafeInteger(delta) || delta === 0 || Math.abs(delta) > 10000000) {
+      adminSetStatus('Изменение должно быть целым числом от -10 000 000 до 10 000 000, кроме нуля.');
+      return;
+    }
+    if (reason.length < 3) {
+      adminSetStatus('Укажи причину минимум из 3 символов.');
+      return;
+    }
+    const sign = delta > 0 ? '+' : '';
+    if (!confirm('Изменить баланс игрока ' + adminSelectedScorePlayer.telegram_id +
+        ' на ' + sign + delta.toLocaleString('ru-RU') + ' очков?')) return;
+    const button = document.getElementById('adminScoreApply');
+    button.disabled = true;
+    try {
+      const response = await communityAdminCall('adjust_score', {
+        telegram_id: adminSelectedScorePlayer.telegram_id, delta, reason
+      });
+      const data = await response.json();
+      const result = data.adjustment || {};
+      adminSetStatus('Готово: ' + sign + Number(result.delta).toLocaleString('ru-RU') +
+        '. Новый баланс: ' + Number(result.balance_after).toLocaleString('ru-RU') +
+        ' очков. Операция №' + result.adjustment_id);
+      document.getElementById('adminScoreDelta').value = '';
+      await adminLookupScorePlayer();
+    } catch (error) {
+      adminSetStatus(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  document.getElementById('adminScoreLookup')?.addEventListener('click', adminLookupScorePlayer);
+  document.getElementById('adminScoreApply')?.addEventListener('click', adminApplyScoreAdjustment);
 
   document.getElementById('adminRefresh')?.addEventListener('click',adminRefreshStatus);
   document.getElementById('adminPreview')?.addEventListener('click',adminLoadPreview);
