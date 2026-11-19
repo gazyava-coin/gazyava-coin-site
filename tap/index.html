@@ -132,6 +132,13 @@ footer{margin-top:24px;text-align:center;color:#89829e;font-size:10px;line-heigh
 #eventRankClaim:disabled{opacity:.45}
 .daily-missions{width:100%;margin-top:14px;padding:18px;border:1px solid #ffd36b55;border-radius:18px;background:linear-gradient(145deg,rgba(255,211,107,.11),rgba(168,255,69,.06));box-shadow:0 12px 35px #05030d35}
 .daily-missions h2{margin:0 0 6px;color:var(--gold);font-size:18px;text-align:center}
+
+.personal-focus{margin:12px 0 14px;padding:13px;border:1px solid #b5ff6255;border-radius:13px;background:linear-gradient(135deg,#b5ff6217,#ffd36b0d)}
+.personal-focus small{display:block;color:var(--gold);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.personal-focus strong{display:block;margin-top:4px;color:var(--green);font-size:14px}
+.personal-focus p{margin:5px 0 10px;color:var(--muted);font-size:11px}
+.personal-focus button{width:100%;border:0;border-radius:9px;padding:9px;background:var(--green);color:#17200d;font-weight:900;font-size:11px}
+
 .mission-card{padding:13px 0;border-bottom:1px solid #ffffff14}
 .mission-card:last-child{border-bottom:0}
 .mission-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:850}
@@ -903,6 +910,12 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
 <section class="daily-missions" aria-labelledby="dailyMissionsTitle">
   <h2 id="dailyMissionsTitle">⚡ ЦЕПОЧКА МИССИЙ</h2>
   <p class="daily-subtitle">Выполняй этапы по порядку — за финал получишь редкий бонус</p>
+  <div class="personal-focus" id="personalFocus" hidden>
+    <small>Твоя цель на сегодня</small>
+    <strong id="personalFocusTitle">Подбираем следующий шаг...</strong>
+    <p id="personalFocusDescription"></p>
+    <button id="personalFocusGo" type="button">Перейти к цели</button>
+  </div>
   <div id="dailyMissionsList"><div class="daily-task">Загружаем миссии...</div></div>
   <div class="collection-box">
     <div class="collection-title">💎 КОЛЛЕКЦИЯ РЕДКОСТЕЙ</div>
@@ -2251,6 +2264,16 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
       const state = data.missions || {};
       const taps = Number(state.taps || 0);
       const claimed = state.claimed || {};
+      const focus = state.focus || null;
+      const focusCard = document.getElementById('personalFocus');
+      if (focusCard && focus) {
+        document.getElementById('personalFocusTitle').textContent = focus.title || 'Твоя цель на сегодня';
+        document.getElementById('personalFocusDescription').textContent = focus.description || '';
+        const focusButton = document.getElementById('personalFocusGo');
+        focusButton.textContent = focus.tab === 'friends' ? 'Открыть друзей и кланы' : focus.tab === 'ranking' ? 'Открыть рейтинг' : focus.tab === 'tasks' ? 'К ежедневным заданиям' : 'Продолжить игру';
+        focusButton.onclick = () => activateGameTab(focus.tab || 'play');
+        focusCard.hidden = false;
+      }
       cachedCollectibles = state.collection || [];
       renderCollectibles(cachedCollectibles);
       const [skinData,trophyData] = await Promise.all([request('exclusive_skins'),request('trophy_collection')]);
