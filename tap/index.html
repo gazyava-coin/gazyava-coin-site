@@ -760,7 +760,7 @@ header{position:relative;padding:7px 10px;border:1px solid #ffffff12;border-radi
 .logo{box-shadow:0 0 0 4px #a8ff4510}
 h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff4520}
 .sub{margin-bottom:15px}
-.game-tabs{position:sticky;top:7px;z-index:20;padding:7px;border:1px solid #ffffff16;border-radius:16px;background:#171226ed;backdrop-filter:blur(16px);box-shadow:0 10px 28px #05030d55}
+.game-tabs{position:fixed;top:auto;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(484px,calc(100% - 20px));z-index:50;margin:0;padding:6px;border:1px solid #ffffff2b;border-radius:16px;background:rgba(23,18,38,.96);backdrop-filter:blur(16px);box-shadow:0 10px 34px #0009,0 0 22px #b5ff6210}
 .game-tab{border-radius:11px;transition:background .18s,border-color .18s,transform .18s}
 .game-tab.active{box-shadow:0 5px 18px #a8ff4520}
 .tab-panel.active{animation:panelEnter .24s ease both}
@@ -775,7 +775,7 @@ h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff
 .new-player-path-head{align-items:center}
 .new-player-day{transition:transform .16s,border-color .16s,background .16s}
 .new-player-day:hover{transform:translateY(-2px);border-color:#a8ff4570;background:#a8ff4510}
-@media(max-width:420px){main{padding:12px 12px 26px}.game-tabs{top:4px;gap:4px}.game-tab{padding:9px 7px;font-size:10px}.cloud-wrap{transform:scale(.94);margin:-5px 0}.stats{gap:7px}}
+@media(max-width:420px){main{padding:12px 12px calc(112px + env(safe-area-inset-bottom))}.game-tabs{top:auto;bottom:calc(8px + env(safe-area-inset-bottom));gap:4px}.game-tab{padding:9px 7px;font-size:10px}.cloud-wrap{transform:scale(.94);margin:-5px 0}.stats{gap:7px}}
 @media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}.new-player-day,.game-tab{transition:none}}
 
 </style>
