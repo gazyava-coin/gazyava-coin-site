@@ -752,6 +752,32 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
 .feedback-card button:disabled{opacity:.5}
 #feedbackStatus{min-height:17px;margin-top:8px;text-align:center;color:var(--green);font-size:11px}
 
+
+/* Gameplay-first layout and visual polish */
+body{background:radial-gradient(ellipse at 50% -8%,#65428b55 0,transparent 42%),radial-gradient(ellipse at 8% 38%,#a8ff4510 0,transparent 34%),var(--bg)}
+main{padding-top:16px}
+header{position:relative;padding:7px 10px;border:1px solid #ffffff12;border-radius:17px;background:linear-gradient(110deg,#ffffff0b,#ffffff03);box-shadow:0 10px 28px #05030d24}
+.logo{box-shadow:0 0 0 4px #a8ff4510}
+h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff4520}
+.sub{margin-bottom:15px}
+.game-tabs{position:sticky;top:7px;z-index:20;padding:7px;border:1px solid #ffffff16;border-radius:16px;background:#171226ed;backdrop-filter:blur(16px);box-shadow:0 10px 28px #05030d55}
+.game-tab{border-radius:11px;transition:background .18s,border-color .18s,transform .18s}
+.game-tab.active{box-shadow:0 5px 18px #a8ff4520}
+.tab-panel.active{animation:panelEnter .24s ease both}
+@keyframes panelEnter{from{opacity:.65;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.stats{gap:9px}
+.stat{background:linear-gradient(145deg,#2b2242ed,#1c172eea);border-color:#ffffff16;box-shadow:0 9px 25px #05030d20}
+.stat strong{font-variant-numeric:tabular-nums}
+.player-progression,.profile-showcase,.new-player-path,.mascot-collection,.combo-panel,.energy,.daily-missions,.streak-card{box-shadow:0 12px 32px #05030d25}
+#tap{box-shadow:0 13px 0 #397b36,0 22px 55px #8cff3b38,0 0 0 10px #a8ff4510}
+#tap:focus-visible,.game-tab:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.new-player-path{margin-top:22px}
+.new-player-path-head{align-items:center}
+.new-player-day{transition:transform .16s,border-color .16s,background .16s}
+.new-player-day:hover{transform:translateY(-2px);border-color:#a8ff4570;background:#a8ff4510}
+@media(max-width:420px){main{padding:12px 12px 26px}.game-tabs{top:4px;gap:4px}.game-tab{padding:9px 7px;font-size:10px}.cloud-wrap{transform:scale(.94);margin:-5px 0}.stats{gap:7px}}
+@media(prefers-reduced-motion:reduce){.tab-panel.active{animation:none}.new-player-day,.game-tab{transition:none}}
+
 </style>
 </head>
 <body>
@@ -776,26 +802,7 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
   <div class="player-progression-meta"><span id="playerXp">0 XP</span><span id="playerNextLevel">До следующего уровня: 100 XP</span></div>
   <div class="player-progression-track"><div id="playerProgressFill"></div></div>
 </section>
-<section class="new-player-path" id="newPlayerPath" aria-labelledby="newPlayerPathTitle">
-  <div class="new-player-path-head">
-    <div><h2 id="newPlayerPathTitle">🚀 ТВОИ ПЕРВЫЕ 7 ДНЕЙ</h2><p>Небольшой маршрут, чтобы освоиться и открыть все возможности игры</p></div>
-    <button class="new-player-dismiss" id="dismissNewPlayerPath" type="button">Скрыть</button>
-  </div>
-  <div class="new-player-days">
-    <button class="new-player-day" type="button" data-onboarding-tab="play"><span class="day-icon">☁️</span><span><strong>День 1 · Знакомство</strong><small>Сделай первые тапы и изучи облако</small></span></button>
-    <button class="new-player-day" type="button" data-onboarding-tab="tasks"><span class="day-icon">🎯</span><span><strong>День 2 · Задания</strong><small>Посмотри ежедневные цели и награды</small></span></button>
-    <button class="new-player-day" type="button" data-onboarding-tab="upgrade"><span class="day-icon">⚡</span><span><strong>День 3 · Улучшения</strong><small>Выбери усиление под свой стиль</small></span></button>
-    <button class="new-player-day" type="button" data-onboarding-tab="friends"><span class="day-icon">🎁</span><span><strong>День 4 · Друзья</strong><small>Получи личную ссылку-приглашение</small></span></button>
-    <button class="new-player-day" type="button" data-onboarding-tab="friends"><span class="day-icon">🛡️</span><span><strong>День 5 · Кланы</strong><small>Найди команду или создай свою</small></span></button>
-    <button class="new-player-day" type="button" data-onboarding-tab="map"><span class="day-icon">🗺️</span><span><strong>День 6 · Исследование</strong><small>Загляни в игровой мир и события</small></span></button>
-    <button class="new-player-day" type="button" data-onboarding-tab="ranking"><span class="day-icon">🏆</span><span><strong>День 7 · Результат</strong><small>Посмотри рейтинг и свой прогресс</small></span></button>
-  </div>
-  <div class="onboarding-rewards" id="onboardingRewards" aria-live="polite">
-    <div class="onboarding-rewards-head"><strong>Награды за возвращение</strong><span id="onboardingDay">Загрузка…</span></div>
-    <div id="onboardingMilestones"></div>
-    <p class="onboarding-note">Игровые очки начисляются один раз за каждый этап. Для действующих игроков отсчёт начинается с первого входа после обновления.</p>
-  </div>
-</section>
+
 <section class="game">
 <div class="mascot-stage">
   <button class="golden-cloud" id="goldenCloud" type="button" hidden aria-label="Поймать золотое облако">☁️<span>+?</span></button>
@@ -854,6 +861,26 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
     <div class="pet-companion-list" id="petCompanionList">Открой яйцо, чтобы найти первого спутника</div>
     <small class="pet-companion-note">Спутник получает XP за подтверждённые тапы: редкие и эпические — ×2, легендарные — ×3. Эволюции на 3, 5 и 10 уровнях. Дубликат даёт +100 XP.</small>
   </section>
+</section>
+<section class="new-player-path" id="newPlayerPath" aria-labelledby="newPlayerPathTitle">
+  <div class="new-player-path-head">
+    <div><h2 id="newPlayerPathTitle">🚀 ТВОИ ПЕРВЫЕ 7 ДНЕЙ</h2><p>Небольшой маршрут, чтобы освоиться и открыть все возможности игры</p></div>
+    <button class="new-player-dismiss" id="dismissNewPlayerPath" type="button">Скрыть</button>
+  </div>
+  <div class="new-player-days">
+    <button class="new-player-day" type="button" data-onboarding-tab="play"><span class="day-icon">☁️</span><span><strong>День 1 · Знакомство</strong><small>Сделай первые тапы и изучи облако</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="tasks"><span class="day-icon">🎯</span><span><strong>День 2 · Задания</strong><small>Посмотри ежедневные цели и награды</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="upgrade"><span class="day-icon">⚡</span><span><strong>День 3 · Улучшения</strong><small>Выбери усиление под свой стиль</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="friends"><span class="day-icon">🎁</span><span><strong>День 4 · Друзья</strong><small>Получи личную ссылку-приглашение</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="friends"><span class="day-icon">🛡️</span><span><strong>День 5 · Кланы</strong><small>Найди команду или создай свою</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="map"><span class="day-icon">🗺️</span><span><strong>День 6 · Исследование</strong><small>Загляни в игровой мир и события</small></span></button>
+    <button class="new-player-day" type="button" data-onboarding-tab="ranking"><span class="day-icon">🏆</span><span><strong>День 7 · Результат</strong><small>Посмотри рейтинг и свой прогресс</small></span></button>
+  </div>
+  <div class="onboarding-rewards" id="onboardingRewards" aria-live="polite">
+    <div class="onboarding-rewards-head"><strong>Награды за возвращение</strong><span id="onboardingDay">Загрузка…</span></div>
+    <div id="onboardingMilestones"></div>
+    <p class="onboarding-note">Игровые очки начисляются один раз за каждый этап. Для действующих игроков отсчёт начинается с первого входа после обновления.</p>
+  </div>
 </section>
 </div>
 <div class="tab-panel" data-tab-panel="tasks">
