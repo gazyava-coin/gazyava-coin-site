@@ -1000,7 +1000,7 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
 <div class="tab-panel" data-tab-panel="upgrade">
 <section class="shop" aria-labelledby="shopTitle">
   <h2 id="shopTitle">🛒 МАГАЗИН УЛУЧШЕНИЙ</h2>
-  <p class="shop-sub">Прокачивай игру за накопленные очки</p>
+  <p class="shop-sub">Прокачивай улучшения без фиксированного потолка — цена растёт с каждым уровнем</p>
   <div class="shop-balance" id="shopBalance">Загружаем баланс...</div>
   <div id="shopItems">Загружаем улучшения...</div>
   <div class="booster-shop"><h3>⚡ БУСТЕРЫ</h3><p class="shop-sub">Временные усиления — покупка и действие проверяются сервером</p><div id="boosterItems">Загружаем бустеры...</div></div>
@@ -2215,13 +2215,13 @@ footer{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
       (shop.items || []).forEach(item => {
         const card = document.createElement('div'); card.className = 'upgrade';
         const head = document.createElement('div'); head.className = 'upgrade-head';
-        const name = document.createElement('span'); name.textContent = item.name + ' · ур. ' + item.level + '/' + item.max_level;
+        const name = document.createElement('span'); name.textContent = item.name + ' · ур. ' + Number(item.level || 0).toLocaleString('ru-RU');
         const effect = document.createElement('span'); effect.style.color = 'var(--green)'; effect.textContent = item.effect;
         head.append(name, effect);
         const desc = document.createElement('div'); desc.className = 'upgrade-desc'; desc.textContent = item.description;
         const btn = document.createElement('button');
-        btn.textContent = item.level >= item.max_level ? 'Максимальный уровень' : 'Улучшить · ' + Number(item.cost).toLocaleString('ru-RU') + ' очков';
-        btn.disabled = item.level >= item.max_level || Number(shop.score || score) < Number(item.cost);
+        btn.textContent = 'Улучшить · ' + Number(item.cost).toLocaleString('ru-RU') + ' очков';
+        btn.disabled = Number(shop.score || score) < Number(item.cost);
         btn.addEventListener('click', async () => {
           btn.disabled = true; btn.textContent = 'Покупаем...';
           try {
