@@ -804,11 +804,37 @@ h1{margin:18px 0 2px;font-size:clamp(26px,6vw,32px);text-shadow:0 5px 24px #a8ff
 .admin-label{display:block;margin:9px 0 4px;color:#ffd36b;font-size:11px;font-weight:850}
 .admin-small{font-size:10px;color:var(--muted)}
 
+
+/* GAZYAVA COSMIC AWAKENING — visual foundation, existing game systems preserved */
+:root{--bg:#090b1b;--panel:#151a35;--green:#a8ff72;--gold:#ffd77a;--text:#f4f5ff;--muted:#aeb7d6;--line:#343d69}
+body{background:radial-gradient(ellipse at 50% -8%,rgba(105,75,190,.38),transparent 43%),radial-gradient(ellipse at 8% 28%,rgba(34,119,164,.14),transparent 35%),radial-gradient(ellipse at 92% 55%,rgba(103,65,170,.13),transparent 38%),#090b1b}
+.cosmic-awakening{position:relative;isolation:isolate;overflow:hidden;margin:18px 0 8px;padding:20px 18px;border:1px solid rgba(151,153,255,.35);border-radius:20px;background:linear-gradient(112deg,rgba(36,39,91,.96),rgba(22,29,66,.92) 56%,rgba(39,28,81,.94));box-shadow:0 16px 42px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.08)}
+.cosmic-awakening:before,.cosmic-awakening:after{content:"";position:absolute;z-index:-1;pointer-events:none;border-radius:50%}
+.cosmic-awakening:before{width:220px;height:220px;right:-58px;top:-118px;border:1px solid rgba(169,184,255,.28);box-shadow:0 0 0 17px rgba(169,184,255,.035),0 0 0 36px rgba(169,184,255,.025),0 0 55px rgba(124,112,255,.3)}
+.cosmic-awakening:after{width:5px;height:5px;right:22%;top:24%;background:#fff;box-shadow:-82px 48px 0 1px #b9c7ff,45px 75px 0 #fff,105px 19px 0 1px #8ce8ff,-35px -8px 0 #fff}
+.cosmic-awakening-content{position:relative;max-width:390px}
+.cosmic-kicker{display:flex;align-items:center;gap:7px;color:#b9c6ff;font-size:9px;font-weight:950;letter-spacing:.14em}
+.cosmic-live-dot{width:7px;height:7px;border-radius:50%;background:#9cff9b;box-shadow:0 0 10px #9cff9b}
+.cosmic-awakening h2{margin:10px 0 6px;color:#fff;font-size:clamp(19px,5vw,24px);line-height:1.12;letter-spacing:-.035em}
+.cosmic-awakening p{max-width:350px;margin:0;color:#c4c9e8;font-size:11px;line-height:1.55}
+.cosmic-pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.cosmic-pill-row span{padding:5px 8px;border:1px solid rgba(179,190,255,.2);border-radius:99px;background:rgba(9,13,37,.35);color:#dce3ff;font-size:9px;font-weight:800}
+@media(max-width:380px){.cosmic-awakening{padding:17px 14px}.cosmic-pill-row{gap:5px}.cosmic-pill-row span{font-size:8px}}
+
 </style>
 </head>
 <body>
 <main>
 <header><img class="logo" src="../gazyava-mark.svg" alt="Gazyava"><div class="brand">GAZYAVA<span> TAP</span></div></header>
+<section class="cosmic-awakening" aria-label="Cosmic Awakening">
+  <div class="cosmic-awakening-orbit" aria-hidden="true"><span></span><i></i><b></b></div>
+  <div class="cosmic-awakening-content">
+    <div class="cosmic-kicker"><span class="cosmic-live-dot"></span> GAZYAVA UNIVERSE · COSMIC ERA</div>
+    <h2>КОСМИЧЕСКОЕ ПРОБУЖДЕНИЕ</h2>
+    <p>Галактика зовёт. Развивай своего хранителя, объединяйся с кланом и открывай новые тайны вселенной Gazyava.</p>
+    <div class="cosmic-pill-row"><span>✦ Исследуй миры</span><span>✦ Собирай артефакты</span><span>✦ Сражайся вместе</span></div>
+  </div>
+</section>
 <h1>Тапай на удачу!</h1><p class="sub">Игра официально открыта! Собирай игровые очки, выполняй задания и развивай облако.</p>
 <nav class="game-tabs" role="tablist" aria-label="Разделы игры">
 <button class="game-tab active" type="button" role="tab" aria-selected="true" data-tab-target="play">☁️ Игра</button>
