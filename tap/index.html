@@ -2375,6 +2375,9 @@ body{background:radial-gradient(ellipse at 50% -8%,rgba(105,75,190,.38),transpar
     }
   }
 
+  setInterval(()=>{
+    if(document.querySelector('[data-tab-panel="play"].active')) loadCosmicBossStatus();
+  },20000);
 
   const DAILY_TASKS = [
     { target: 100, reward: 10, claimedKey: 'claimed_100' },
