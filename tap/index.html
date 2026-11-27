@@ -1909,11 +1909,16 @@ h1{font-size:clamp(28px,7vw,36px);background:linear-gradient(90deg,#fff,#c6b7ff,
       claim.hidden=!boss.reward_available;
       claim.disabled=!boss.reward_available;
       document.getElementById('cosmicBossFoot').textContent=boss.defeated?(boss.claimed?'Твоя награда за рейд уже получена.':'Колосс повержен! Участники с подтверждённым уроном могут забрать внутриигровую награду.'):'Каждый подтверждённый сервером тап наносит 1 урон. Награды — только игровые очки.';
-    }catch(error){document.getElementById('cosmicBossFoot').textContent=error.message||'Не удалось загрузить глобальный рейд';}
+    }catch(error){
+      const message=error.message||'Не удалось загрузить глобальный рейд';
+      document.getElementById('cosmicBossHpText').textContent='Рейд временно недоступен';
+      document.getElementById('cosmicBossLeaderboard').textContent=message;
+      document.getElementById('cosmicBossFoot').textContent=message+' · Нажми «Обновить рейд».';
+    }
     finally{if(refresh)refresh.disabled=false;}
   }
   document.getElementById('cosmicBossRefresh')?.addEventListener('click',async()=>{const b=document.getElementById('cosmicBossRefresh');b.disabled=true;await loadCosmicBossStatus();});
-  document.getElementById('cosmicBossClaim')?.addEventListener('click',async()=>{const b=document.getElementById('cosmicBossClaim');b.disabled=true;try{const data=await request('claim_cosmic_boss_reward');const result=data.claim_cosmic_boss_reward||data;if(!result.ok)throw new Error(result.reason==='boss_alive'?'Колосс ещё не повержен':result.reason==='no_contribution'?'Нужен личный вклад в рейд':'Награда уже получена');document.getElementById('cosmicBossFoot').textContent='Получено '+Number(result.reward||0).toLocaleString('ru-RU')+' игровых очков за рейд!';await loadPlayer();await loadCosmicBossStatus();}catch(e){document.getElementById('cosmicBossFoot').textContent=e.message;b.disabled=false;}});
+  document.getElementById('cosmicBossClaim')?.addEventListener('click',async()=>{const b=document.getElementById('cosmicBossClaim');b.disabled=true;try{const data=await request('claim_cosmic_boss_reward');const result=data.claim_cosmic_boss_reward||data.cosmic_boss_claim||data;if(!result.ok)throw new Error(result.reason==='boss_alive'?'Колосс ещё не повержен':result.reason==='no_contribution'?'Нужен личный вклад в рейд':'Награда уже получена');document.getElementById('cosmicBossFoot').textContent='Получено '+Number(result.reward||0).toLocaleString('ru-RU')+' игровых очков за рейд!';await loadPlayer();await loadCosmicBossStatus();}catch(e){document.getElementById('cosmicBossFoot').textContent=e.message;b.disabled=false;}});
   function renderCosmicAtlas(){
     const grid=document.getElementById('cosmicPlanetGrid');if(!grid)return;
     const score=Math.max(0,Number(window.__gazyavaScore||0));
@@ -2419,7 +2424,6 @@ h1{font-size:clamp(28px,7vw,36px);background:linear-gradient(90deg,#fff,#c6b7ff,
       loadPetCollection();
       window.__gazyavaScore=Number(data.score||0);
       renderCosmicAtlas();
-      loadCosmicBossStatus();
     } catch (error) {
       hint.textContent = error.message;
       console.error('Profile loading failed:', error);
@@ -3821,6 +3825,7 @@ h1{font-size:clamp(28px,7vw,36px);background:linear-gradient(90deg,#fff,#c6b7ff,
   wakeMascot();
   render();
   loadPlayer();
+  loadCosmicBossStatus();
   loadLeaderboard();
   loadWeeklyTournament();
   loadDailyProgress();
